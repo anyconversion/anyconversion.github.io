@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Square Feet to Acres</title>
+    <meta name="description" content="Discover a versatile unit converter with tools for length, temperature, area, volume, weight, and time conversions. Get accurate results quickly using our free calculator.">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        /* Header Styling */
+        header {
+            background-color: #343a40;
+            color: white;
+            padding: 0;
+        }
+
+            header h1 {
+                font-size: clamp(1.5rem, 5vw, 3rem); /* Responsive font size */
+                margin: 0;
+            }
+        /* Default order */
+        .main {
+            order: 1;
+        }
+
+        .sidebar {
+            order: 2; /* By default, sidebar comes last */
+        }
+
+        .sidebar-secondary {
+            margin-top: 1rem;
+        }
+
+        .navbar {
+            padding: 1rem;
+        }
+
+        .navbar-brand {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: white !important;
+        }
+
+        /* Hamburger Menu Styling */
+        .navbar-toggler {
+            border-color: white;
+        }
+
+        .navbar-toggler-icon {
+            background-image: url("data:image/svg+xml;charset=UTF8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3E%3Cpath stroke='white' stroke-width='2' stroke-linecap='round' stroke-miterlimit='10' d='M4 7h22M4 15h22M4 23h22'/%3E%3C/svg%3E");
+        }
+
+        .nav-link {
+            color: white !important;
+            font-size: 1rem;
+            padding: 0.5rem 1rem;
+        }
+
+            .nav-link:hover {
+                color: #ddd !important;
+            }
+
+        .nav-item button {
+            background-color: steelblue;
+            border-color: white !important;
+        }
+
+        .active {
+            background-color: steelblue !important;
+            color: white !important;
+            border-color: blue !important;
+            font-weight: 900;
+            padding: 10px;
+        }
+
+        .dropdown-menu {
+            background-color: #343a40;
+            border: none;
+        }
+
+        .dropdown-item {
+            color: white !important;
+        }
+
+            .dropdown-item:hover {
+                background-color: #495057 !important;
+            }
+
+        footer {
+            text-align: center;
+            margin-top: 2rem;
+            padding: 1rem 0;
+            background-color: #f8f9fa;
+            color: #6c757d;
+        }
+
+        /* Float links to the right in the expanded dropdown */
+        @media (max-width: 992px) {
+            .navbar-nav {
+                text-align: right;
+            }
+
+            .navbar-collapse {
+                justify-content: flex-end;
+            }
+
+            .main {
+                order: 2; /* Unit converter section */
+            }
+
+            .sidebar {
+                order: 1; /* Sidebar moves below unit converter */
+            }
+
+            .sidebar-secondary {
+                margin-top: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <nav class="navbar navbar-expand-lg navbar-dark">
+            <div class="container-fluid">
+                <a class="navbar-brand" href="#" onclick="showSection('home')">AnyConversion</a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav ms-auto">
+                        <li class="nav-item">
+                            <a class="nav-link" href="../index.html">Home</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </header>
+    <main class="container my-4">
+        <div class="row">
+            <div class="col-lg-9">
+                <!-- Main Content Section -->
+                <div class="card shadow-lg">
+                    <div class="card-header bg-primary text-white">
+                        <h4 class="text-center mb-0">Square Feet to Acres (sqft to ac) Converter</h4>
+                    </div>
+                    <div class="card-body">
+                        <!-- Conversion Form -->
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="squareFeet" class="form-label">Square Feet:</label>
+                                    <input type="number" class="form-control" id="squareFeet" placeholder="Enter square feet">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="acre" class="form-label">Acres:</label>
+                                    <input type="number" class="form-control" id="acre" placeholder="Enter acres">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Common Conversions -->
+                <div class="content-container my-4">
+                    <div class="card shadow-lg text-white">
+                        <div class="card-header bg-secondary">
+                            <h5 class="mb-0">Common Conversions</h5>
+                        </div>
+                        <div class="card-body d-flex justify-content-center align-items-center">
+                            <div class="row row-cols-1 row-cols-md-4 g-4">
+                                <div class="col">
+                                    <h4 class="text-black">LENGTH</h4>
+                                    <ul class="list-unstyled">
+                                        <li><a href="../length/inches-to-cm.html" class="text-decoration-none">inches to cm</a></li>
+                                        <li><a href="../length/cm-to-inches.html" class="text-decoration-none">cm to inches</a></li>
+                                        <li><a href="../length/mm-to-inches.html" class="text-decoration-none">mm to inches</a></li>
+                                        <li><a href="../length/meters_to_feet.html" class="text-decoration-none">meters to feet</a></li>
+                                        <li><a href="../length/km-to-miles.html" class="text-decoration-none">km to miles</a></li>
+                                        <li><a href="../length/cm-to-feet.html" class="text-decoration-none">cm to feet</a></li>
+                                        <li><a href="../length/inches-to-feet.html" class="text-decoration-none">inches to feet</a></li>
+                                        <li><a href="../length/meters-to-yards.html" class="text-decoration-none">meters to yards</a></li>
+                                    </ul>
+                                </div>
+                                <div class="col">
+                                    <h4 class="text-black">WEIGHT</h4>
+                                    <ul class="list-unstyled">
+                                        <li><a href="../weight/kg-to-lbs.html" class="text-decoration-none">kg to lbs</a></li>
+                                        <li><a href="../weight/lbs-to-kg.html" class="text-decoration-none">lbs to kg</a></li>
+                                        <li><a href="../weight/grams-to-ounces.html" class="text-decoration-none">grams to ounces</a></li>
+                                        <li><a href="../weight/pounds-to-ounces.html" class="text-decoration-none">pounds to ounces</a></li>
+                                        <li><a href="../weight/ounces-to-grams.html" class="text-decoration-none">ounces to grams</a></li>
+                                        <li><a href="../weight/ounces-to-pounds.html" class="text-decoration-none">ounces to pounds</a></li>
+                                    </ul>
+                                </div>
+                                <div class="col">
+                                    <h4 class="text-black">TEMPERATURE</h4>
+                                    <ul class="list-unstyled">
+                                        <li><a href="../temperature/celsius-to-fahrenheit.html" class="text-decoration-none">Celsius to Fahrenheit</a></li>
+                                        <li><a href="../temperature/fahrenheit-to-celsius.html" class="text-decoration-none">Fahrenheit to Celsius</a></li>
+                                    </ul>
+                                </div>
+                                <div class="col">
+                                    <h4 class="text-black">AREA</h4>
+                                    <ul class="list-unstyled">
+                                        <li><a href="../area/acres-to-square-feet.html" class="text-decoration-none">acres to square feet</a></li>
+                                        <li><a href="../area/square-feet-to-acres.html" class="text-decoration-none">square feet to acres</a></li>
+                                    </ul>
+                                </div>
+                                <div class="col">
+                                    <h4 class="text-black">VOLUME</h4>
+                                    <ul class="list-unstyled">
+                                        <li><a href="../volume/liters-to-gallons.html" class="text-decoration-none">liters to gallons</a></li>
+                                        <li><a href="../volume/gallons-to-liters.html" class="text-decoration-none">gallons to liters</a></li>
+                                        <li><a href="../volume/ml-to-cups.html" class="text-decoration-none">mL to cups</a></li>
+                                        <li><a href="../volume/cups-to-ml.html" class="text-decoration-none">cups to mL</a></li>
+                                    </ul>
+                                </div>
+                                <div class="col">
+                                    <h4 class="text-black">POWER</h4>
+                                    <ul class="list-unstyled">
+                                        <li><a href="../power/hp-to-kw.html" class="text-decoration-none">hp to kw</a></li>
+                                        <li><a href="../power/kw-to-hp.html" class="text-decoration-none">kw to hp</a></li>
+                                    </ul>
+                                </div>
+                                <div class="col">
+                                    <h4 class="text-black">SPEED</h4>
+                                    <ul class="list-unstyled">
+                                        <li><a href="../speed/mph-to-kph.html" class="text-decoration-none">mph to kph</a></li>
+                                        <li><a href="../speed/kph-to-mph.html" class="text-decoration-none">kph to mph</a></li>
+                                    </ul>
+                                </div>
+                                <div class="col">
+                                    <h4 class="text-black">ANGLE</h4>
+                                    <ul class="list-unstyled">
+                                        <li><a href="../angle/radians-to-degrees.html" class="text-decoration-none">radians to degrees</a></li>
+                                        <li><a href="../angle/degrees-to-radians.html" class="text-decoration-none">degrees to radians</a></li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Other Conversions -->
+                <div class="content-container my-4">
+                    <div class="card shadow-lg text-white">
+                        <div class="card-header bg-secondary">
+                            <h5 class="mb-0">Other Conversions</h5>
+                        </div>
+                        <div class="card-body text-center">
+                            <div class="col">
+                                <ul class="list-unstyled">
+                                    <li><a href="../other/mm-to-sae.html" class="text-decoration-none">Metric to SAE</a></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Sidebar -->
+            <div class="col-lg-3">
+                <div class="sidebar sticky-top" style="top: 20px;">
+                    <div class="card shadow-sm">
+                        <div class="card-body text-center">
+                            <h5>Advertisement</h5>
+                            <p class="text-muted">Your ad here.</p>
+                            <div style="border: 1px dashed #ccc; padding: 10px;">
+                                <span class="text-muted">Ad Placeholder</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    <!-- Footer -->
+    <footer>
+        <p>© 2025 AnyConversion.github.io. All rights reserved.</p>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.min.js"></script>
+    <script>
+        const squareFeetInput = document.getElementById("squareFeet");
+        const acreInput = document.getElementById("acre");
+
+        function updateFromSquareFeet() {
+            const squareFeet = parseFloat(squareFeetInput.value);
+            if (!isNaN(squareFeet)) {
+                acreInput.value = (squareFeet / 43560).toFixed(6);
+            }
+        }
+
+        function updateFromAcre() {
+            const acre = parseFloat(acreInput.value);
+            if (!isNaN(acre)) {
+                squareFeetInput.value = (acre * 43560).toFixed(6);
+            }
+        }
+
+        squareFeetInput.addEventListener("input", updateFromSquareFeet);
+        acreInput.addEventListener("input", updateFromAcre);
+    </script>
+</body>
+</html>

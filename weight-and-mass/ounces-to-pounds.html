@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block title %}Ounces to Pounds{% endblock %}
+{% block content %}
+<body>
+    <div class="container mY-4">
+        <div class="row">
+            <!-- Main Content Section -->            
+            <div class="card shadow-lg">
+                <div class="card-header bg-primary text-white" style="margin-left: -0.8rem; margin-right: -0.8rem;">
+                    <h4 class="text-center mb-0">Ounces to Pounds Converter (oz to lbs)</h4>
+                </div>
+                <div class="card-body">
+                    <!-- Conversion Form -->
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="ounces" class="form-label">Ounces:</label>
+                                <input type="number" class="form-control" id="ounces" placeholder="Enter oz">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="pounds" class="form-label">Pounds:</label>
+                                <input type="number" class="form-control" id="pounds" placeholder="Enter lbs">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>    
+        </div>
+    </div>
+    <script>
+        const ouncesInput = document.getElementById("ounces");
+		const poundsInput = document.getElementById("pounds");
+
+		function updateFromOunces() {
+			const ounces = parseFloat(ouncesInput.value);
+			if (!isNaN(ounces)) {
+				poundsInput.value = (ounces / 16).toFixed(6); // Ounces to pounds
+			}
+		}
+
+		function updateFromPounds() {
+			const pounds = parseFloat(poundsInput.value);
+			if (!isNaN(pounds)) {
+				ouncesInput.value = (pounds * 16).toFixed(6); // Pounds to ounces
+			}
+		}
+
+		ouncesInput.addEventListener("input", updateFromOunces);
+		poundsInput.addEventListener("input", updateFromPounds);
+
+
+    </script>
+</body>
+{% endblock %}

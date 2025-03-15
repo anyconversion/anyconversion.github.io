@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+
+{% block title %}Centimeters to Inches{% endblock %}
+
+{% block content %}
+<body>
+    <div class="container mY-4">
+        <div class="row">
+            <!-- Main Content Section -->
+            <div class="card shadow-lg">
+                <div class="card-header bg-primary text-white" style="margin-left: -0.8rem; margin-right: -0.8rem;">
+                    <h1 class="text-center mb-0">Centimeters to Inches (cm to in) Converter</h1>
+                </div>
+                <div class="card-body">
+                    <!-- Conversion Form -->
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="centimeters" class="form-label">Centimeters:</label>
+                                <input type="number" class="form-control" id="centimeters" placeholder="Enter centimeters">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="inches" class="form-label">Inches:</label>
+                                <input type="number" class="form-control" id="inches" placeholder="Enter inches">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const cmInput = document.getElementById("centimeters");
+        const inchesInput = document.getElementById("inches");
+
+        function updateFromCentimeters() {
+            const cm = parseFloat(cmInput.value);
+            if (!isNaN(cm)) {
+                inchesInput.value = (cm / 2.54).toFixed(6);
+            }
+        }
+
+        function updateFromInches() {
+            const inches = parseFloat(inchesInput.value);
+            if (!isNaN(inches)) {
+                cmInput.value = (inches * 2.54).toFixed(6);
+            }
+        }
+
+        cmInput.addEventListener("input", updateFromCentimeters);
+        inchesInput.addEventListener("input", updateFromInches);
+    </script>
+</body>
+{% endblock %}
