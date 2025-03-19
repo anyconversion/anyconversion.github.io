@@ -1,0 +1,46 @@
+
+                <!-- Main Content Section -->
+                <div class="card shadow-lg">
+                    <div class="card-header bg-primary text-white">
+                        <h4 class="text-center mb-0">Square Feet to Acres (sqft to ac) Converter</h4>
+                    </div>
+                    <div class="card-body">
+                        <!-- Conversion Form -->
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="squareFeet" class="form-label">Square Feet:</label>
+                                    <input type="number" class="form-control" id="squareFeet" placeholder="Enter square feet">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="acre" class="form-label">Acres:</label>
+                                    <input type="number" class="form-control" id="acre" placeholder="Enter acres">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+    <script>
+        const squareFeetInput = document.getElementById("squareFeet");
+        const acreInput = document.getElementById("acre");
+
+        function updateFromSquareFeet() {
+            const squareFeet = parseFloat(squareFeetInput.value);
+            if (!isNaN(squareFeet)) {
+                acreInput.value = (squareFeet / 43560).toFixed(6);
+            }
+        }
+
+        function updateFromAcre() {
+            const acre = parseFloat(acreInput.value);
+            if (!isNaN(acre)) {
+                squareFeetInput.value = (acre * 43560).toFixed(6);
+            }
+        }
+
+        squareFeetInput.addEventListener("input", updateFromSquareFeet);
+        acreInput.addEventListener("input", updateFromAcre);
+    </script>

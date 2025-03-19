@@ -1,0 +1,46 @@
+
+                <!-- Main Content Section -->
+                <div class="card shadow-lg">
+                    <div class="card-header bg-primary text-white">
+                        <h4 class="text-center mb-0">Cups to Milliliters (C to mL)</h4>
+                    </div>
+                    <div class="card-body">
+                        <!-- Conversion Form -->
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="cups" class="form-label">Cups:</label>
+                                    <input type="number" class="form-control" id="cups" placeholder="Enter Cups">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="ml" class="form-label">Milliliters:</label>
+                                    <input type="number" class="form-control" id="ml" placeholder="Enter Milliliters">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+               
+                <script>
+                    const cupsInput = document.getElementById("cups");
+                    const mlInput = document.getElementById("ml");
+                
+                    function updateFromCups() {
+                        const cups = parseFloat(cupsInput.value);
+                        if (!isNaN(cups)) {
+                            mlInput.value = (cups * 236.5882365).toFixed(6);
+                        }
+                    }
+                
+                    function updateFromMilliliters() {
+                        const ml = parseFloat(mlInput.value);
+                        if (!isNaN(ml)) {
+                            cupsInput.value = (ml / 236.5882365).toFixed(6);
+                        }
+                    }
+                
+                    cupsInput.addEventListener("input", updateFromCups);
+                    mlInput.addEventListener("input", updateFromMilliliters);
+                </script>

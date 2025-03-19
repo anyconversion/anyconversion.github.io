@@ -1,0 +1,46 @@
+
+                <!-- Main Content Section -->
+                <div class="card shadow-lg">
+                    <div class="card-header bg-primary text-white">
+                        <h4 class="text-center mb-0">Radians to Degrees (Rad to Deg) Converter</h4>
+                    </div>
+                    <div class="card-body">
+                        <!-- Conversion Form -->
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="radians" class="form-label">Radians:</label>
+                                    <input type="number" class="form-control" id="radians" placeholder="Enter radians">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="degrees" class="form-label">Degrees:</label>
+                                    <input type="number" class="form-control" id="degrees" placeholder="Enter degrees">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+    <script>
+        const radiansInput = document.getElementById("radians");
+        const degreesInput = document.getElementById("degrees");
+
+        function updateFromRadians() {
+            const radians = parseFloat(radiansInput.value);
+            if (!isNaN(radians)) {
+                degreesInput.value = (radians * (180 / Math.PI)).toFixed(6); // Radians to degrees
+            }
+        }
+
+        function updateFromDegrees() {
+            const degrees = parseFloat(degreesInput.value);
+            if (!isNaN(degrees)) {
+                radiansInput.value = (degrees * (Math.PI / 180)).toFixed(6); // Degrees to radians
+            }
+        }
+
+        radiansInput.addEventListener("input", updateFromRadians);
+        degreesInput.addEventListener("input", updateFromDegrees);
+    </script>

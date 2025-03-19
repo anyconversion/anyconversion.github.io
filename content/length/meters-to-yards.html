@@ -1,0 +1,44 @@
+
+                <div class="card shadow-lg">
+                    <div class="card-header bg-primary text-white">
+                        <h4 class="text-center mb-0">Meters to Yards Converter</h4>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="meters" class="form-label">Meters:</label>
+                                    <input type="number" class="form-control" id="meters" placeholder="Enter meters">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="yards" class="form-label">Yards:</label>
+                                    <input type="number" class="form-control" id="yards" placeholder="Enter yards">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+    <script>
+        const metersInput = document.getElementById("meters");
+        const yardsInput = document.getElementById("yards");
+
+        function updateFromMeters() {
+            const meters = parseFloat(metersInput.value);
+            if (!isNaN(meters)) {
+                yardsInput.value = (meters * 1.09361).toFixed(6);
+            }
+        }
+
+        function updateFromYards() {
+            const yards = parseFloat(yardsInput.value);
+            if (!isNaN(yards)) {
+                metersInput.value = (yards / 1.09361).toFixed(6);
+            }
+        }
+
+        metersInput.addEventListener("input", updateFromMeters);
+        yardsInput.addEventListener("input", updateFromYards);
+    </script>

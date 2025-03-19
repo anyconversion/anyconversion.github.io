@@ -1,0 +1,44 @@
+<div class="card shadow-lg">
+    <div class="card-header bg-primary text-white">
+        <h4 class="text-center mb-0">Reyns to Pascal-Seconds Converter</h4>
+    </div>
+    <div class="card-body">
+        <div class="row g-3">
+            <div class="col-md-6">
+                <label for="reyns" class="form-label">Reyns:</label>
+                <input type="number" class="form-control" id="reyns" placeholder="Enter reyns">
+            </div>
+            <div class="col-md-6">
+                <label for="pascal-seconds" class="form-label">Pascal-Seconds (Pa·s):</label>
+                <input type="number" class="form-control" id="pascal-seconds" placeholder="Enter Pa·s">
+            </div>
+        </div>
+    </div>
+</div>
+<div class="mt-4">
+    <h5>Definition</h5>
+    <p>A reyn is a unit of dynamic viscosity in the British gravitational system, equal to 1 pound-force-second per square inch, or approximately 6894.75729 pascal-seconds. A pascal-second (Pa·s) is the SI unit of viscosity, equal to 1 newton-second per square meter, used for fluid dynamics.</p>
+    <h5>History</h5>
+    <p>The reyn was named after Osborne Reynolds, a 19th-century engineer known for the Reynolds number in fluid mechanics, introduced in the early 20th century for engineering in the US. The pascal-second, part of the SI system since the 1960s, honors Blaise Pascal and replaced imperial units like the reyn in scientific use.</p>
+</div>
+<script>
+    const reynsInput = document.getElementById("reyns");
+    const pasInput = document.getElementById("pascal-seconds");
+
+    function updateFromReyns() {
+        const reyns = parseFloat(reynsInput.value);
+        if (!isNaN(reyns)) {
+            pasInput.value = (reyns * 6894.75729).toFixed(6);
+        }
+    }
+
+    function updateFromPascalSeconds() {
+        const pas = parseFloat(pasInput.value);
+        if (!isNaN(pas)) {
+            reynsInput.value = (pas / 6894.75729).toFixed(6);
+        }
+    }
+
+    reynsInput.addEventListener("input", updateFromReyns);
+    pasInput.addEventListener("input", updateFromPascalSeconds);
+</script>

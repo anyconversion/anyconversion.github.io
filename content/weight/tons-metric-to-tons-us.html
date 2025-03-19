@@ -1,0 +1,38 @@
+<div class="card shadow-lg">
+    <div class="card-header bg-primary text-white">
+        <h4 class="text-center mb-0">Tons (Metric) to Tons (US) Converter</h4>
+    </div>
+    <div class="card-body">
+        <div class="row g-3">
+            <div class="col-md-6">
+                <label for="metric-tons" class="form-label">Metric Tons:</label>
+                <input type="number" class="form-control" id="metric-tons" placeholder="Enter metric tons">
+            </div>
+            <div class="col-md-6">
+                <label for="us-tons" class="form-label">US Tons:</label>
+                <input type="number" class="form-control" id="us-tons" placeholder="Enter US tons">
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    const metricTonsInput = document.getElementById("metric-tons");
+    const usTonsInput = document.getElementById("us-tons");
+
+    function updateFromMetricTons() {
+        const metricTons = parseFloat(metricTonsInput.value);
+        if (!isNaN(metricTons)) {
+            usTonsInput.value = (metricTons * 1.1023113109).toFixed(6);
+        }
+    }
+
+    function updateFromUsTons() {
+        const usTons = parseFloat(usTonsInput.value);
+        if (!isNaN(usTons)) {
+            metricTonsInput.value = (usTons / 1.1023113109).toFixed(6);
+        }
+    }
+
+    metricTonsInput.addEventListener("input", updateFromMetricTons);
+    usTonsInput.addEventListener("input", updateFromUsTons);
+</script>

@@ -1,0 +1,44 @@
+<div class="card shadow-lg">
+    <div class="card-header bg-primary text-white">
+        <h4 class="text-center mb-0">Kilometers per Liter to MPG (US) Converter</h4>
+    </div>
+    <div class="card-body">
+        <div class="row g-3">
+            <div class="col-md-6">
+                <label for="km-per-liter" class="form-label">Kilometers per Liter:</label>
+                <input type="number" class="form-control" id="km-per-liter" placeholder="Enter km/L">
+            </div>
+            <div class="col-md-6">
+                <label for="mpg" class="form-label">Miles per Gallon (US):</label>
+                <input type="number" class="form-control" id="mpg" placeholder="Enter MPG (US)">
+            </div>
+        </div>
+    </div>
+</div>
+<div class="mt-4">
+    <h5>Definition</h5>
+    <p>Kilometers per liter (km/L) is a metric unit of fuel efficiency, indicating the distance a vehicle travels per liter of fuel, where 1 liter equals 0.264172 US gallons. Miles per gallon (MPG, US) measures distance per US gallon, equal to 3.785411784 liters, used primarily in the US.</p>
+    <h5>History</h5>
+    <p>Kilometers per liter gained use in metric countries during the 20th century as automobiles spread, aligning with the metric system established in the 1790s. MPG (US) developed in the early 1900s in the US, tied to the US customary system and the automotive industry’s growth, emphasizing efficiency for consumers.</p>
+</div>
+<script>
+    const kmplInput = document.getElementById("km-per-liter");
+    const mpgInput = document.getElementById("mpg");
+
+    function updateFromKmPerLiter() {
+        const kmpl = parseFloat(kmplInput.value);
+        if (!isNaN(kmpl)) {
+            mpgInput.value = (kmpl * 2.352145833).toFixed(6);
+        }
+    }
+
+    function updateFromMPG() {
+        const mpg = parseFloat(mpgInput.value);
+        if (!isNaN(mpg)) {
+            kmplInput.value = (mpg / 2.352145833).toFixed(6);
+        }
+    }
+
+    kmplInput.addEventListener("input", updateFromKmPerLiter);
+    mpgInput.addEventListener("input", updateFromMPG);
+</script>

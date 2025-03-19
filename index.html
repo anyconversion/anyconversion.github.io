@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Unit Converter</title>
+    <meta name="description" content="Discover a versatile unit converter with tools for length, temperature, area, volume, weight, and time conversions. Get accurate results quickly using our free calculator.">
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <nav class="navbar navbar-expand-lg navbar-dark">
+            <div class="container-fluid">
+                <a class="navbar-brand" href="index.html?page=home">AnyConversion</a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav ms-auto">
+                        <li class="nav-item">
+                            <a class="nav-link" href="index.html?page=home">Home</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container my-4">
+        <div class="row">
+            <div class="col-lg-9">
+                <div id="home-section">
+                    <!-- Dynamic content will be loaded here -->
+                    <div id="content-container"></div>
+                </div>
+                <!-- Common Conversions -->
+                <div class="content-container my-4">
+                    <div class="card shadow-lg text-white">
+                        <div class="card-header bg-secondary">
+                            <h5 class="mb-0">Common Conversions</h5>
+                        </div>
+                        <div class="card-body d-flex justify-content-center align-items-center">
+                            <div class="row row-cols-1 row-cols-md-4 g-4">
+                                <div class="col">
+                                    <h4 class="text-black">LENGTH</h4>
+                                    <ul class="list-unstyled">
+                                        <li><a href="index.html?page=inches-to-cm" class="text-decoration-none">inches to cm</a></li>
+                                        <li><a href="index.html?page=cm-to-inches" class="text-decoration-none">cm to inches</a></li>
+                                        <li><a href="index.html?page=mm-to-inches" class="text-decoration-none">mm to inches</a></li>
+                                        <li><a href="index.html?page=meters-to-feet" class="text-decoration-none">meters to feet</a></li>
+                                        <li><a href="index.html?page=km-to-miles" class="text-decoration-none">km to miles</a></li>
+                                        <li><a href="index.html?page=cm-to-feet" class="text-decoration-none">cm to feet</a></li>
+                                        <li><a href="index.html?page=inches-to-feet" class="text-decoration-none">inches to feet</a></li>
+                                        <li><a href="index.html?page=meters-to-yards" class="text-decoration-none">meters to yards</a></li>
+                                    </ul>
+                                </div>
+                                <div class="col">
+                                    <h4 class="text-black">WEIGHT</h4>
+                                    <ul class="list-unstyled">
+                                        <li><a href="index.html?page=kg-to-lbs" class="text-decoration-none">kg to lbs</a></li>
+                                        <li><a href="index.html?page=lbs-to-kg" class="text-decoration-none">lbs to kg</a></li>
+                                        <li><a href="index.html?page=grams-to-ounces" class="text-decoration-none">grams to ounces</a></li>
+                                        <li><a href="index.html?page=pounds-to-ounces" class="text-decoration-none">pounds to ounces</a></li>
+                                        <li><a href="index.html?page=ounces-to-grams" class="text-decoration-none">ounces to grams</a></li>
+                                        <li><a href="index.html?page=ounces-to-pounds" class="text-decoration-none">ounces to pounds</a></li>
+                                    </ul>
+                                </div>
+                                <div class="col">
+                                    <h4 class="text-black">TEMPERATURE</h4>
+                                    <ul class="list-unstyled">
+                                        <li><a href="index.html?page=celsius-to-fahrenheit" class="text-decoration-none">Celsius to Fahrenheit</a></li>
+                                        <li><a href="index.html?page=fahrenheit-to-celsius" class="text-decoration-none">Fahrenheit to Celsius</a></li>
+                                    </ul>
+                                </div>
+                                <div class="col">
+                                    <h4 class="text-black">AREA</h4>
+                                    <ul class="list-unstyled">
+                                        <li><a href="index.html?page=acres-to-square-feet" class="text-decoration-none">acres to square feet</a></li>
+                                        <li><a href="index.html?page=square-feet-to-acres" class="text-decoration-none">square feet to acres</a></li>
+                                    </ul>
+                                </div>
+                                <div class="col">
+                                    <h4 class="text-black">VOLUME</h4>
+                                    <ul class="list-unstyled">
+                                        <li><a href="index.html?page=liters-to-gallons" class="text-decoration-none">liters to gallons</a></li>
+                                        <li><a href="index.html?page=gallons-to-liters" class="text-decoration-none">gallons to liters</a></li>
+                                        <li><a href="index.html?page=ml-to-cups" class="text-decoration-none">mL to cups</a></li>
+                                        <li><a href="index.html?page=cups-to-ml" class="text-decoration-none">cups to mL</a></li>
+                                    </ul>
+                                </div>
+                                <div class="col">
+                                    <h4 class="text-black">POWER</h4>
+                                    <ul class="list-unstyled">
+                                        <li><a href="index.html?page=hp-to-kw" class="text-decoration-none">hp to kw</a></li>
+                                        <li><a href="index.html?page=kw-to-hp" class="text-decoration-none">kw to hp</a></li>
+                                    </ul>
+                                </div>
+                                <div class="col">
+                                    <h4 class="text-black">SPEED</h4>
+                                    <ul class="list-unstyled">
+                                        <li><a href="index.html?page=mph-to-kph" class="text-decoration-none">mph to kph</a></li>
+                                        <li><a href="index.html?page=kph-to-mph" class="text-decoration-none">kph to mph</a></li>
+                                    </ul>
+                                </div>
+                                <div class="col">
+                                    <h4 class="text-black">ANGLE</h4>
+                                    <ul class="list-unstyled">
+                                        <li><a href="index.html?page=radians-to-degrees" class="text-decoration-none">radians to degrees</a></li>
+                                        <li><a href="index.html?page=degrees-to-radians" class="text-decoration-none">degrees to radians</a></li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="content-container my-4">
+                    <div class="card shadow-lg text-white">
+                        <div class="card-header bg-secondary">
+                            <h5 class="mb-0">Other Conversions</h5>
+                        </div>
+                        <div class="card-body text-center">
+                            <div class="col">
+                                <ul class="list-unstyled">
+                                    <li><a href="index.html?page=mm-to-sae" class="text-decoration-none">Metric to SAE</a></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div><!-- Close col-lg-9 here -->
+        
+            <!-- Sidebar -->
+            <div class="col-lg-3">
+                <div class="sidebar">
+                    <ul class="category-list">
+                        <li class="category-item">
+                            <a href="index.html?page=length" class="category-link">Length/Distance</a>
+                            <ul class="subcategory-list">
+                                <li class="subcategory-item"><a href="index.html?page=meters-to-feet">Meters to Feet</a></li>
+                                <li class="subcategory-item"><a href="index.html?page=kilometers-to-miles">Kilometers to Miles</a></li>
+                                <li class="subcategory-item"><a href="index.html?page=centimeters-to-inches">Centimeters to Inches</a></li>
+                                <li class="subcategory-item"><a href="index.html?page=millimeters-to-inches">Millimeters to Inches</a></li>
+                                <li class="subcategory-item"><a href="index.html?page=yards-to-meters">Yards to Meters</a></li>
+                                <li class="subcategory-item"><a href="index.html?page=feet-to-inches">Feet to Inches</a></li>
+                                <li class="subcategory-item"><a href="index.html?page=miles-to-nautical-miles">Miles to Nautical Miles</a></li>
+                                <li class="subcategory-item"><a href="index.html?page=micrometers-to-nanometers">Micrometers to Nanometers</a></li>
+                                <li class="subcategory-item"><a href="index.html?page=angstroms-to-nanometers">Angstroms to Nanometers</a></li>
+                                <li class="subcategory-item"><a href="index.html?page=furlongs-to-chains">Furlongs to Chains</a></li>
+                                <li class="subcategory-item"><a href="index.html?page=light-years-to-parsecs">Light-Years to Parsecs</a></li>
+                                <li class="subcategory-item"><a href="index.html?page=cubits-to-meters">Cubits to Meters</a></li>
+                                <li class="subcategory-item"><a href="index.html?page=rods-to-feet">Rods to Feet</a></li>
+                            </ul>
+                        </li>
+                        <li class="category-item">
+                            <a href="index.html?page=weight" class="category-link">Weight/Mass</a>
+                            <ul class="subcategory-list">
+                                <li class="subcategory-item"><a href="index.html?page=kilograms-to-pounds">Kilograms to Pounds</a></li>
+                                <li class="subcategory-item"><a href="index.html?page=pounds-to-ounces">Pounds to Ounces</a></li>
+                                <li class="subcategory-item"><a href="index.html?page=grams-to-ounces">Grams to Ounces</a></li>
+                                <li class="subcategory-item"><a href="index.html?page=ounces-to-grams">Ounces to Grams</a></li>
+                                <li class="subcategory-item"><a href="index.html?page=pounds-to-kilograms">Pounds to Kilograms</a></li>
+                                <li class="subcategory-item"><a href="index.html?page=tons-metric-to-tons-us">Tons (Metric) to Tons (US)</a></li>
+                                <li class="subcategory-item"><a href="index.html?page=milligrams-to-micrograms">Milligrams to Micrograms</a></li>
+                                <li class="subcategory-item"><a href="index.html?page=stone-to-pounds">Stone to Pounds</a></li>
+                                <li class="subcategory-item"><a href="index.html?page=carats-to-grams">Carats to Grams</a></li>
+                                <li class="subcategory-item"><a href="index.html?page=slugs-to-kilograms">Slugs to Kilograms</a></li>
+                                <li class="subcategory-item"><a href="index.html?page=troy-ounces-to-ounces">Troy Ounces to Ounces</a></li>
+                                <li class="subcategory-item"><a href="index.html?page=grains-to-grams">Grains to Grams</a></li>
+                            </ul>
+                        </li>
+                        <li class="category-item">
+                            <a href="index.html?page=volume" class="category-link">Volume/Capacity</a>
+                            <ul class="subcategory-list">
+                                <li class="subcategory-item"><a href="index.html?page=liters-to-gallons">Liters to Gallons (US)</a></li>
+                                <li class="subcategory-item"><a href="index.html?page=gallons-to-liters">Gallons (US) to Liters</a></li>
+                                <li class="subcategory-item"><a href="index.html?page=milliliters-to-fluid-ounces">Milliliters to Fluid Ounces</a></li>
+                                <li class="subcategory-item"><a href="index.html?page=cubic-meters-to-cubic-feet">Cubic Meters to Cubic Feet</a></li>
+                                <li class="subcategory-item"><a href="index.html?page=cups-to-milliliters">Cups to Milliliters</a></li>
+                                <li class="subcategory-item"><a href="index.html?page=pints-to-liters">Pints to Liters</a></li>
+                                <li class="subcategory-item"><a href="index.html?page=quarts-to-gallons">Quarts to Gallons</a></li>
+                                <li class="subcategory-item"><a href="index.html?page=barrels-to-gallons">Barrels (Oil) to Gallons</a></li>
+                                <li class="subcategory-item"><a href="index.html?page=bushels-to-liters">Bushels to Liters</a></li>
+                                <li class="subcategory-item"><a href="index.html?page=teaspoons-to-drops">Teaspoons to Drops</a></li>
+                                <li class="subcategory-item"><a href="index.html?page=hogsheads-to-gallons">Hogsheads to Gallons</a></li>
+                                <li class="subcategory-item"><a href="index.html?page=cubic-parsecs-to-cubic-light-years">Cubic Parsecs to Cubic Light-Years</a></li>
+                            </ul>
+                        </li>
+                        <li class="category-item">
+                            <a href="index.html?page=area" class="category-link">Area</a>
+                            <ul class="subcategory-list">
+                                <li class="subcategory-item"><a href="index.html?page=square-meters-to-square-feet">Square Meters to Square Feet</a></li>
+                                <li class="subcategory-item"><a href="index.html?page=acres-to-square-feet">Acres to Square Feet</a></li>
+                                <li class="subcategory-item"><a href="index.html?page=square-kilometers-to-square-miles">Square Kilometers to Square Miles</a></li>
+                                <li class="subcategory-item"><a href="index.html?page=hectares-to-acres">Hectares to Acres</a></li>
+                                <li class="subcategory-item"><a href="index.html?page=square-yards-to-square-meters">Square Yards to Square Meters</a></li>
+                                <li class="subcategory-item"><a href="index.html?page=square-inches-to-square-centimeters">Square Inches to Square Centimeters</a></li>
+                                <li class="subcategory-item"><a href="index.html?page=roods-to-acres">Roods to Acres</a></li>
+                                <li class="subcategory-item"><a href="index.html?page=square-chains-to-square-feet">Square Chains to Square Feet</a></li>
+                                <li class="subcategory-item"><a href="index.html?page=square-furlongs-to-acres">Square Furlongs to Acres</a></li>
+                            </ul>
+                        </li>
+                        <li class="category-item">
+                            <a href="index.html?page=temperature" class="category-link">Temperature</a>
+                            <ul class="subcategory-list">
+                                <li class="subcategory-item"><a href="index.html?page=celsius-to-fahrenheit">Celsius to Fahrenheit</a></li>
+                                <li class="subcategory-item"><a href="index.html?page=fahrenheit-to-celsius">Fahrenheit to Celsius</a></li>
+                                <li class="subcategory-item"><a href="index.html?page=celsius-to-kelvin">Celsius to Kelvin</a></li>
+                                <li class="subcategory-item"><a href="index.html?page=kelvin-to-rankine">Kelvin to Rankine</a></li>
+                                <li class="subcategory-item"><a href="index.html?page=reaumur-to-celsius">Réaumur to Celsius</a></li>
+                            </ul>
+                        </li>
+                        <li class="category-item">
+                            <a href="index.html?page=time" class="category-link">Time</a>
+                            <ul class="subcategory-list">
+                                <li class="subcategory-item"><a href="index.html?page=seconds-to-minutes">Seconds to Minutes</a></li>
+                                <li class="subcategory-item"><a href="index.html?page=minutes-to-hours">Minutes to Hours</a></li>
+                                <li class="subcategory-item"><a href="index.html?page=hours-to-days">Hours to Days</a></li>
+                                <li class="subcategory-item"><a href="index.html?page=days-to-weeks">Days to Weeks</a></li>
+                                <li class="subcategory-item"><a href="index.html?page=years-to-hours">Years to Hours</a></li>
+                                <li class="subcategory-item"><a href="index.html?page=microseconds-to-nanoseconds">Microseconds to Nanoseconds</a></li>
+                                <li class="subcategory-item"><a href="index.html?page=sidereal-days-to-solar-days">Sidereal Days to Solar Days</a></li>
+                                <li class="subcategory-item"><a href="index.html?page=fortnights-to-days">Fortnights to Days</a></li>
+                                <li class="subcategory-item"><a href="index.html?page=lustrums-to-years">Lustrums to Years</a></li>
+                            </ul>
+                        </li>
+                        <li class="category-item">
+                            <a href="index.html?page=speed" class="category-link">Speed/Velocity</a>
+                            <ul class="subcategory-list">
+                                <li class="subcategory-item"><a href="index.html?page=kilometers-per-hour-to-miles-per-hour">Kilometers per Hour to Miles per Hour</a></li>
+                                <li class="subcategory-item"><a href="index.html?page=meters-per-second-to-feet-per-second">Meters per Second to Feet per Second</a></li>
+                                <li class="subcategory-item"><a href="index.html?page=knots-to-miles-per-hour">Knots to Miles per Hour</a></li>
+                                <li class="subcategory-item"><a href="index.html?page=mach-to-meters-per-second">Mach to Meters per Second</a></li>
+                                <li class="subcategory-item"><a href="index.html?page=furlongs-per-fortnight-to-meters-per-second">Furlongs per Fortnight to Meters per Second</a></li>
+                            </ul>
+                        </li>
+                        <li class="category-item">
+                            <a href="index.html?page=energy" class="category-link">Energy/Work</a>
+                            <ul class="subcategory-list">
+                                <li class="subcategory-item"><a href="index.html?page=joules-to-calories">Joules to Calories</a></li>
+                                <li class="subcategory-item"><a href="index.html?page=kilowatt-hours-to-joules">Kilowatt-Hours to Joules</a></li>
+                                <li class="subcategory-item"><a href="index.html?page=btu-to-joules">British Thermal Units (BTU) to Joules</a></li>
+                                <li class="subcategory-item"><a href="index.html?page=electronvolts-to-joules">Electronvolts to Joules</a></li>
+                                <li class="subcategory-item"><a href="index.html?page=ergs-to-joules">Ergs to Joules</a></li>
+                                <li class="subcategory-item"><a href="index.html?page=foot-pounds-to-newton-meters">Foot-Pounds to Newton-Meters</a></li>
+                            </ul>
+                        </li>
+                        <li class="category-item">
+                            <a href="index.html?page=power" class="category-link">Power</a>
+                            <ul class="subcategory-list">
+                                <li class="subcategory-item"><a href="index.html?page=watts-to-horsepower">Watts to Horsepower</a></li>
+                                <li class="subcategory-item"><a href="index.html?page=horsepower-to-kilowatts">Horsepower to Kilowatts</a></li>
+                                <li class="subcategory-item"><a href="index.html?page=btu-per-hour-to-watts">BTU per Hour to Watts</a></li>
+                                <li class="subcategory-item"><a href="index.html?page=ergs-per-second-to-watts">Ergs per Second to Watts</a></li>
+                                <li class="subcategory-item"><a href="index.html?page=cheval-vapeur-to-horsepower">Cheval Vapeur to Horsepower</a></li>
+                            </ul>
+                        </li>
+                        <li class="category-item">
+                            <a href="index.html?page=pressure" class="category-link">Pressure</a>
+                            <ul class="subcategory-list">
+                                <li class="subcategory-item"><a href="index.html?page=pascals-to-atmospheres">Pascals to Atmospheres</a></li>
+                                <li class="subcategory-item"><a href="index.html?page=bars-to-psi">Bars to Pounds per Square Inch (PSI)</a></li>
+                                <li class="subcategory-item"><a href="index.html?page=torr-to-millibars">Torr to Millibars</a></li>
+                                <li class="subcategory-item"><a href="index.html?page=inches-of-mercury-to-pascals">Inches of Mercury to Pascals</a></li>
+                                <li class="subcategory-item"><a href="index.html?page=atmospheres-technical-to-bars">Atmospheres Technical to Bars</a></li>
+                            </ul>
+                        </li>
+                        <li class="category-item">
+                            <a href="index.html?page=force" class="category-link">Force</a>
+                            <ul class="subcategory-list">
+                                <li class="subcategory-item"><a href="index.html?page=newtons-to-pounds-force">Newtons to Pounds-Force</a></li>
+                                <li class="subcategory-item"><a href="index.html?page=kilogram-force-to-newtons">Kilogram-Force to Newtons</a></li>
+                                <li class="subcategory-item"><a href="index.html?page=dynes-to-newtons">Dynes to Newtons</a></li>
+                                <li class="subcategory-item"><a href="index.html?page=poundals-to-newtons">Poundals to Newtons</a></li>
+                            </ul>
+                        </li>
+                        <li class="category-item">
+                            <a href="index.html?page=angle" class="category-link">Angle</a>
+                            <ul class="subcategory-list">
+                                <li class="subcategory-item"><a href="index.html?page=degrees-to-radians">Degrees to Radians</a></li>
+                                <li class="subcategory-item"><a href="index.html?page=radians-to-degrees">Radians to Degrees</a></li>
+                                <li class="subcategory-item"><a href="index.html?page=gradians-to-degrees">Gradians to Degrees</a></li>
+                                <li class="subcategory-item"><a href="index.html?page=mils-to-degrees">Mils to Degrees</a></li>
+                            </ul>
+                        </li>
+                        <li class="category-item">
+                            <a href="index.html?page=data" class="category-link">Data/Storage</a>
+                            <ul class="subcategory-list">
+                                <li class="subcategory-item"><a href="index.html?page=bytes-to-kilobytes">Bytes to Kilobytes</a></li>
+                                <li class="subcategory-item"><a href="index.html?page=megabytes-to-gigabytes">Megabytes to Gigabytes</a></li>
+                                <li class="subcategory-item"><a href="index.html?page=terabytes-to-petabytes">Terabytes to Petabytes</a></li>
+                                <li class="subcategory-item"><a href="index.html?page=bits-to-nibbles">Bits to Nibbles</a></li>
+                                <li class="subcategory-item"><a href="index.html?page=exabytes-to-zettabytes">Exabytes to Zettabytes</a></li>
+                            </ul>
+                        </li>
+                        <li class="category-item">
+                            <a href="index.html?page=fuel-efficiency" class="category-link">Fuel Efficiency</a>
+                            <ul class="subcategory-list">
+                                <li class="subcategory-item"><a href="index.html?page=mpg-to-liters-per-100km">Miles per Gallon (MPG) to Liters per 100 Kilometers</a></li>
+                                <li class="subcategory-item"><a href="index.html?page=kilometers-per-liter-to-mpg">Kilometers per Liter to MPG</a></li>
+                                <li class="subcategory-item"><a href="index.html?page=mpg-imperial-to-mpg-us">Miles per Gallon (Imperial) to MPG (US)</a></li>
+                            </ul>
+                        </li>
+                        <li class="category-item">
+                            <a href="index.html?page=cooking" class="category-link">Cooking</a>
+                            <ul class="subcategory-list">
+                                <li class="subcategory-item"><a href="index.html?page=teaspoons-to-tablespoons">Teaspoons to Tablespoons</a></li>
+                                <li class="subcategory-item"><a href="index.html?page=cups-to-ounces">Cups to Ounces</a></li>
+                                <li class="subcategory-item"><a href="index.html?page=pinches-to-grams">Pinches to Grams</a></li>
+                                <li class="subcategory-item"><a href="index.html?page=dashes-to-milliliters">Dashes to Milliliters</a></li>
+                            </ul>
+                        </li>
+                        <li class="category-item">
+                            <a href="index.html?page=specialized" class="category-link">Specialized</a>
+                            <ul class="subcategory-list">
+                                <li class="subcategory-item"><a href="index.html?page=astronomical-units-to-kilometers">Astronomical Units (AU) to Kilometers</a></li>
+                                <li class="subcategory-item"><a href="index.html?page=planck-length-to-meters">Planck Length to Meters</a></li>
+                                <li class="subcategory-item"><a href="index.html?page=becquerels-to-curies">Becquerels to Curies</a></li>
+                                <li class="subcategory-item"><a href="index.html?page=sieverts-to-rems">Sieverts to Rems</a></li>
+                                <li class="subcategory-item"><a href="index.html?page=candela-to-lumens">Candela to Lumens</a></li>
+                                <li class="subcategory-item"><a href="index.html?page=knots-to-fathoms-per-minute">Knots to Fathoms per Minute</a></li>
+                                <li class="subcategory-item"><a href="index.html?page=gauss-to-teslas">Gauss to Teslas</a></li>
+                                <li class="subcategory-item"><a href="index.html?page=poise-to-pascal-seconds">Poise to Pascal-Seconds</a></li>
+                                <li class="subcategory-item"><a href="index.html?page=reyns-to-pascal-seconds">Reyns to Pascal-Seconds</a></li>
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+	</main>
+
+    <!-- Footer -->
+    <footer>
+        <p>© 2025 AnyConversion.github.io. All rights reserved.</p>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.min.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>

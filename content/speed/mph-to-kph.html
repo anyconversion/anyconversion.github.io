@@ -1,0 +1,44 @@
+
+                <div class="card shadow-lg">
+                    <div class="card-header bg-primary text-white">
+                        <h4 class="text-center mb-0">Miles per Hour to Kilometers per Hour (mph to kph) Converter</h4>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="mph" class="form-label">MPH:</label>
+                                    <input type="number" class="form-control" id="mph" placeholder="Enter MPH">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="kph" class="form-label">KPH:</label>
+                                    <input type="number" class="form-control" id="kph" placeholder="Enter KPH">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+    <script>
+        const mphInput = document.getElementById("mph");
+        const kphInput = document.getElementById("kph");
+
+        function updateFromMPH() {
+            const mph = parseFloat(mphInput.value);
+            if (!isNaN(mph)) {
+                kphInput.value = (mph * 1.60934).toFixed(6);
+            }
+        }
+
+        function updateFromKPH() {
+            const kph = parseFloat(kphInput.value);
+            if (!isNaN(kph)) {
+                mphInput.value = (kph / 1.60934).toFixed(6);
+            }
+        }
+
+        mphInput.addEventListener("input", updateFromMPH);
+        kphInput.addEventListener("input", updateFromKPH);
+    </script>

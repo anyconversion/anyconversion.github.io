@@ -1,0 +1,48 @@
+
+                <!-- Main Content Section -->
+                <div class="card shadow-lg">
+                    <div class="card-header bg-primary text-white">
+                        <h4 class="text-center mb-0">Horsepower to Kilowatt-Hours (hp to kWh) Converter</h4>
+                    </div>
+                    <div class="card-body">
+                        <!-- Conversion Form -->
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="horsepower" class="form-label">Horsepower (hp):</label>
+                                    <input type="number" class="form-control" id="horsepower" placeholder="Enter horsepower">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="kwh" class="form-label">Kilowatt-Hours (kWh):</label>
+                                    <input type="number" class="form-control" id="kwh" placeholder="Enter kWh">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+    <script>
+        const hpInput = document.getElementById("horsepower");
+        const kwhInput = document.getElementById("kwh");
+
+        function updateFromHorsepower() {
+            const hp = parseFloat(hpInput.value);
+            if (!isNaN(hp)) {
+                // 1 hp = 0.7457 kW, for 1 hour = 0.7457 kWh
+                kwhInput.value = (hp * 0.7457).toFixed(6);
+            }
+        }
+
+        function updateFromKwh() {
+            const kwh = parseFloat(kwhInput.value);
+            if (!isNaN(kwh)) {
+                // hp = kWh / 0.7457 (assuming 1 hour)
+                hpInput.value = (kwh / 0.7457).toFixed(6);
+            }
+        }
+
+        hpInput.addEventListener("input", updateFromHorsepower);
+        kwhInput.addEventListener("input", updateFromKwh);
+    </script>

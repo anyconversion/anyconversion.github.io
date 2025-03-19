@@ -1,0 +1,44 @@
+
+                <div class="card shadow-lg">
+                    <div class="card-header bg-primary text-white">
+                        <h4 class="text-center mb-0">Grams to Ounces Converter (g to oz)</h4>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="grams" class="form-label">Grams:</label>
+                                    <input type="number" class="form-control" id="grams" placeholder="Enter g">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="ounces" class="form-label">Ounces:</label>
+                                    <input type="number" class="form-control" id="ounces" placeholder="Enter oz">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+    <script>
+        const ouncesInput = document.getElementById("ounces");
+        const gramsInput = document.getElementById("grams");
+
+        function updateFromOunces() {
+            const ounces = parseFloat(ouncesInput.value);
+            if (!isNaN(ounces)) {
+                gramsInput.value = (ounces * 28.3495).toFixed(6);
+            }
+        }
+
+        function updateFromGrams() {
+            const grams = parseFloat(gramsInput.value);
+            if (!isNaN(grams)) {
+                ouncesInput.value = (grams / 28.3495).toFixed(6);
+            }
+        }
+
+        ouncesInput.addEventListener("input", updateFromOunces);
+        gramsInput.addEventListener("input", updateFromGrams);
+    </script>

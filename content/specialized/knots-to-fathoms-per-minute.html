@@ -1,0 +1,44 @@
+<div class="card shadow-lg">
+    <div class="card-header bg-primary text-white">
+        <h4 class="text-center mb-0">Knots to Fathoms per Minute Converter</h4>
+    </div>
+    <div class="card-body">
+        <div class="row g-3">
+            <div class="col-md-6">
+                <label for="knots" class="form-label">Knots:</label>
+                <input type="number" class="form-control" id="knots" placeholder="Enter knots">
+            </div>
+            <div class="col-md-6">
+                <label for="fathoms-per-minute" class="form-label">Fathoms per Minute:</label>
+                <input type="number" class="form-control" id="fathoms-per-minute" placeholder="Enter fathoms/min">
+            </div>
+        </div>
+    </div>
+</div>
+<div class="mt-4">
+    <h5>Definition</h5>
+    <p>A knot is a unit of speed used in aviation and maritime contexts, equal to one nautical mile per hour, or approximately 1.15078 statute miles per hour. A fathom per minute is a rate of speed or depth change, where 1 fathom equals 6 feet, and 1 knot equates to about 16.878 fathoms per minute.</p>
+    <h5>History</h5>
+    <p>The knot originated in the 17th century with the log-line method, where sailors counted knots in a rope to measure ship speed, standardized with the nautical mile in the 1920s. The fathom dates to antiquity, from the Old English "fæðm" (embrace), as the span of outstretched arms, used for depth since medieval seafaring.</p>
+</div>
+<script>
+    const knotsInput = document.getElementById("knots");
+    const fpmInput = document.getElementById("fathoms-per-minute");
+
+    function updateFromKnots() {
+        const knots = parseFloat(knotsInput.value);
+        if (!isNaN(knots)) {
+            fpmInput.value = (knots * 16.8783333333).toFixed(6);
+        }
+    }
+
+    function updateFromFathomsPerMinute() {
+        const fpm = parseFloat(fpmInput.value);
+        if (!isNaN(fpm)) {
+            knotsInput.value = (fpm / 16.8783333333).toFixed(6);
+        }
+    }
+
+    knotsInput.addEventListener("input", updateFromKnots);
+    fpmInput.addEventListener("input", updateFromFathomsPerMinute);
+</script>

@@ -1,0 +1,44 @@
+
+                <div class="card shadow-lg">
+                    <div class="card-header bg-primary text-white">
+                        <h4 class="text-center mb-0">Millimeters to Inches Converter</h4>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="millimeters" class="form-label">Millimeters:</label>
+                                    <input type="number" class="form-control" id="millimeters" placeholder="Enter millimeters">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="inches" class="form-label">Inches:</label>
+                                    <input type="number" class="form-control" id="inches" placeholder="Enter inches">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+    <script>
+        const mmInput = document.getElementById("millimeters");
+        const inchesInput = document.getElementById("inches");
+
+        function updateFromMillimeters() {
+            const mm = parseFloat(mmInput.value);
+            if (!isNaN(mm)) {
+                inchesInput.value = (mm / 25.4).toFixed(6);
+            }
+        }
+
+        function updateFromInches() {
+            const inches = parseFloat(inchesInput.value);
+            if (!isNaN(inches)) {
+                mmInput.value = (inches * 25.4).toFixed(6);
+            }
+        }
+
+        mmInput.addEventListener("input", updateFromMillimeters);
+        inchesInput.addEventListener("input", updateFromInches);
+    </script>

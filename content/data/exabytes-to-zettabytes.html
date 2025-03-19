@@ -1,0 +1,44 @@
+<div class="card shadow-lg">
+    <div class="card-header bg-primary text-white">
+        <h4 class="text-center mb-0">Exabytes to Zettabytes Converter</h4>
+    </div>
+    <div class="card-body">
+        <div class="row g-3">
+            <div class="col-md-6">
+                <label for="exabytes" class="form-label">Exabytes (EB):</label>
+                <input type="number" class="form-control" id="exabytes" placeholder="Enter EB">
+            </div>
+            <div class="col-md-6">
+                <label for="zettabytes" class="form-label">Zettabytes (ZB):</label>
+                <input type="number" class="form-control" id="zettabytes" placeholder="Enter ZB">
+            </div>
+        </div>
+    </div>
+</div>
+<div class="mt-4">
+    <h5>Definition</h5>
+    <p>An exabyte (EB) is a unit of digital storage equal to 1,000 petabytes or 10¹⁸ bytes, used for vast data volumes like global internet traffic. A zettabyte (ZB) is 1,000 exabytes or 10²¹ bytes, representing colossal scales such as planetary data storage forecasts.</p>
+    <h5>History</h5>
+    <p>The exabyte was named in the late 1990s as data storage needs surged with the internet, using the prefix “exa” (10¹⁸). The zettabyte followed in the 2000s, coined from “zetta” (10²¹), as projections for global data growth—like the “zettabyte era” predicted around 2010—highlighted massive digital expansion.</p>
+</div>
+<script>
+    const ebInput = document.getElementById("exabytes");
+    const zbInput = document.getElementById("zettabytes");
+
+    function updateFromExabytes() {
+        const eb = parseFloat(ebInput.value);
+        if (!isNaN(eb)) {
+            zbInput.value = (eb / 1000).toFixed(6);
+        }
+    }
+
+    function updateFromZettabytes() {
+        const zb = parseFloat(zbInput.value);
+        if (!isNaN(zb)) {
+            ebInput.value = (zb * 1000).toFixed(6);
+        }
+    }
+
+    ebInput.addEventListener("input", updateFromExabytes);
+    zbInput.addEventListener("input", updateFromZettabytes);
+</script>
