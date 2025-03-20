@@ -1,0 +1,41 @@
+<div class="card shadow-lg">
+    <div class="card-header bg-primary text-white">
+        <h4 class="text-center mb-0">Cubic Meters to Cubic Feet Converter</h4>
+    </div>
+    <div class="card-body">
+        <div class="row g-3">
+            <div class="col-md-6">
+                <label for="cubicMeters" class="form-label">Cubic Meters (m³):</label>
+                <input type="number" class="form-control" id="cubicMeters" placeholder="Enter cubic meters">
+            </div>
+            <div class="col-md-6">
+                <label for="cubicFeet" class="form-label">Cubic Feet (ft³):</label>
+                <input type="number" class="form-control" id="cubicFeet" placeholder="Enter cubic feet">
+            </div>
+        </div>
+    </div>
+</div>
+<div class="mt-4">
+    <h5>Definition</h5>
+    <p>A cubic meter is the volume of a cube with edges one meter in length, equal to 1,000 liters. A cubic foot is the volume of a cube with edges one foot in length, equal to approximately 0.028317 cubic meters or 28.317 liters.</p>
+    <h5>History</h5>
+    <p>The cubic meter was defined with the introduction of the metric system during the French Revolution in the late 18th century. The cubic foot has ancient origins and was used by many civilizations, but was standardized in England during the medieval period. Both units remain in common use today, with cubic meters prevalent in countries using the metric system and cubic feet still widely used in the United States and some Commonwealth countries.</p>
+</div>
+<script>
+    const cubicMetersInput = document.getElementById("cubicMeters");
+    const cubicFeetInput = document.getElementById("cubicFeet");
+    function updateFromCubicMeters() {
+        const cubicMeters = parseFloat(cubicMetersInput.value);
+        if (!isNaN(cubicMeters)) {
+            cubicFeetInput.value = (cubicMeters * 35.3147).toFixed(6);
+        }
+    }
+    function updateFromCubicFeet() {
+        const cubicFeet = parseFloat(cubicFeetInput.value);
+        if (!isNaN(cubicFeet)) {
+            cubicMetersInput.value = (cubicFeet * 0.028317).toFixed(6);
+        }
+    }
+    cubicMetersInput.addEventListener("input", updateFromCubicMeters);
+    cubicFeetInput.addEventListener("input", updateFromCubicFeet);
+</script>

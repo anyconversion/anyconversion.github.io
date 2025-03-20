@@ -1,0 +1,41 @@
+<div class="card shadow-lg">
+    <div class="card-header bg-primary text-white">
+        <h4 class="text-center mb-0">Bushels to Liters Converter</h4>
+    </div>
+    <div class="card-body">
+        <div class="row g-3">
+            <div class="col-md-6">
+                <label for="bushels" class="form-label">US Bushels (bu):</label>
+                <input type="number" class="form-control" id="bushels" placeholder="Enter bushels">
+            </div>
+            <div class="col-md-6">
+                <label for="liters" class="form-label">Liters (L):</label>
+                <input type="number" class="form-control" id="liters" placeholder="Enter liters">
+            </div>
+        </div>
+    </div>
+</div>
+<div class="mt-4">
+    <h5>Definition</h5>
+    <p>A US bushel is a unit of volume equal to 8 gallons, 32 quarts, or approximately 35.2391 liters. It's commonly used for measuring dry goods, especially agricultural products like grains and fruits. The Imperial bushel (UK) is slightly larger at 36.3687 liters. A liter is the metric unit of volume equal to 1 cubic decimeter.</p>
+    <h5>History</h5>
+    <p>The bushel has ancient origins and was used by many civilizations for measuring agricultural products. The Winchester bushel, established in England during the Middle Ages, became the standard US bushel. The UK later adopted the Imperial bushel in 1824, which differs from the US measure. The liter was introduced during the French Revolution in the 1790s as part of the metric system. Despite metrication efforts, the bushel remains an important unit in US agriculture.</p>
+</div>
+<script>
+    const bushelsInput = document.getElementById("bushels");
+    const litersInput = document.getElementById("liters");
+    function updateFromBushels() {
+        const bushels = parseFloat(bushelsInput.value);
+        if (!isNaN(bushels)) {
+            litersInput.value = (bushels * 35.2391).toFixed(6);
+        }
+    }
+    function updateFromLiters() {
+        const liters = parseFloat(litersInput.value);
+        if (!isNaN(liters)) {
+            bushelsInput.value = (liters / 35.2391).toFixed(6);
+        }
+    }
+    bushelsInput.addEventListener("input", updateFromBushels);
+    litersInput.addEventListener("input", updateFromLiters);
+</script>

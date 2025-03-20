@@ -1,0 +1,41 @@
+<div class="card shadow-lg">
+    <div class="card-header bg-primary text-white">
+        <h4 class="text-center mb-0">Stone to Pounds Converter</h4>
+    </div>
+    <div class="card-body">
+        <div class="row g-3">
+            <div class="col-md-6">
+                <label for="stone" class="form-label">Stone (st):</label>
+                <input type="number" class="form-control" id="stone" placeholder="Enter stone">
+            </div>
+            <div class="col-md-6">
+                <label for="lbs" class="form-label">Pounds (lb):</label>
+                <input type="number" class="form-control" id="lbs" placeholder="Enter pounds">
+            </div>
+        </div>
+    </div>
+</div>
+<div class="mt-4">
+    <h5>Definition</h5>
+    <p>A stone is a unit of weight in the imperial system used primarily in the United Kingdom and Ireland, equal to 14 pounds or approximately 6.35 kilograms. A pound is a unit of weight in the imperial and US customary systems, equal to 16 ounces or exactly 0.45359237 kilograms. One stone equals exactly 14 pounds.</p>
+    <h5>History</h5>
+    <p>The stone as a unit of weight has been used in Britain since the Middle Ages, originally varying by commodity and region. It was standardized in the early 19th century as 14 pounds for all uses. It remains the common measure for stating human body weight in the UK and Ireland, though it's not part of the International System of Units (SI). The pound has ancient origins, deriving from the Roman "libra" (hence the abbreviation "lb"). The current international pound was standardized in 1959 by agreement between the United States and countries of the Commonwealth, defining it as exactly 0.45359237 kilograms.</p>
+</div>
+<script>
+    const stoneInput = document.getElementById("stone");
+    const lbsInput = document.getElementById("lbs");
+    function updateFromStone() {
+        const stone = parseFloat(stoneInput.value);
+        if (!isNaN(stone)) {
+            lbsInput.value = (stone * 14).toFixed(2);
+        }
+    }
+    function updateFromLbs() {
+        const lbs = parseFloat(lbsInput.value);
+        if (!isNaN(lbs)) {
+            stoneInput.value = (lbs / 14).toFixed(4);
+        }
+    }
+    stoneInput.addEventListener("input", updateFromStone);
+    lbsInput.addEventListener("input", updateFromLbs);
+</script>

@@ -1,0 +1,44 @@
+<div class="card shadow-lg">
+    <div class="card-header bg-primary text-white">
+        <h4 class="text-center mb-0">Years to Hours Converter</h4>
+    </div>
+    <div class="card-body">
+        <div class="row g-3">
+            <div class="col-md-6">
+                <label for="years" class="form-label">Years (yr):</label>
+                <input type="number" class="form-control" id="years" placeholder="Enter years">
+            </div>
+            <div class="col-md-6">
+                <label for="hours" class="form-label">Hours (hr):</label>
+                <input type="number" class="form-control" id="hours" placeholder="Enter hours">
+            </div>
+        </div>
+    </div>
+</div>
+<div class="mt-4">
+    <h5>Definition</h5>
+    <p>A year (yr) is approximately the time it takes for the Earth to complete one orbit around the Sun. In the Gregorian calendar, a common year has 365 days, while a leap year has 366 days. An hour (hr) is a unit of time equal to 60 minutes or 3,600 seconds. One year equals 8,760 hours in a common year and 8,784 hours in a leap year.</p>
+    <h5>History</h5>
+    <p>The concept of a year based on the Earth's orbit around the Sun dates back to ancient civilizations. The Egyptians used a 365-day calendar as early as 3000 BCE. The Romans established the Julian calendar in 45 BCE, which included leap years. The Gregorian calendar, introduced by Pope Gregory XIII in 1582, refined the leap year system to better match the solar year of approximately 365.2422 days. The modern definition of an hour as 1/24 of a day was standardized with the advent of mechanical clocks in medieval Europe.</p>
+</div>
+<script>
+    const yearsInput = document.getElementById("years");
+    const hoursInput = document.getElementById("hours");
+
+    function updateFromYears() {
+        const years = parseFloat(yearsInput.value);
+        if (!isNaN(years)) {
+            hoursInput.value = (years * 8760).toFixed(6);
+        }
+    }
+
+    function updateFromHours() {
+        const hours = parseFloat(hoursInput.value);
+        if (!isNaN(hours)) {
+            yearsInput.value = (hours / 8760).toFixed(6);
+        }
+    }
+
+    yearsInput.addEventListener("input", updateFromYears);
+    hoursInput.addEventListener("input", updateFromHours);
+</script>

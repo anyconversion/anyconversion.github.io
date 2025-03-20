@@ -1,0 +1,41 @@
+<div class="card shadow-lg">
+    <div class="card-header bg-primary text-white">
+        <h4 class="text-center mb-0">Troy Ounces to Ounces Converter</h4>
+    </div>
+    <div class="card-body">
+        <div class="row g-3">
+            <div class="col-md-6">
+                <label for="troy" class="form-label">Troy Ounces (t oz):</label>
+                <input type="number" class="form-control" id="troy" placeholder="Enter troy ounces">
+            </div>
+            <div class="col-md-6">
+                <label for="oz" class="form-label">Avoirdupois Ounces (oz):</label>
+                <input type="number" class="form-control" id="oz" placeholder="Enter ounces">
+            </div>
+        </div>
+    </div>
+</div>
+<div class="mt-4">
+    <h5>Definition</h5>
+    <p>A troy ounce is a unit of weight used for precious metals, equal to 31.1035 grams. An avoirdupois ounce (the common ounce) is a unit of weight in the imperial and US customary systems, equal to 28.3495 grams. One troy ounce equals approximately 1.09714 avoirdupois ounces.</p>
+    <h5>History</h5>
+    <p>The troy ounce originated in Troyes, France, a medieval trading center, and has been used for weighing precious metals since at least the Middle Ages. The troy system was officially adopted in Britain in 1527. The avoirdupois system (which includes the common ounce) emerged in the 13th century for weighing bulk goods. The troy ounce is heavier than the avoirdupois ounce but is part of a different weight system (12 troy ounces = 1 troy pound, while 16 avoirdupois ounces = 1 avoirdupois pound). Today, the troy ounce remains the standard unit for pricing and trading gold, silver, and other precious metals worldwide, while the avoirdupois ounce is used for most other purposes.</p>
+</div>
+<script>
+    const troyInput = document.getElementById("troy");
+    const ozInput = document.getElementById("oz");
+    function updateFromTroy() {
+        const troy = parseFloat(troyInput.value);
+        if (!isNaN(troy)) {
+            ozInput.value = (troy * 1.09714).toFixed(4);
+        }
+    }
+    function updateFromOz() {
+        const oz = parseFloat(ozInput.value);
+        if (!isNaN(oz)) {
+            troyInput.value = (oz / 1.09714).toFixed(4);
+        }
+    }
+    troyInput.addEventListener("input", updateFromTroy);
+    ozInput.addEventListener("input", updateFromOz);
+</script>

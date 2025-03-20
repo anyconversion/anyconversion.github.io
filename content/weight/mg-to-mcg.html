@@ -1,0 +1,41 @@
+<div class="card shadow-lg">
+    <div class="card-header bg-primary text-white">
+        <h4 class="text-center mb-0">Milligrams to Micrograms Converter</h4>
+    </div>
+    <div class="card-body">
+        <div class="row g-3">
+            <div class="col-md-6">
+                <label for="mg" class="form-label">Milligrams (mg):</label>
+                <input type="number" class="form-control" id="mg" placeholder="Enter milligrams">
+            </div>
+            <div class="col-md-6">
+                <label for="mcg" class="form-label">Micrograms (μg):</label>
+                <input type="number" class="form-control" id="mcg" placeholder="Enter micrograms">
+            </div>
+        </div>
+    </div>
+</div>
+<div class="mt-4">
+    <h5>Definition</h5>
+    <p>A milligram is a unit of mass in the metric system equal to one-thousandth of a gram (10^-3 grams). A microgram is a unit of mass in the metric system equal to one-millionth of a gram (10^-6 grams). One milligram equals exactly 1,000 micrograms.</p>
+    <h5>History</h5>
+    <p>Both the milligram and microgram are part of the metric system that originated during the French Revolution in the late 18th century. The metric system was developed to establish a universal decimal-based system of measurement. The prefixes "milli-" (meaning one-thousandth) and "micro-" (meaning one-millionth) were standardized as part of the metric system's development. In 1960, the International System of Units (SI) formally incorporated these units with their modern definitions, establishing them as standard units for scientific, medical, and pharmaceutical measurements worldwide.</p>
+</div>
+<script>
+    const mgInput = document.getElementById("mg");
+    const mcgInput = document.getElementById("mcg");
+    function updateFromMg() {
+        const mg = parseFloat(mgInput.value);
+        if (!isNaN(mg)) {
+            mcgInput.value = (mg * 1000).toFixed(2);
+        }
+    }
+    function updateFromMcg() {
+        const mcg = parseFloat(mcgInput.value);
+        if (!isNaN(mcg)) {
+            mgInput.value = (mcg / 1000).toFixed(6);
+        }
+    }
+    mgInput.addEventListener("input", updateFromMg);
+    mcgInput.addEventListener("input", updateFromMcg);
+</script>

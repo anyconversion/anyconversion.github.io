@@ -1,0 +1,41 @@
+<div class="card shadow-lg">
+    <div class="card-header bg-primary text-white">
+        <h4 class="text-center mb-0">Grains to Grams Converter</h4>
+    </div>
+    <div class="card-body">
+        <div class="row g-3">
+            <div class="col-md-6">
+                <label for="grains" class="form-label">Grains (gr):</label>
+                <input type="number" class="form-control" id="grains" placeholder="Enter grains">
+            </div>
+            <div class="col-md-6">
+                <label for="grams" class="form-label">Grams (g):</label>
+                <input type="number" class="form-control" id="grams" placeholder="Enter grams">
+            </div>
+        </div>
+    </div>
+</div>
+<div class="mt-4">
+    <h5>Definition</h5>
+    <p>A grain is a unit of mass equal to 0.06479891 grams. It is a traditionally used unit in many fields including firearms, archery, and pharmacy. A gram is the base unit of mass in the metric system, defined as one thousandth of a kilogram.</p>
+    <h5>History</h5>
+    <p>The grain was originally defined as the weight of a grain of wheat or barley, dating back to ancient times. It became standardized in England around the 13th century. The gram was introduced as part of the metric system during the French Revolution in the 1790s, defined based on the weight of a specific volume of water.</p>
+</div>
+<script>
+    const grainsInput = document.getElementById("grains");
+    const gramsInput = document.getElementById("grams");
+    function updateFromGrains() {
+        const grains = parseFloat(grainsInput.value);
+        if (!isNaN(grains)) {
+            gramsInput.value = (grains * 0.06479891).toFixed(6);
+        }
+    }
+    function updateFromGrams() {
+        const grams = parseFloat(gramsInput.value);
+        if (!isNaN(grams)) {
+            grainsInput.value = (grams / 0.06479891).toFixed(6);
+        }
+    }
+    grainsInput.addEventListener("input", updateFromGrains);
+    gramsInput.addEventListener("input", updateFromGrams);
+</script>

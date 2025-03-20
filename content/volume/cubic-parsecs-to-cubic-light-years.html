@@ -1,0 +1,41 @@
+<div class="card shadow-lg">
+    <div class="card-header bg-primary text-white">
+        <h4 class="text-center mb-0">Cubic Parsecs to Cubic Light Years Converter</h4>
+    </div>
+    <div class="card-body">
+        <div class="row g-3">
+            <div class="col-md-6">
+                <label for="cubicParsecs" class="form-label">Cubic Parsecs (pc³):</label>
+                <input type="number" class="form-control" id="cubicParsecs" placeholder="Enter cubic parsecs">
+            </div>
+            <div class="col-md-6">
+                <label for="cubicLightYears" class="form-label">Cubic Light Years (ly³):</label>
+                <input type="number" class="form-control" id="cubicLightYears" placeholder="Enter cubic light years">
+            </div>
+        </div>
+    </div>
+</div>
+<div class="mt-4">
+    <h5>Definition</h5>
+    <p>A cubic parsec (pc³) is a unit of volume equal to a cube with sides measuring one parsec in length. One parsec is approximately 3.26 light-years or 30.9 trillion kilometers. A cubic light-year (ly³) is a unit of volume equal to a cube with sides measuring one light-year, with a light-year being the distance light travels in one year, approximately 9.46 trillion kilometers.</p>
+    <h5>History</h5>
+    <p>The parsec (parallax second) was first defined in 1913 by British astronomer Herbert Hall Turner, derived from the distance at which one astronomical unit subtends an angle of one arcsecond. The light-year was first proposed in 1838 by Friedrich Bessel when measuring the parallax of 61 Cygni. Both units are primarily used in astronomy to express vast cosmic distances and volumes, with cubic versions being utilized to measure the volume of astronomical objects and regions of space.</p>
+</div>
+<script>
+    const cubicParsecsInput = document.getElementById("cubicParsecs");
+    const cubicLightYearsInput = document.getElementById("cubicLightYears");
+    function updateFromCubicParsecs() {
+        const cubicParsecs = parseFloat(cubicParsecsInput.value);
+        if (!isNaN(cubicParsecs)) {
+            cubicLightYearsInput.value = (cubicParsecs * 34.6).toFixed(6);
+        }
+    }
+    function updateFromCubicLightYears() {
+        const cubicLightYears = parseFloat(cubicLightYearsInput.value);
+        if (!isNaN(cubicLightYears)) {
+            cubicParsecsInput.value = (cubicLightYears / 34.6).toFixed(6);
+        }
+    }
+    cubicParsecsInput.addEventListener("input", updateFromCubicParsecs);
+    cubicLightYearsInput.addEventListener("input", updateFromCubicLightYears);
+</script>

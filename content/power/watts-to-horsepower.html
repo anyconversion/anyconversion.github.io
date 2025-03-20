@@ -1,0 +1,44 @@
+<div class="card shadow-lg">
+    <div class="card-header bg-primary text-white">
+        <h4 class="text-center mb-0">Watts to Horsepower Converter</h4>
+    </div>
+    <div class="card-body">
+        <div class="row g-3">
+            <div class="col-md-6">
+                <label for="watts" class="form-label">Watts (W):</label>
+                <input type="number" class="form-control" id="watts" placeholder="Enter W">
+            </div>
+            <div class="col-md-6">
+                <label for="horsepower" class="form-label">Horsepower (hp):</label>
+                <input type="number" class="form-control" id="horsepower" placeholder="Enter hp">
+            </div>
+        </div>
+    </div>
+</div>
+<div class="mt-4">
+    <h5>Definition</h5>
+    <p>A watt (W) is the SI unit of power, equal to one joule per second (1 W = 1 J/s), measuring the rate of energy transfer or work done. Horsepower (hp) is a unit of power, typically mechanical horsepower, where 1 hp equals approximately 745.699871582 watts, used to rate engines and motors.</p>
+    <h5>History</h5>
+    <p>The watt was named after James Watt in 1882, adopted by the SI system in 1960 to standardize power measurements, reflecting his steam engine improvements. Horsepower was devised by Watt in the late 18th century, comparing engine output to the work of draft horses, standardized at 33,000 foot-pounds per minute.</p>
+</div>
+<script>
+    const wattsInput = document.getElementById("watts");
+    const hpInput = document.getElementById("horsepower");
+
+    function updateFromWatts() {
+        const watts = parseFloat(wattsInput.value);
+        if (!isNaN(watts)) {
+            hpInput.value = (watts / 745.699871582).toFixed(6);
+        }
+    }
+
+    function updateFromHorsepower() {
+        const hp = parseFloat(hpInput.value);
+        if (!isNaN(hp)) {
+            wattsInput.value = (hp * 745.699871582).toFixed(6);
+        }
+    }
+
+    wattsInput.addEventListener("input", updateFromWatts);
+    hpInput.addEventListener("input", updateFromHorsepower);
+</script>
