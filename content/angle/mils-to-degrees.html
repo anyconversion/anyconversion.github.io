@@ -1,0 +1,44 @@
+<div class="card shadow-lg">
+    <div class="card-header bg-primary text-white">
+        <h4 class="text-center mb-0">Mils to Degrees Converter</h4>
+    </div>
+    <div class="card-body">
+        <div class="row g-3">
+            <div class="col-md-6">
+                <label for="mils" class="form-label">Mils:</label>
+                <input type="number" class="form-control" id="mils" placeholder="Enter mils">
+            </div>
+            <div class="col-md-6">
+                <label for="degrees" class="form-label">Degrees (°):</label>
+                <input type="number" class="form-control" id="degrees" placeholder="Enter degrees">
+            </div>
+        </div>
+    </div>
+</div>
+<div class="mt-4">
+    <h5>Definition</h5>
+    <p>Mils, short for milliradians, is an angular unit where 1 mil approximates 1/1000 of a radian, with 6,400 mils in a full circle (NATO standard), commonly used in military and artillery for precision. Degrees (°) is a unit of angular measure where 1 degree is 1/360 of a circle, widely used in navigation, astronomy, and everyday applications.</p>
+    <h5>History</h5>
+    <p>Mils originated in the 19th century with the development of the metric system’s radian, adapted by militaries (notably NATO) in the 20th century for its ease in ranging and targeting, with 6,400 mils per circle standardized post-WWII. Degrees trace back to ancient Mesopotamia around 2000 BCE, dividing the circle into 360 parts based on the solar year, formalized by Greek astronomers like Hipparchus.</p>
+</div>
+<script>
+    const milsInput = document.getElementById("mils");
+    const degreesInput = document.getElementById("degrees");
+
+    function updateFromMils() {
+        const mils = parseFloat(milsInput.value);
+        if (!isNaN(mils)) {
+            degreesInput.value = (mils * 0.05625).toFixed(6);
+        }
+    }
+
+    function updateFromDegrees() {
+        const degrees = parseFloat(degreesInput.value);
+        if (!isNaN(degrees)) {
+            milsInput.value = (degrees / 0.05625).toFixed(6);
+        }
+    }
+
+    milsInput.addEventListener("input", updateFromMils);
+    degreesInput.addEventListener("input", updateFromDegrees);
+</script>

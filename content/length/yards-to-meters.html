@@ -1,0 +1,44 @@
+<div class="card shadow-lg">
+    <div class="card-header bg-primary text-white">
+        <h4 class="text-center mb-0">Yards to Meters Converter</h4>
+    </div>
+    <div class="card-body">
+        <div class="row g-3">
+            <div class="col-md-6">
+                <label for="yards" class="form-label">Yards (yd):</label>
+                <input type="number" class="form-control" id="yards" placeholder="Enter yards">
+            </div>
+            <div class="col-md-6">
+                <label for="meters" class="form-label">Meters (m):</label>
+                <input type="number" class="form-control" id="meters" placeholder="Enter meters">
+            </div>
+        </div>
+    </div>
+</div>
+<div class="mt-4">
+    <h5>Definition</h5>
+    <p>A yard (yd) is a unit of length in the imperial and US customary systems, equal to 3 feet or 36 inches. By international agreement, one yard equals exactly 0.9144 meters. A meter (m) is the SI base unit of length, defined as the distance traveled by light in a vacuum in 1/299,792,458 of a second.</p>
+    <h5>History</h5>
+    <p>The yard has ancient origins, with similar units found in many cultures. It was standardized in medieval England, possibly based on the distance from the tip of the nose to the end of the outstretched arm of King Henry I. The meter was originally defined in 1793 during the French Revolution as one ten-millionth of the distance from the equator to the North Pole. In 1959, the international yard and pound agreement defined the yard as exactly 0.9144 meters, standardizing the slightly different definitions used in the US and UK.</p>
+</div>
+<script>
+    const yardsInput = document.getElementById("yards");
+    const metersInput = document.getElementById("meters");
+
+    function updateFromYards() {
+        const yards = parseFloat(yardsInput.value);
+        if (!isNaN(yards)) {
+            metersInput.value = (yards * 0.9144).toFixed(6);
+        }
+    }
+
+    function updateFromMeters() {
+        const meters = parseFloat(metersInput.value);
+        if (!isNaN(meters)) {
+            yardsInput.value = (meters / 0.9144).toFixed(6);
+        }
+    }
+
+    yardsInput.addEventListener("input", updateFromYards);
+    metersInput.addEventListener("input", updateFromMeters);
+</script>

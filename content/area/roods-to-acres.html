@@ -1,0 +1,41 @@
+<div class="card shadow-lg">
+    <div class="card-header bg-primary text-white">
+        <h4 class="text-center mb-0">Roods to Acres Converter</h4>
+    </div>
+    <div class="card-body">
+        <div class="row g-3">
+            <div class="col-md-6">
+                <label for="roods" class="form-label">Roods:</label>
+                <input type="number" class="form-control" id="roods" placeholder="Enter roods">
+            </div>
+            <div class="col-md-6">
+                <label for="acres" class="form-label">Acres (ac):</label>
+                <input type="number" class="form-control" id="acres" placeholder="Enter acres">
+            </div>
+        </div>
+    </div>
+</div>
+<div class="mt-4">
+    <h5>Definition</h5>
+    <p>Rood is an old English unit of area equal to one-quarter of an acre or 10,890 square feet. Acre (ac) is an imperial and US customary unit of land area equal to 43,560 square feet. One rood is exactly 0.25 acres.</p>
+    <h5>History</h5>
+    <p>The rood is an ancient Anglo-Saxon land measurement dating back to medieval England, often used alongside the acre and perch in the traditional English land measurement system. It was commonly used for measuring plots of land until the 19th century. While the acre remains in use today, the rood has largely fallen out of common usage, though it still exists in some legal descriptions of land in the UK.</p>
+</div>
+<script>
+    const roodsInput = document.getElementById("roods");
+    const acresInput = document.getElementById("acres");
+    function updateFromRoods() {
+        const roods = parseFloat(roodsInput.value);
+        if (!isNaN(roods)) {
+            acresInput.value = (roods * 0.25).toFixed(4);
+        }
+    }
+    function updateFromAcres() {
+        const acres = parseFloat(acresInput.value);
+        if (!isNaN(acres)) {
+            roodsInput.value = (acres / 0.25).toFixed(4);
+        }
+    }
+    roodsInput.addEventListener("input", updateFromRoods);
+    acresInput.addEventListener("input", updateFromAcres);
+</script>

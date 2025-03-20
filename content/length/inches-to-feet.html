@@ -1,46 +1,41 @@
-
-                <!-- Main Content Section -->
-                <div class="card shadow-lg">
-                    <div class="card-header bg-primary text-white">
-                        <h4 class="text-center mb-0">Inches to Feet (in to ft) Converter</h4>
-                    </div>
-                    <div class="card-body">
-                        <!-- Conversion Form -->
-                        <div class="row g-3">
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label for="inches" class="form-label">Inches:</label>
-                                    <input type="number" class="form-control" id="inches" placeholder="Enter inches">
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label for="feet" class="form-label">Feet:</label>
-                                    <input type="number" class="form-control" id="feet" placeholder="Enter feet">
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-    <script>
-        const inchesInput = document.getElementById("inches");
-        const feetInput = document.getElementById("feet");
-
-        function updateFromInches() {
-            const inches = parseFloat(inchesInput.value);
-            if (!isNaN(inches)) {
-                feetInput.value = (inches / 12).toFixed(6);
-            }
+<div class="card shadow-lg">
+    <div class="card-header bg-primary text-white">
+        <h4 class="text-center mb-0">Inches to Feet Converter</h4>
+    </div>
+    <div class="card-body">
+        <div class="row g-3">
+            <div class="col-md-6">
+                <label for="inches" class="form-label">Inches (in):</label>
+                <input type="number" class="form-control" id="inches" placeholder="Enter inches">
+            </div>
+            <div class="col-md-6">
+                <label for="feet" class="form-label">Feet (ft):</label>
+                <input type="number" class="form-control" id="feet" placeholder="Enter feet">
+            </div>
+        </div>
+    </div>
+</div>
+<div class="mt-4">
+    <h5>Definition</h5>
+    <p>An inch is a unit of length in the imperial and US customary systems, defined as exactly 2.54 centimeters. A foot is a unit of length in the imperial and US customary systems, defined as 12 inches or exactly 30.48 centimeters. One foot equals exactly 12 inches.</p>
+    <h5>History</h5>
+    <p>The inch has origins dating back to Anglo-Saxon England, where it was defined as the length of three barleycorns placed end to end. The foot has ancient origins and has been used by many civilizations, though its exact length varied. Both units were standardized over time, with the current definitions established in 1959 by the international yard and pound agreement. The relationship of 12 inches to 1 foot has been consistent throughout much of Western history, dating back to the Roman system of measurement.</p>
+</div>
+<script>
+    const inchesInput = document.getElementById("inches");
+    const feetInput = document.getElementById("feet");
+    function updateFromInches() {
+        const inches = parseFloat(inchesInput.value);
+        if (!isNaN(inches)) {
+            feetInput.value = (inches / 12).toFixed(4);
         }
-
-        function updateFromFeet() {
-            const feet = parseFloat(feetInput.value);
-            if (!isNaN(feet)) {
-                inchesInput.value = (feet * 12).toFixed(6);
-            }
+    }
+    function updateFromFeet() {
+        const feet = parseFloat(feetInput.value);
+        if (!isNaN(feet)) {
+            inchesInput.value = (feet * 12).toFixed(2);
         }
-
-        inchesInput.addEventListener("input", updateFromInches);
-        feetInput.addEventListener("input", updateFromFeet);
-    </script>
+    }
+    inchesInput.addEventListener("input", updateFromInches);
+    feetInput.addEventListener("input", updateFromFeet);
+</script>

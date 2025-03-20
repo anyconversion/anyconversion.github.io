@@ -1,44 +1,41 @@
-
-                <div class="card shadow-lg">
-                    <div class="card-header bg-primary text-white">
-                        <h4 class="text-center mb-0">Meters to Yards Converter</h4>
-                    </div>
-                    <div class="card-body">
-                        <div class="row g-3">
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label for="meters" class="form-label">Meters:</label>
-                                    <input type="number" class="form-control" id="meters" placeholder="Enter meters">
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label for="yards" class="form-label">Yards:</label>
-                                    <input type="number" class="form-control" id="yards" placeholder="Enter yards">
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-    <script>
-        const metersInput = document.getElementById("meters");
-        const yardsInput = document.getElementById("yards");
-
-        function updateFromMeters() {
-            const meters = parseFloat(metersInput.value);
-            if (!isNaN(meters)) {
-                yardsInput.value = (meters * 1.09361).toFixed(6);
-            }
+<div class="card shadow-lg">
+    <div class="card-header bg-primary text-white">
+        <h4 class="text-center mb-0">Meters to Yards Converter</h4>
+    </div>
+    <div class="card-body">
+        <div class="row g-3">
+            <div class="col-md-6">
+                <label for="meters" class="form-label">Meters (m):</label>
+                <input type="number" class="form-control" id="meters" placeholder="Enter meters">
+            </div>
+            <div class="col-md-6">
+                <label for="yards" class="form-label">Yards (yd):</label>
+                <input type="number" class="form-control" id="yards" placeholder="Enter yards">
+            </div>
+        </div>
+    </div>
+</div>
+<div class="mt-4">
+    <h5>Definition</h5>
+    <p>A meter is the base unit of length in the International System of Units (SI), defined as the length of the path traveled by light in a vacuum in 1/299,792,458 of a second. A yard is a unit of length in the imperial and US customary systems, defined as 3 feet or exactly 0.9144 meters. One meter equals approximately 1.0936 yards.</p>
+    <h5>History</h5>
+    <p>The meter was introduced by the French in 1793 during the French Revolution as part of the metric system, originally defined as one ten-millionth of the distance from the equator to the North Pole. The yard has origins in medieval England, where it was standardized by the 13th century. There are several theories about its origin, including that it represented the length from the tip of King Henry I's nose to the end of his outstretched thumb. The current international definition of the yard as exactly 0.9144 meters was established in 1959 by agreement between the United States and countries of the Commonwealth.</p>
+</div>
+<script>
+    const metersInput = document.getElementById("meters");
+    const yardsInput = document.getElementById("yards");
+    function updateFromMeters() {
+        const meters = parseFloat(metersInput.value);
+        if (!isNaN(meters)) {
+            yardsInput.value = (meters * 1.0936).toFixed(4);
         }
-
-        function updateFromYards() {
-            const yards = parseFloat(yardsInput.value);
-            if (!isNaN(yards)) {
-                metersInput.value = (yards / 1.09361).toFixed(6);
-            }
+    }
+    function updateFromYards() {
+        const yards = parseFloat(yardsInput.value);
+        if (!isNaN(yards)) {
+            metersInput.value = (yards * 0.9144).toFixed(4);
         }
-
-        metersInput.addEventListener("input", updateFromMeters);
-        yardsInput.addEventListener("input", updateFromYards);
-    </script>
+    }
+    metersInput.addEventListener("input", updateFromMeters);
+    yardsInput.addEventListener("input", updateFromYards);
+</script>

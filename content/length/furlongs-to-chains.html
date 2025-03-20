@@ -1,0 +1,44 @@
+<div class="card shadow-lg">
+    <div class="card-header bg-primary text-white">
+        <h4 class="text-center mb-0">Furlongs to Chains Converter</h4>
+    </div>
+    <div class="card-body">
+        <div class="row g-3">
+            <div class="col-md-6">
+                <label for="furlongs" class="form-label">Furlongs:</label>
+                <input type="number" class="form-control" id="furlongs" placeholder="Enter furlongs">
+            </div>
+            <div class="col-md-6">
+                <label for="chains" class="form-label">Chains:</label>
+                <input type="number" class="form-control" id="chains" placeholder="Enter chains">
+            </div>
+        </div>
+    </div>
+</div>
+<div class="mt-4">
+    <h5>Definition</h5>
+    <p>A furlong is a unit of distance in the imperial and US customary systems equal to 220 yards, 660 feet, or 201.168 meters. A chain is a unit of length equal to 66 feet, 22 yards, or 20.1168 meters. One furlong equals 10 chains.</p>
+    <h5>History</h5>
+    <p>The furlong (from "furrow long") originated in Anglo-Saxon England as the length of a furrow in a plowed field, or the distance a team of oxen could plow without resting. The chain was introduced by English mathematician Edmund Gunter in the early 17th century as a practical surveying tool. Gunter's chain, as it was known, was 66 feet long with 100 links. These units became important in land measurement and agriculture. The relationship between furlongs and chains (10 chains = 1 furlong) made them convenient for surveying and describing land areas. While both units are now mostly obsolete in everyday use, they remain important in specific contexts such as horse racing (furlongs) and land surveying in countries that maintain imperial measurements.</p>
+</div>
+<script>
+    const furlongsInput = document.getElementById("furlongs");
+    const chainsInput = document.getElementById("chains");
+
+    function updateFromFurlongs() {
+        const furlongs = parseFloat(furlongsInput.value);
+        if (!isNaN(furlongs)) {
+            chainsInput.value = (furlongs * 10).toFixed(6);
+        }
+    }
+
+    function updateFromChains() {
+        const chains = parseFloat(chainsInput.value);
+        if (!isNaN(chains)) {
+            furlongsInput.value = (chains / 10).toFixed(6);
+        }
+    }
+
+    furlongsInput.addEventListener("input", updateFromFurlongs);
+    chainsInput.addEventListener("input", updateFromChains);
+</script>

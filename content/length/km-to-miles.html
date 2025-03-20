@@ -1,46 +1,41 @@
-
-                <!-- Main Content Section -->
-                <div class="card shadow-lg">
-                    <div class="card-header bg-primary text-white">
-                        <h4 class="text-center mb-0">Kilometers to Miles (km to M) Converter</h4>
-                    </div>
-                    <div class="card-body">
-                        <!-- Conversion Form -->
-                        <div class="row g-3">
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label for="kilometers" class="form-label">Kilometers:</label>
-                                    <input type="number" class="form-control" id="kilometers" placeholder="Enter kilometers">
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label for="miles" class="form-label">Miles:</label>
-                                    <input type="number" class="form-control" id="miles" placeholder="Enter miles">
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-               
-    <script>
-        const kilometersInput = document.getElementById("kilometers");
-        const milesInput = document.getElementById("miles");
-
-        function updateFromKilometers() {
-            const kilometers = parseFloat(kilometersInput.value);
-            if (!isNaN(kilometers)) {
-                milesInput.value = (kilometers * 0.621371).toFixed(6);
-            }
+<div class="card shadow-lg">
+    <div class="card-header bg-primary text-white">
+        <h4 class="text-center mb-0">Kilometers to Miles Converter</h4>
+    </div>
+    <div class="card-body">
+        <div class="row g-3">
+            <div class="col-md-6">
+                <label for="km" class="form-label">Kilometers (km):</label>
+                <input type="number" class="form-control" id="km" placeholder="Enter kilometers">
+            </div>
+            <div class="col-md-6">
+                <label for="miles" class="form-label">Miles (mi):</label>
+                <input type="number" class="form-control" id="miles" placeholder="Enter miles">
+            </div>
+        </div>
+    </div>
+</div>
+<div class="mt-4">
+    <h5>Definition</h5>
+    <p>A kilometer is a unit of length in the metric system, equal to 1,000 meters or approximately 0.621371 miles. A mile is a unit of length in the imperial and US customary systems, defined as 5,280 feet, 1,760 yards, or exactly 1.609344 kilometers.</p>
+    <h5>History</h5>
+    <p>The kilometer was introduced in France as part of the metric system during the French Revolution in the 1790s. It was defined as one ten-thousandth of the distance from the equator to the North Pole along a meridian through Paris. The mile has ancient origins from the Roman "mille passus" (thousand paces), which was about 1,480 meters. The current international mile was standardized by the international yard and pound agreement in 1959, defining it as exactly 1.609344 kilometers.</p>
+</div>
+<script>
+    const kmInput = document.getElementById("km");
+    const milesInput = document.getElementById("miles");
+    function updateFromKm() {
+        const km = parseFloat(kmInput.value);
+        if (!isNaN(km)) {
+            milesInput.value = (km * 0.621371).toFixed(4);
         }
-
-        function updateFromMiles() {
-            const miles = parseFloat(milesInput.value);
-            if (!isNaN(miles)) {
-                kilometersInput.value = (miles / 0.621371).toFixed(6);
-            }
+    }
+    function updateFromMiles() {
+        const miles = parseFloat(milesInput.value);
+        if (!isNaN(miles)) {
+            kmInput.value = (miles * 1.609344).toFixed(4);
         }
-
-        kilometersInput.addEventListener("input", updateFromKilometers);
-        milesInput.addEventListener("input", updateFromMiles);
-    </script>
+    }
+    kmInput.addEventListener("input", updateFromKm);
+    milesInput.addEventListener("input", updateFromMiles);
+</script>

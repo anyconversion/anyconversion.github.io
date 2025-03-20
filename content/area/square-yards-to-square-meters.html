@@ -1,0 +1,41 @@
+<div class="card shadow-lg">
+    <div class="card-header bg-primary text-white">
+        <h4 class="text-center mb-0">Square Yards to Square Meters Converter</h4>
+    </div>
+    <div class="card-body">
+        <div class="row g-3">
+            <div class="col-md-6">
+                <label for="sqyd" class="form-label">Square Yards (yd²):</label>
+                <input type="number" class="form-control" id="sqyd" placeholder="Enter square yards">
+            </div>
+            <div class="col-md-6">
+                <label for="sqm" class="form-label">Square Meters (m²):</label>
+                <input type="number" class="form-control" id="sqm" placeholder="Enter square meters">
+            </div>
+        </div>
+    </div>
+</div>
+<div class="mt-4">
+    <h5>Definition</h5>
+    <p>Square yard (yd²) is an imperial and US customary unit of area, defined as the area of a square with sides of 1 yard (3 feet). Square meter (m²) is the SI unit of area, defined as the area of a square with sides of 1 meter. One square yard equals approximately 0.83613 square meters.</p>
+    <h5>History</h5>
+    <p>The square yard has been used in England since medieval times and was formalized in the imperial system in the 19th century. The square meter was established as part of the metric system during the French Revolution in the late 18th century and is now the standard unit of area measurement in most countries worldwide.</p>
+</div>
+<script>
+    const sqydInput = document.getElementById("sqyd");
+    const sqmInput = document.getElementById("sqm");
+    function updateFromSqyd() {
+        const sqyd = parseFloat(sqydInput.value);
+        if (!isNaN(sqyd)) {
+            sqmInput.value = (sqyd * 0.83613).toFixed(4);
+        }
+    }
+    function updateFromSqm() {
+        const sqm = parseFloat(sqmInput.value);
+        if (!isNaN(sqm)) {
+            sqydInput.value = (sqm / 0.83613).toFixed(4);
+        }
+    }
+    sqydInput.addEventListener("input", updateFromSqyd);
+    sqmInput.addEventListener("input", updateFromSqm);
+</script>
