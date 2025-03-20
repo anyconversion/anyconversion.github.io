@@ -315,7 +315,7 @@ document.addEventListener('DOMContentLoaded', () => {
         keywordsTag.content = meta.keywords;
     }
 
-    // Modify existing loadContent function to include meta tag updates
+    // Inside loadContent or navigation logic
     function loadContent(page) {
         const contentDiv = document.getElementById('content');
         const url = contentMap[page] || contentMap['home'];
@@ -324,8 +324,13 @@ document.addEventListener('DOMContentLoaded', () => {
             .then(response => response.text())
             .then(data => {
                 contentDiv.innerHTML = data;
-                updateMetaTags(page); // Update meta tags after loading content
-                // Reattach any scripts if needed (e.g., for let-us-know form)
+                updateMetaTags(page);
+                // Track page view in Google Analytics
+                gtag('config', 'G-25CMMZLTZ7', {
+                    'page_path': `/index.html?page=${page}`,
+                    'page_title': metaData[page]?.title || 'AnyConversion - Unit Converter'
+                });
+                // Reattach scripts if needed
                 if (page === 'let-us-know') {
                     const scripts = contentDiv.getElementsByTagName('script');
                     for (let script of scripts) {
