@@ -243,7 +243,119 @@ document.addEventListener('DOMContentLoaded', () => {
             contentContainer.innerHTML = '<p>Error loading content. Please try again later.</p>';
             console.error(error);
         });
+    // Meta data for each page
+    const metaData = {
+        'home': {
+            title: 'AnyConversion - Unit Converter',
+            description: 'Discover a versatile unit converter for length, weight, volume, and more at AnyConversion. Convert units easily and accurately.',
+            keywords: 'unit converter, conversion tool, length, weight, volume'
+        },
+        'let-us-know': {
+            title: 'Let Us Know - AnyConversion',
+            description: 'Share your feedback or request a new unit conversion at AnyConversion. Help us improve our free online converter tool.',
+            keywords: 'feedback, conversion request, unit converter'
+        },
+        'length': {
+            title: 'Length Converter - AnyConversion',
+            description: 'Convert length units like meters to feet, kilometers to miles, and more with AnyConversion’s free length converter.',
+            keywords: 'length converter, meters to feet, kilometers to miles'
+        },
+        'meters-to-feet': {
+            title: 'Meters to Feet Converter - AnyConversion',
+            description: 'Easily convert meters to feet with AnyConversion’s accurate and free online tool.',
+            keywords: 'meters to feet, length conversion, unit converter'
+        },
+        'kilometers-to-miles': {
+            title: 'Kilometers to Miles Converter - AnyConversion',
+            description: 'Convert kilometers to miles quickly and accurately with AnyConversion’s free online converter.',
+            keywords: 'kilometers to miles, length conversion, unit converter'
+        },
+        'weight': {
+            title: 'Weight Converter - AnyConversion',
+            description: 'Convert weight units like kilograms to pounds, ounces to grams, and more with AnyConversion’s free tool.',
+            keywords: 'weight converter, kilograms to pounds, ounces to grams'
+        },
+        'kilograms-to-pounds': {
+            title: 'Kilograms to Pounds Converter - AnyConversion',
+            description: 'Convert kilograms to pounds effortlessly with AnyConversion’s free and precise online tool.',
+            keywords: 'kilograms to pounds, weight conversion, unit converter'
+        },
+        // Add more pages here (e.g., 'volume', 'liters-to-gallons', etc.)
+        // Default fallback
+        'default': {
+            title: 'AnyConversion - Unit Converter',
+            description: 'Convert units easily with AnyConversion’s free online tool for all your conversion needs.',
+            keywords: 'unit converter, conversion tool, online calculator'
+        }
+    };
 
+    // Function to update meta tags dynamically
+    function updateMetaTags(page) {
+        const meta = metaData[page] || metaData['default'];
+        
+        // Update title
+        document.title = meta.title;
+        
+        // Update or create description meta tag
+        let descTag = document.querySelector('meta[name="description"]');
+        if (!descTag) {
+            descTag = document.createElement('meta');
+            descTag.name = 'description';
+            document.head.appendChild(descTag);
+        }
+        descTag.content = meta.description;
+        
+        // Update or create keywords meta tag
+        let keywordsTag = document.querySelector('meta[name="keywords"]');
+        if (!keywordsTag) {
+            keywordsTag = document.createElement('meta');
+            keywordsTag.name = 'keywords';
+            document.head.appendChild(keywordsTag);
+        }
+        keywordsTag.content = meta.keywords;
+    }
+
+    // Modify existing loadContent function to include meta tag updates
+    function loadContent(page) {
+        const contentDiv = document.getElementById('content');
+        const url = contentMap[page] || contentMap['home'];
+        
+        fetch(url)
+            .then(response => response.text())
+            .then(data => {
+                contentDiv.innerHTML = data;
+                updateMetaTags(page); // Update meta tags after loading content
+                // Reattach any scripts if needed (e.g., for let-us-know form)
+                if (page === 'let-us-know') {
+                    const scripts = contentDiv.getElementsByTagName('script');
+                    for (let script of scripts) {
+                        const newScript = document.createElement('script');
+                        newScript.textContent = script.textContent;
+                        document.body.appendChild(newScript);
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('Error loading content:', error);
+                contentDiv.innerHTML = '<p>Error loading content.</p>';
+            });
+    }
+
+    // Existing navigation logic (ensure this calls loadContent with the page param)
+    document.addEventListener('DOMContentLoaded', () => {
+        const urlParams = new URLSearchParams(window.location.search);
+        const page = urlParams.get('page') || 'home';
+        loadContent(page);
+
+        document.querySelectorAll('.nav-link, .sidebar-link').forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                const newPage = link.getAttribute('data-page');
+                window.history.pushState({}, '', `index.html?page=${newPage}`);
+                loadContent(newPage);
+            });
+        });
+    });
     // Sidebar accordion behavior (consolidated)
     document.querySelectorAll('.category-link').forEach(link => {
         console.log('Found category link:', link.textContent); // Debug: Confirm links are found
