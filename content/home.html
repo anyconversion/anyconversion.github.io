@@ -1,65 +1,72 @@
-<!-- Main Converter (from index.html) -->
-                    <div class="card shadow-lg">
-                        <div class="card-header bg-primary text-white">
-                            <h1 class="text-center mb-0">Unit Converter</h1>
-                        </div>
-                        <div class="card-body">
-                            <!-- Tab Navigation -->
-                            <ul class="nav nav-tabs mb-4" id="unitTabs" role="tablist">
-                                <li class="nav-item" role="presentation">
-                                    <button class="nav-link active" id="length-tab" data-bs-toggle="tab" data-category="length" type="button" role="tab">Length</button>
-                                </li>
-                                <li class="nav-item" role="presentation">
-                                    <button class="nav-link" id="temperature-tab" data-bs-toggle="tab" data-category="temperature" type="button" role="tab">Temperature</button>
-                                </li>
-                                <li class="nav-item" role="presentation">
-                                    <button class="nav-link" id="area-tab" data-bs-toggle="tab" data-category="area" type="button" role="tab">Area</button>
-                                </li>
-                                <li class="nav-item" role="presentation">
-                                    <button class="nav-link" id="volume-tab" data-bs-toggle="tab" data-category="volume" type="button" role="tab">Volume</button>
-                                </li>
-                                <li class="nav-item" role="presentation">
-                                    <button class="nav-link" id="weight-tab" data-bs-toggle="tab" data-category="weight" type="button" role="tab">Weight</button>
-                                </li>
-                                <li class="nav-item" role="presentation">
-                                    <button class="nav-link" id="time-tab" data-bs-toggle="tab" data-category="time" type="button" role="tab">Time</button>
-                                </li>
-                            </ul>
-                    
-                            <!-- Conversion Form -->
-                            <div class="row g-3">
-                                <div class="col-md-6">
-                                    <div class="mb-3">
-                                        <label for="fromValue" id="fromValuelbl" class="form-label">From Value:</label>
-                                        <input type="number" class="form-control" id="fromValue" placeholder="Enter value">
-                                    </div>
-                                    <div>
-                                        <label for="fromUnit" class="form-label">From Unit:</label>
-                                        <select class="form-select" id="fromUnit" size="8"></select>
-                                    </div>
-                                </div>
-                    
-                                <div class="col-md-6">
-                                    <div class="mb-3">
-                                        <label for="toValue" class="form-label">To Value:</label>
-                                        <div class="input-group">
-                                            <input type="number" class="form-control" id="toValue" readonly>
-                                            <button class="btn btn-outline-secondary" id="decreaseAccuracy">-</button>
-                                            <button class="btn btn-outline-secondary" id="increaseAccuracy">+</button>
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <label for="toUnit" class="form-label">To Unit:</label>
-                                        <select class="form-select" id="toUnit" size="8"></select>
-                                    </div>
-                                </div>
-                            </div>
-                            <div id="conversionResult" class="mt-4 p-3 bg-light border rounded text-center">
-                                <h5>Conversion Details:</h5>
-                                <p id="conversionText">Enter a value to see the result.</p>
-                            </div>
-                        </div>
+<!-- Main Converter -->
+<div class="card shadow-lg">
+    <div class="card-header bg-primary text-white">
+        <h1 class="text-center mb-0">Unit Converter</h1>
+    </div>
+    <div class="card-body">
+        <!-- Tab Navigation -->
+        <ul class="nav nav-tabs mb-4" id="unitTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="length-tab" data-bs-toggle="tab" data-category="length" type="button" role="tab">Length</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="temperature-tab" data-bs-toggle="tab" data-category="temperature" type="button" role="tab">Temperature</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="area-tab" data-bs-toggle="tab" data-category="area" type="button" role="tab">Area</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="volume-tab" data-bs-toggle="tab" data-category="volume" type="button" role="tab">Volume</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="weight-tab" data-bs-toggle="tab" data-category="weight" type="button" role="tab">Weight</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="time-tab" data-bs-toggle="tab" data-category="time" type="button" role="tab">Time</button>
+            </li>
+        </ul>
+
+        <!-- Conversion Form -->
+        <div class="row g-3">
+            <!-- From Unit -->
+            <div class="col-md-6 order-md-1 order-1">
+                <div class="mb-3">
+                    <label for="fromUnit" class="form-label">I am converting from:</label>
+                    <select class="form-select" id="fromUnit" size="8"></select>
+                </div>
+            </div>
+            <!-- To Unit -->
+            <div class="col-md-6 order-md-2 order-2">
+                <div class="mb-3">
+                    <label for="toUnit" class="form-label">I am converting to:</label>
+                    <select class="form-select" id="toUnit" size="8"></select>
+                </div>
+            </div>
+            <!-- From Value -->
+            <div class="col-md-6 order-md-3 order-3">
+                <div class="mb-3">
+                    <label for="fromValue" id="fromValuelbl" class="form-label">From Value:</label>
+                    <input type="number" class="form-control" id="fromValue" placeholder="Enter value">
+                </div>
+            </div>
+            <!-- To Value -->
+            <div class="col-md-6 order-md-4 order-4">
+                <div class="mb-3">
+                    <label for="toValue" class="form-label">Result:</label>
+                    <div class="input-group">
+                        <input type="number" class="form-control" id="toValue" readonly>
+                        <button class="btn btn-outline-secondary" id="decreaseAccuracy">-</button>
+                        <button class="btn btn-outline-secondary" id="increaseAccuracy">+</button>
                     </div>
+                </div>
+            </div>
+        </div>
+        <div id="conversionResult" class="mt-4 p-3 bg-light border rounded text-center">
+            <h5>Conversion Details:</h5>
+            <p id="conversionText">Enter a value to see the result.</p>
+        </div>
+    </div>
+</div>
                     <script>
                         const unitData = {
         length: {
