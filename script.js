@@ -11,6 +11,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const contentMap = {
         // Home (not nested)
         'home': 'content/home.html',
+        'let-us-know': 'content/let-us-know.html',
     
         // Length/Distance (from sidebar)
         'length': 'content/length/length.html', // Category page
@@ -30,10 +31,10 @@ document.addEventListener('DOMContentLoaded', () => {
         // From Common Conversions (Length)
         'inches-to-cm': 'content/length/inches-to-cm.html',
         'cm-to-inches': 'content/length/cm-to-inches.html',
-        'mm-to-inches': 'content/length/mm-to-inches.html', // Already in sidebar
-        'meters-to-yards': 'content/length/meters-to-yards.html', // Already in sidebar
         'km-to-miles': 'content/length/km-to-miles.html', // Alias for kilometers-to-miles
         'cm-to-feet': 'content/length/cm-to-feet.html',
+        'mm-to-inches': 'content/length/mm-to-inches.html', // Already in sidebar
+        'meters-to-yards': 'content/length/meters-to-yards.html', // Already in sidebar        
         'inches-to-feet': 'content/length/inches-to-feet.html', // Already in sidebar
     
         // Weight/Mass (from sidebar)
@@ -45,18 +46,20 @@ document.addEventListener('DOMContentLoaded', () => {
         'pounds-to-kilograms': 'content/weight/pounds-to-kilograms.html',
         'tons-metric-to-tons-us': 'content/weight/tons-metric-to-tons-us.html',
         'milligrams-to-micrograms': 'content/weight/milligrams-to-micrograms.html',
+        'mg-to-mcg': 'content/weight/mg-to-mcg.html',
         'stone-to-pounds': 'content/weight/stone-to-pounds.html',
         'carats-to-grams': 'content/weight/carats-to-grams.html',
         'slugs-to-kilograms': 'content/weight/slugs-to-kilograms.html',
         'troy-ounces-to-ounces': 'content/weight/troy-ounces-to-ounces.html',
         'grains-to-grams': 'content/weight/grains-to-grams.html',
         // From Common Conversions (Weight)
+        'ounces-to-pounds': 'content/weight/ounces-to-pounds.html',
         'kg-to-lbs': 'content/weight/kg-to-lbs.html', // Alias for kilograms-to-pounds
         'lbs-to-kg': 'content/weight/lbs-to-kg.html', // Alias for pounds-to-kilograms
-        'grams-to-ounces': 'content/weight/grams-to-ounces.html', // Already in sidebar
-        'pounds-to-ounces': 'content/weight/pounds-to-ounces.html', // Already in sidebar
         'ounces-to-grams': 'content/weight/ounces-to-grams.html', // Already in sidebar
-        'ounces-to-pounds': 'content/weight/ounces-to-pounds.html',
+        'pounds-to-ounces': 'content/weight/pounds-to-ounces.html', // Already in sidebar
+        'grams-to-ounces': 'content/weight/grams-to-ounces.html', // Already in sidebar
+        
     
         // Volume/Capacity (from sidebar)
         'volume': 'content/volume/volume.html', // Category page
@@ -73,9 +76,9 @@ document.addEventListener('DOMContentLoaded', () => {
         'hogsheads-to-gallons': 'content/volume/hogsheads-to-gallons.html',
         'cubic-parsecs-to-cubic-light-years': 'content/volume/cubic-parsecs-to-cubic-light-years.html',
         // From Common Conversions (Volume)
-        'liters-to-gallons': 'content/volume/liters-to-gallons.html', // Already in sidebar
-        'gallons-to-liters': 'content/volume/gallons-to-liters.html', // Already in sidebar
         'ml-to-cups': 'content/volume/ml-to-cups.html',
+        'liters-to-gallons': 'content/volume/liters-to-gallons.html', // Already in sidebar
+        'gallons-to-liters': 'content/volume/gallons-to-liters.html', // Already in sidebar        
         'cups-to-ml': 'content/volume/cups-to-ml.html', // Alias for cups-to-milliliters
     
         // Area (from sidebar)
@@ -90,8 +93,9 @@ document.addEventListener('DOMContentLoaded', () => {
         'square-chains-to-square-feet': 'content/area/square-chains-to-square-feet.html',
         'square-furlongs-to-acres': 'content/area/square-furlongs-to-acres.html',
         // From Common Conversions (Area)
-        'acres-to-square-feet': 'content/area/acres-to-square-feet.html', // Already in sidebar
         'square-feet-to-acres': 'content/area/square-feet-to-acres.html',
+        'acres-to-square-feet': 'content/area/acres-to-square-feet.html', // Already in sidebar
+        
     
         // Temperature (from sidebar)
         'temperature': 'content/temperature/temperature.html', // Category page
@@ -120,6 +124,8 @@ document.addEventListener('DOMContentLoaded', () => {
         'speed': 'content/speed/speed.html', // Category page
         'kilometers-per-hour-to-miles-per-hour': 'content/speed/kilometers-per-hour-to-miles-per-hour.html',
         'meters-per-second-to-feet-per-second': 'content/speed/meters-per-second-to-feet-per-second.html',
+        'meters-per-second-to-miles-per-hour': 'content/speed/meters-per-second-to-miles-per-hour.html',
+        'miles-per-hour-to-kilometers-per-hour': 'content/speed/miles-per-hour-to-kilometers-per-hour.html',
         'knots-to-miles-per-hour': 'content/speed/knots-to-miles-per-hour.html',
         'mach-to-meters-per-second': 'content/speed/mach-to-meters-per-second.html',
         'furlongs-per-fortnight-to-meters-per-second': 'content/speed/furlongs-per-fortnight-to-meters-per-second.html',
@@ -153,7 +159,7 @@ document.addEventListener('DOMContentLoaded', () => {
         'bars-to-psi': 'content/pressure/bars-to-psi.html',
         'torr-to-millibars': 'content/pressure/torr-to-millibars.html',
         'inches-of-mercury-to-pascals': 'content/pressure/inches-of-mercury-to-pascals.html',
-        'atmospheres-technical-to-bars': 'content/pressure/atmospheres-technical-to-bars.html',
+        'at-to-bars': 'content/pressure/at-to-bars.html',
     
         // Force (from sidebar)
         'force': 'content/force/force.html', // Category page
@@ -168,6 +174,7 @@ document.addEventListener('DOMContentLoaded', () => {
         'radians-to-degrees': 'content/angle/radians-to-degrees.html',
         'gradians-to-degrees': 'content/angle/gradians-to-degrees.html',
         'mils-to-degrees': 'content/angle/mils-to-degrees.html',
+        'degrees-to-mils': 'content/angle/degrees-to-mils.html',
         // From Common Conversions (Angle)
         'radians-to-degrees': 'content/angle/radians-to-degrees.html', // Already in sidebar
         'degrees-to-radians': 'content/angle/degrees-to-radians.html', // Already in sidebar
@@ -206,7 +213,8 @@ document.addEventListener('DOMContentLoaded', () => {
         'reyns-to-pascal-seconds': 'content/specialized/reyns-to-pascal-seconds.html',
     
         // Other Conversions
-        'mm-to-sae': 'content/other/mm-to-sae.html' // Assuming 'other' as category
+        'mm-to-sae': 'content/other/mm-to-sae.html', // Assuming 'other' as category
+        'formtest' : 'content/let_us_know_test.html'
     };
 
     // Load the appropriate content
