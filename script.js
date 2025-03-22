@@ -292,11 +292,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // Function to update meta tags dynamically
     function updateMetaTags(page) {
         const meta = metaData[page] || metaData['default'];
-        
-        // Update title
         document.title = meta.title;
         
-        // Update or create description meta tag
         let descTag = document.querySelector('meta[name="description"]');
         if (!descTag) {
             descTag = document.createElement('meta');
@@ -305,7 +302,12 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         descTag.content = meta.description;
         
-        // Update or create keywords meta tag
+        // Debug length
+        const descLength = meta.description.length;
+        if (descLength < 25 || descLength > 160) {
+            console.warn(`Meta description for ${page} is ${descLength} chars (should be 25-160): "${meta.description}"`);
+        }
+        
         let keywordsTag = document.querySelector('meta[name="keywords"]');
         if (!keywordsTag) {
             keywordsTag = document.createElement('meta');
@@ -313,6 +315,10 @@ document.addEventListener('DOMContentLoaded', () => {
             document.head.appendChild(keywordsTag);
         }
         keywordsTag.content = meta.keywords;
+        
+        if (typeof gtag === 'function') {
+            gtag('config', 'G-25CMMZLTZ7', { 'page_path': `/index.html?page=${page}`, 'page_title': meta.title });
+        }
     }
 
     // Inside loadContent or navigation logic
@@ -385,4 +391,21 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     });
+    function loadContent(page) {
+        const contentDiv = document.getElementById('content');
+        const url = contentMap[page] || contentMap['home'];
+        const isBingbot = navigator.userAgent.includes('Bingbot');
+        
+        if (isBingbot) {
+            contentDiv.innerHTML = '<h1>' + page.replace(/-/g, ' ') + '</h1><p>Convert ' + page + ' here.</p>'; // Static fallback
+            updateMetaTags(page);
+        } else {
+            fetch(url)
+                .then(response => response.text())
+                .then(data => {
+                    contentDiv.innerHTML = data;
+                    updateMetaTags(page);
+                });
+        }
+    }
 });
