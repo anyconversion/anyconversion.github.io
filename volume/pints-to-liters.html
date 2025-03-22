@@ -1,0 +1,41 @@
+<div class="card shadow-lg">
+    <div class="card-header bg-primary text-white">
+        <h1 class="text-center mb-0">Pints to Liters Converter</h1>
+    </div>
+    <div class="card-body">
+        <div class="row g-3">
+            <div class="col-md-6">
+                <label for="pints" class="form-label">US Pints (pt):</label>
+                <input type="number" class="form-control" id="pints" placeholder="Enter pints">
+            </div>
+            <div class="col-md-6">
+                <label for="liters" class="form-label">Liters (L):</label>
+                <input type="number" class="form-control" id="liters" placeholder="Enter liters">
+            </div>
+        </div>
+    </div>
+</div>
+<div class="mt-4">
+    <h5>Definition</h5>
+    <p>A US pint is a unit of volume equal to 16 US fluid ounces or approximately 0.473176 liters. A liter is a metric unit of volume equal to 1 cubic decimeter or 1,000 cubic centimeters. The Imperial pint (used in the UK) is larger at 0.568261 liters.</p>
+    <h5>History</h5>
+    <p>The pint has medieval origins, but the US pint was standardized in the early 19th century based on the wine gallon. The liter was introduced in France in 1795 as part of the metric system. The US and Imperial pint diverged when the UK established the Imperial system in 1824, creating the difference that persists today—the British or Imperial pint is about 20% larger than the US pint.</p>
+</div>
+<script>
+    const pintsInput = document.getElementById("pints");
+    const litersInput = document.getElementById("liters");
+    function updateFromPints() {
+        const pints = parseFloat(pintsInput.value);
+        if (!isNaN(pints)) {
+            litersInput.value = (pints * 0.473176).toFixed(6);
+        }
+    }
+    function updateFromLiters() {
+        const liters = parseFloat(litersInput.value);
+        if (!isNaN(liters)) {
+            pintsInput.value = (liters / 0.473176).toFixed(6);
+        }
+    }
+    pintsInput.addEventListener("input", updateFromPints);
+    litersInput.addEventListener("input", updateFromLiters);
+</script>

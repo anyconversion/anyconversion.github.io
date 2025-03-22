@@ -1,0 +1,41 @@
+<div class="card shadow-lg">
+    <div class="card-header bg-primary text-white">
+        <h1 class="text-center mb-0">Carats to Grams Converter</h1>
+    </div>
+    <div class="card-body">
+        <div class="row g-3">
+            <div class="col-md-6">
+                <label for="ct" class="form-label">Carats (ct):</label>
+                <input type="number" class="form-control" id="ct" placeholder="Enter carats">
+            </div>
+            <div class="col-md-6">
+                <label for="grams" class="form-label">Grams (g):</label>
+                <input type="number" class="form-control" id="grams" placeholder="Enter grams">
+            </div>
+        </div>
+    </div>
+</div>
+<div class="mt-4">
+    <h5>Definition</h5>
+    <p>A carat is a unit of mass used for measuring gemstones and pearls, equal to exactly 200 milligrams (0.2 grams). A gram is a unit of mass in the metric system, equal to one-thousandth of a kilogram. One carat equals exactly 0.2 grams, or 5 carats equal exactly 1 gram.</p>
+    <h5>History</h5>
+    <p>The carat derives from the Greek word for the carob seed, "keration," as carob seeds were used as counterweights in ancient scales due to their relatively uniform weight. Throughout history, the carat varied slightly in different trading centers until 1907, when it was standardized internationally as exactly 200 milligrams. The gram was introduced as part of the metric system during the French Revolution in the 1790s, originally defined as the mass of one cubic centimeter of water at the temperature of melting ice. Today, both units are used extensively in the jewelry industry, with carats being the standard unit for gemstone weight.</p>
+</div>
+<script>
+    const ctInput = document.getElementById("ct");
+    const gramsInput = document.getElementById("grams");
+    function updateFromCt() {
+        const ct = parseFloat(ctInput.value);
+        if (!isNaN(ct)) {
+            gramsInput.value = (ct * 0.2).toFixed(4);
+        }
+    }
+    function updateFromGrams() {
+        const grams = parseFloat(gramsInput.value);
+        if (!isNaN(grams)) {
+            ctInput.value = (grams / 0.2).toFixed(2);
+        }
+    }
+    ctInput.addEventListener("input", updateFromCt);
+    gramsInput.addEventListener("input", updateFromGrams);
+</script>

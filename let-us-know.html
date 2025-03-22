@@ -1,0 +1,126 @@
+<div class="card shadow-lg">
+    <div class="card-header bg-primary text-white">
+        <h1 class="text-center mb-0">Let Us Know</h1>
+    </div>
+    <div class="card-body">
+        <p class="lead">Have feedback or a conversion idea? Let us know below!</p>
+        
+        <div class="mb-3">
+            <label for="requestType" class="form-label">What would you like to tell us?</label>
+            <select class="form-select" id="requestType" onchange="toggleForm()">
+                <option value="feedback">General Feedback</option>
+                <option value="conversion">Request a Specific Conversion</option>
+            </select>
+        </div>
+        <form id="feedbackForm" class="d-block">
+            <div class="mb-3 field">
+            <label for="feedbackName" class="form-label">Name</label>
+            <input type="text" class="form-control" name="name" id="feedbackName" placeholder="e.g., John Doe" required>
+            </div>
+            <div class="mb-3 field">
+            <label for="feedbackText" class="form-label">Feedback</label>
+            <textarea class="form-control" name="feedback" id="feedbackText" rows="4" placeholder="Enter your feedback here" required></textarea>
+            </div>
+            <div class="mb-3 field">
+            <label for="feedbackEmail" class="form-label">Your Email (required):</label>
+            <input type="email" class="form-control" name="user_email" id="feedbackEmail" placeholder="e.g., you@example.com" required>
+            </div>
+            <div class="field">    
+            <input type="hidden" name="email" id="feedbackToEmail" value="anyconversion@gmail.com">
+            </div>
+        
+            <input type="submit" id="feedbackButton" value="Send Email" >
+        </form>
+        <!-- Conversion Request Form -->
+        <form id="conversionForm" class="d-none">
+            <div class="mb-3 field">
+                <label for="conversionName" class="form-label">Your Name:</label>
+                <input type="text" class="form-control" id="conversionName" name="name" placeholder="e.g., John Doe" required>
+            </div>
+            <div class="mb-3 field">
+                <label for="fromUnit" class="form-label">From Unit:</label>
+                <input type="text" class="form-control" id="fromUnit" name="from_unit" placeholder="e.g., miles" required>
+            </div>
+            <div class="mb-3 field">
+                <label for="toUnit" class="form-label">To Unit:</label>
+                <input type="text" class="form-control" id="toUnit" name="to_unit" placeholder="e.g., kilometers" required>
+            </div>
+            <div class="mb-3 field">
+                <label for="category" class="form-label">Suggested Category:</label>
+                <input type="text" class="form-control" id="category" name="category" placeholder="e.g., Speed" required>
+            </div>
+            <div class="mb-3 field">
+                <label for="userEmail" class="form-label">Your Email (required):</label>
+                <input type="email" class="form-control" id="userEmail" name="user_email" placeholder="e.g., you@example.com" required>
+            </div>
+            <div class="field">
+                <input type="hidden" name="email" id="conversionToEmail" value="anyconversion@gmail.com">
+            </div>
+            <button type="submit" class="btn btn-primary" id="conversionButton">Submit</button>
+        </form>
+        <script type="text/javascript"
+            src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+        
+        <script type="text/javascript">
+            emailjs.init('BD5LUE3-GV_resm6r')
+        </script>
+    </div>
+</div>
+<script type="text/javascript">
+    const btn = document.getElementById('feedbackButton');
+
+    document.getElementById('feedbackForm').addEventListener('submit', function(event) {
+    event.preventDefault();
+
+    btn.value = 'Sending...';
+
+    const serviceID = 'service_srw33bd';
+    const templateID = 'template_03iy5qr';
+
+    emailjs.sendForm(serviceID, templateID, this)
+        .then(() => {
+        btn.value = 'Send Email';
+        alert('Sent!');
+        }, (err) => {
+        btn.value = 'Send Email';
+        alert(JSON.stringify(err));
+        });
+    });
+    const btn2 = document.getElementById('conversionButton');
+
+    document.getElementById('conversionForm')
+    .addEventListener('submit', function(event) {
+    event.preventDefault();
+
+    btn2.value = 'Sending...';
+
+    const serviceID = 'default_service';
+    const templateID = 'template_a8pijk7';
+
+    emailjs.sendForm(serviceID, templateID, this)
+        .then(() => {
+        btn.value = 'Send Email';
+        alert('Sent!');
+        }, (err) => {
+        btn.value = 'Send Email';
+        alert(JSON.stringify(err));
+        });
+    });
+
+    function toggleForm() {
+            const requestType = document.getElementById("requestType").value;
+            const feedbackForm = document.getElementById("feedbackForm");
+            const conversionForm = document.getElementById("conversionForm");
+            if (requestType === "feedback") {
+                feedbackForm.classList.remove("d-none");
+                feedbackForm.classList.add("d-block");
+                conversionForm.classList.remove("d-block");
+                conversionForm.classList.add("d-none");
+            } else {
+                conversionForm.classList.remove("d-none");
+                conversionForm.classList.add("d-block");
+                feedbackForm.classList.remove("d-block");
+                feedbackForm.classList.add("d-none");
+            }
+        }
+</script>

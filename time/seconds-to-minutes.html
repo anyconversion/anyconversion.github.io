@@ -1,0 +1,44 @@
+<div class="card shadow-lg">
+    <div class="card-header bg-primary text-white">
+        <h1 class="text-center mb-0">Seconds to Minutes Converter</h1>
+    </div>
+    <div class="card-body">
+        <div class="row g-3">
+            <div class="col-md-6">
+                <label for="seconds" class="form-label">Seconds (s):</label>
+                <input type="number" class="form-control" id="seconds" placeholder="Enter seconds">
+            </div>
+            <div class="col-md-6">
+                <label for="minutes" class="form-label">Minutes (min):</label>
+                <input type="number" class="form-control" id="minutes" placeholder="Enter minutes">
+            </div>
+        </div>
+    </div>
+</div>
+<div class="mt-4">
+    <h5>Definition</h5>
+    <p>A second (s) is the SI base unit of time, defined as the duration of 9,192,631,770 periods of radiation corresponding to the transition between two hyperfine levels of the ground state of cesium-133. A minute (min) is a unit of time equal to 60 seconds.</p>
+    <h5>History</h5>
+    <p>The second was originally defined as 1/86,400 of a mean solar day. In 1967, the definition was changed to be based on atomic properties of cesium-133 for greater precision. Minutes have been used since ancient times, with the Babylonians using a sexagesimal (base-60) system that influenced our modern time divisions of 60 seconds per minute and 60 minutes per hour.</p>
+</div>
+<script>
+    const secondsInput = document.getElementById("seconds");
+    const minutesInput = document.getElementById("minutes");
+
+    function updateFromSeconds() {
+        const seconds = parseFloat(secondsInput.value);
+        if (!isNaN(seconds)) {
+            minutesInput.value = (seconds / 60).toFixed(6);
+        }
+    }
+
+    function updateFromMinutes() {
+        const minutes = parseFloat(minutesInput.value);
+        if (!isNaN(minutes)) {
+            secondsInput.value = (minutes * 60).toFixed(6);
+        }
+    }
+
+    secondsInput.addEventListener("input", updateFromSeconds);
+    minutesInput.addEventListener("input", updateFromMinutes);
+</script>

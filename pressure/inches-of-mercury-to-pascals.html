@@ -1,0 +1,44 @@
+<div class="card shadow-lg">
+    <div class="card-header bg-primary text-white">
+        <h1 class="text-center mb-0">Inches of Mercury to Pascals Converter</h1>
+    </div>
+    <div class="card-body">
+        <div class="row g-3">
+            <div class="col-md-6">
+                <label for="in-hg" class="form-label">Inches of Mercury (inHg):</label>
+                <input type="number" class="form-control" id="in-hg" placeholder="Enter inHg">
+            </div>
+            <div class="col-md-6">
+                <label for="pascals" class="form-label">Pascals (Pa):</label>
+                <input type="number" class="form-control" id="pascals" placeholder="Enter Pa">
+            </div>
+        </div>
+    </div>
+</div>
+<div class="mt-4">
+    <h5>Definition</h5>
+    <p>Inches of mercury (inHg) is a unit of pressure based on the height of a mercury column in a barometer, where 1 inHg equals approximately 3,386.389 pascals at standard gravity and temperature. A pascal (Pa) is the SI unit of pressure, equal to 1 newton per square meter (1 Pa = 1 N/m²).</p>
+    <h5>History</h5>
+    <p>Inches of mercury originated with Torricelli’s 1643 barometer, adapted in the 18th century to English units, standardized at 29.92 inHg for 1 atm by the 19th century in aviation and meteorology. The pascal, named after Blaise Pascal, was adopted in 1971 by the SI system, unifying pressure measurements in science.</p>
+</div>
+<script>
+    const inhgInput = document.getElementById("in-hg");
+    const pascalsInput = document.getElementById("pascals");
+
+    function updateFromInHg() {
+        const inhg = parseFloat(inhgInput.value);
+        if (!isNaN(inhg)) {
+            pascalsInput.value = (inhg * 3386.389).toFixed(6);
+        }
+    }
+
+    function updateFromPascals() {
+        const pascals = parseFloat(pascalsInput.value);
+        if (!isNaN(pascals)) {
+            inhgInput.value = (pascals / 3386.389).toFixed(6);
+        }
+    }
+
+    inhgInput.addEventListener("input", updateFromInHg);
+    pascalsInput.addEventListener("input", updateFromPascals);
+</script>

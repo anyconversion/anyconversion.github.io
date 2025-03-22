@@ -1,0 +1,44 @@
+<div class="card shadow-lg">
+    <div class="card-header bg-primary text-white">
+        <h1 class="text-center mb-0">Hours to Days Converter</h1>
+    </div>
+    <div class="card-body">
+        <div class="row g-3">
+            <div class="col-md-6">
+                <label for="hours" class="form-label">Hours (hr):</label>
+                <input type="number" class="form-control" id="hours" placeholder="Enter hours">
+            </div>
+            <div class="col-md-6">
+                <label for="days" class="form-label">Days (d):</label>
+                <input type="number" class="form-control" id="days" placeholder="Enter days">
+            </div>
+        </div>
+    </div>
+</div>
+<div class="mt-4">
+    <h5>Definition</h5>
+    <p>An hour (hr) is a unit of time equal to 60 minutes or 3,600 seconds. A day (d) is a unit of time equal to 24 hours, 1,440 minutes, or 86,400 seconds, representing one complete rotation of the Earth around its axis.</p>
+    <h5>History</h5>
+    <p>The concept of a 24-hour day originated in ancient Egypt around 3000 BCE, where they divided the day and night into 12 hours each. These hours initially varied in length according to the season. The Greeks later adopted this system, and the Romans spread it throughout their empire. The fixed-length hour we use today became standardized with the invention of mechanical clocks in medieval Europe, allowing for consistent time measurement regardless of season.</p>
+</div>
+<script>
+    const hoursInput = document.getElementById("hours");
+    const daysInput = document.getElementById("days");
+
+    function updateFromHours() {
+        const hours = parseFloat(hoursInput.value);
+        if (!isNaN(hours)) {
+            daysInput.value = (hours / 24).toFixed(6);
+        }
+    }
+
+    function updateFromDays() {
+        const days = parseFloat(daysInput.value);
+        if (!isNaN(days)) {
+            hoursInput.value = (days * 24).toFixed(6);
+        }
+    }
+
+    hoursInput.addEventListener("input", updateFromHours);
+    daysInput.addEventListener("input", updateFromDays);
+</script>

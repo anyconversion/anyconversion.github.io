@@ -1,0 +1,41 @@
+<div class="card shadow-lg">
+    <div class="card-header bg-primary text-white">
+        <h1 class="text-center mb-0">Grams to Ounces Converter</h1>
+    </div>
+    <div class="card-body">
+        <div class="row g-3">
+            <div class="col-md-6">
+                <label for="grams" class="form-label">Grams (g):</label>
+                <input type="number" class="form-control" id="grams" placeholder="Enter grams">
+            </div>
+            <div class="col-md-6">
+                <label for="oz" class="form-label">Ounces (oz):</label>
+                <input type="number" class="form-control" id="oz" placeholder="Enter ounces">
+            </div>
+        </div>
+    </div>
+</div>
+<div class="mt-4">
+    <h5>Definition</h5>
+    <p>A gram is a unit of mass in the metric system, equal to one-thousandth of a kilogram. An ounce is a unit of weight in the imperial and US customary systems, equal to 1/16 of a pound or approximately 28.35 grams. One ounce equals approximately 28.3495 grams.</p>
+    <h5>History</h5>
+    <p>The gram was introduced as part of the metric system during the French Revolution in the 1790s. It was originally defined as the mass of one cubic centimeter of water at the temperature of melting ice. The ounce derives from the Roman "uncia," which was 1/12 of a Roman pound. In medieval England, various standards were used until the avoirdupois system became dominant, defining the ounce as 1/16 of a pound. The current international definitions were standardized in 1959, with the avoirdupois ounce defined as exactly 28.349523125 grams.</p>
+</div>
+<script>
+    const gramsInput = document.getElementById("grams");
+    const ozInput = document.getElementById("oz");
+    function updateFromGrams() {
+        const grams = parseFloat(gramsInput.value);
+        if (!isNaN(grams)) {
+            ozInput.value = (grams / 28.3495).toFixed(4);
+        }
+    }
+    function updateFromOz() {
+        const oz = parseFloat(ozInput.value);
+        if (!isNaN(oz)) {
+            gramsInput.value = (oz * 28.3495).toFixed(4);
+        }
+    }
+    gramsInput.addEventListener("input", updateFromGrams);
+    ozInput.addEventListener("input", updateFromOz);
+</script>

@@ -1,0 +1,44 @@
+<div class="card shadow-lg">
+    <div class="card-header bg-primary text-white">
+        <h1 class="text-center mb-0">Torr to Millibars Converter</h1>
+    </div>
+    <div class="card-body">
+        <div class="row g-3">
+            <div class="col-md-6">
+                <label for="torr" class="form-label">Torr (Torr):</label>
+                <input type="number" class="form-control" id="torr" placeholder="Enter Torr">
+            </div>
+            <div class="col-md-6">
+                <label for="millibars" class="form-label">Millibars (mbar):</label>
+                <input type="number" class="form-control" id="millibars" placeholder="Enter mbar">
+            </div>
+        </div>
+    </div>
+</div>
+<div class="mt-4">
+    <h5>Definition</h5>
+    <p>A torr (Torr) is a unit of pressure equal to 1/760 of an atmosphere, approximately 133.3223684 pascals, defined as the pressure exerted by 1 millimeter of mercury. A millibar (mbar) is a metric unit equal to 1/1000 of a bar, or 100 pascals, commonly used in meteorology.</p>
+    <h5>History</h5>
+    <p>The torr was named after Evangelista Torricelli in 1949, honoring his 1643 invention of the mercury barometer, initially called “mmHg” before formalization. The millibar was introduced in the early 20th century by Vilhelm Bjerknes for weather forecasting, derived from the bar and adopted widely due to its metric convenience.</p>
+</div>
+<script>
+    const torrInput = document.getElementById("torr");
+    const mbarInput = document.getElementById("millibars");
+
+    function updateFromTorr() {
+        const torr = parseFloat(torrInput.value);
+        if (!isNaN(torr)) {
+            mbarInput.value = (torr * 1.333223684).toFixed(6);
+        }
+    }
+
+    function updateFromMillibars() {
+        const mbar = parseFloat(mbarInput.value);
+        if (!isNaN(mbar)) {
+            torrInput.value = (mbar / 1.333223684).toFixed(6);
+        }
+    }
+
+    torrInput.addEventListener("input", updateFromTorr);
+    mbarInput.addEventListener("input", updateFromMillibars);
+</script>

@@ -1,0 +1,44 @@
+<div class="card shadow-lg">
+    <div class="card-header bg-primary text-white">
+        <h1 class="text-center mb-0">Furlongs per Fortnight to Meters per Second Converter</h1>
+    </div>
+    <div class="card-body">
+        <div class="row g-3">
+            <div class="col-md-6">
+                <label for="fpf" class="form-label">Furlongs per Fortnight (fpf):</label>
+                <input type="number" class="form-control" id="fpf" placeholder="Enter fpf">
+            </div>
+            <div class="col-md-6">
+                <label for="mps" class="form-label">Meters per Second (m/s):</label>
+                <input type="number" class="form-control" id="mps" placeholder="Enter m/s">
+            </div>
+        </div>
+    </div>
+</div>
+<div class="mt-4">
+    <h5>Definition</h5>
+    <p>Furlongs per fortnight (fpf) is an obscure unit of speed, where 1 furlong is 201.168 meters and 1 fortnight is 14 days (1,209,600 seconds), equaling about 0.0001663095 meters per second per fpf, often used humorously. Meters per second (m/s) is the SI unit of speed.</p>
+    <h5>History</h5>
+    <p>Furlongs per fortnight isn’t a historical unit but a playful combination—furlongs from medieval England (1/8 mile) and fortnights from Old English (14 nights)—popularized in the 20th century as a quirky example in physics education. Meters per second was established with the metric system in the 1790s, adopted by SI in 1960.</p>
+</div>
+<script>
+    const fpfInput = document.getElementById("fpf");
+    const mpsInput = document.getElementById("mps");
+
+    function updateFromFpf() {
+        const fpf = parseFloat(fpfInput.value);
+        if (!isNaN(fpf)) {
+            mpsInput.value = (fpf * 0.0001663095).toFixed(6);
+        }
+    }
+
+    function updateFromMps() {
+        const mps = parseFloat(mpsInput.value);
+        if (!isNaN(mps)) {
+            fpfInput.value = (mps / 0.0001663095).toFixed(6);
+        }
+    }
+
+    fpfInput.addEventListener("input", updateFromFpf);
+    mpsInput.addEventListener("input", updateFromMps);
+</script>

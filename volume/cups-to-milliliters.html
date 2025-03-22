@@ -1,0 +1,41 @@
+<div class="card shadow-lg">
+    <div class="card-header bg-primary text-white">
+        <h1 class="text-center mb-0">Cups to Milliliters Converter</h1>
+    </div>
+    <div class="card-body">
+        <div class="row g-3">
+            <div class="col-md-6">
+                <label for="cups" class="form-label">Cups (c):</label>
+                <input type="number" class="form-control" id="cups" placeholder="Enter cups">
+            </div>
+            <div class="col-md-6">
+                <label for="ml" class="form-label">Milliliters (ml):</label>
+                <input type="number" class="form-control" id="ml" placeholder="Enter milliliters">
+            </div>
+        </div>
+    </div>
+</div>
+<div class="mt-4">
+    <h5>Definition</h5>
+    <p>A US cup is a volume unit equal to 8 fluid ounces, 16 tablespoons, or approximately 236.588 milliliters. A milliliter is one thousandth of a liter, equal to 1 cubic centimeter. The metric cup used in Australia, Canada, and New Zealand is slightly different at 250 milliliters.</p>
+    <h5>History</h5>
+    <p>The cup as a measurement has ancient origins, but the standardized US cup was established in the early 20th century. The milliliter was introduced as part of the metric system during the French Revolution in the late 18th century. Cup measurements vary internationally, with the metric cup (250 ml) being adopted by many countries to simplify conversion to the metric system.</p>
+</div>
+<script>
+    const cupsInput = document.getElementById("cups");
+    const mlInput = document.getElementById("ml");
+    function updateFromCups() {
+        const cups = parseFloat(cupsInput.value);
+        if (!isNaN(cups)) {
+            mlInput.value = (cups * 236.588).toFixed(6);
+        }
+    }
+    function updateFromMl() {
+        const ml = parseFloat(mlInput.value);
+        if (!isNaN(ml)) {
+            cupsInput.value = (ml / 236.588).toFixed(6);
+        }
+    }
+    cupsInput.addEventListener("input", updateFromCups);
+    mlInput.addEventListener("input", updateFromMl);
+</script>

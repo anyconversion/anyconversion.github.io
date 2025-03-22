@@ -1,0 +1,41 @@
+<div class="card shadow-lg">
+    <div class="card-header bg-primary text-white">
+        <h1 class="text-center mb-0">Hogsheads to Gallons Converter</h1>
+    </div>
+    <div class="card-body">
+        <div class="row g-3">
+            <div class="col-md-6">
+                <label for="hogsheads" class="form-label">Hogsheads:</label>
+                <input type="number" class="form-control" id="hogsheads" placeholder="Enter hogsheads">
+            </div>
+            <div class="col-md-6">
+                <label for="gallons" class="form-label">Gallons:</label>
+                <input type="number" class="form-control" id="gallons" placeholder="Enter gallons">
+            </div>
+        </div>
+    </div>
+</div>
+<div class="mt-4">
+    <h5>Definition</h5>
+    <p>A hogshead is a large barrel or cask used historically for storing and transporting liquids, particularly alcoholic beverages. One hogshead is equal to 63 gallons (US) or approximately 52.5 imperial gallons. A gallon is a unit of volume in both the US customary and imperial systems, with the US gallon equal to 3.785 liters and the imperial gallon equal to 4.546 liters.</p>
+    <h5>History</h5>
+    <p>The hogshead originated in the late Middle Ages as a standard-sized cask for wine and ale. The term likely comes from "hog's head," possibly referring to the size comparable to a hog's head. It became a crucial unit in colonial American and British trade, especially for tobacco and molasses. The gallon has ancient roots, derived from Roman and Medieval European measurements, with the US and imperial gallons diverging in the 19th century when the British standardized their system.</p>
+</div>
+<script>
+    const hogsheadsInput = document.getElementById("hogsheads");
+    const gallonsInput = document.getElementById("gallons");
+    function updateFromHogsheads() {
+        const hogsheads = parseFloat(hogsheadsInput.value);
+        if (!isNaN(hogsheads)) {
+            gallonsInput.value = (hogsheads * 63).toFixed(2);
+        }
+    }
+    function updateFromGallons() {
+        const gallons = parseFloat(gallonsInput.value);
+        if (!isNaN(gallons)) {
+            hogsheadsInput.value = (gallons / 63).toFixed(6);
+        }
+    }
+    hogsheadsInput.addEventListener("input", updateFromHogsheads);
+    gallonsInput.addEventListener("input", updateFromGallons);
+</script>

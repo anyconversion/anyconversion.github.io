@@ -1,0 +1,44 @@
+<div class="card shadow-lg">
+    <div class="card-header bg-primary text-white">
+        <h1 class="text-center mb-0">Microseconds to Nanoseconds Converter</h1>
+    </div>
+    <div class="card-body">
+        <div class="row g-3">
+            <div class="col-md-6">
+                <label for="microseconds" class="form-label">Microseconds (μs):</label>
+                <input type="number" class="form-control" id="microseconds" placeholder="Enter microseconds">
+            </div>
+            <div class="col-md-6">
+                <label for="nanoseconds" class="form-label">Nanoseconds (ns):</label>
+                <input type="number" class="form-control" id="nanoseconds" placeholder="Enter nanoseconds">
+            </div>
+        </div>
+    </div>
+</div>
+<div class="mt-4">
+    <h5>Definition</h5>
+    <p>A microsecond (μs) is one millionth (10^-6) of a second. A nanosecond (ns) is one billionth (10^-9) of a second. One microsecond equals 1,000 nanoseconds, making these units essential for measuring extremely short durations in fields like computing, physics, and electronics.</p>
+    <h5>History</h5>
+    <p>Microseconds and nanoseconds became important units of measurement with the advent of modern electronics and computing in the 20th century. The need to measure increasingly shorter time intervals grew alongside technological advancements. The prefixes "micro-" and "nano-" were officially adopted as part of the International System of Units (SI) in 1960, standardizing these units for scientific and technological applications. The ability to measure such tiny time intervals has been crucial for developments in computing, telecommunication, and physics research.</p>
+</div>
+<script>
+    const microsecondsInput = document.getElementById("microseconds");
+    const nanosecondsInput = document.getElementById("nanoseconds");
+
+    function updateFromMicroseconds() {
+        const microseconds = parseFloat(microsecondsInput.value);
+        if (!isNaN(microseconds)) {
+            nanosecondsInput.value = (microseconds * 1000).toFixed(6);
+        }
+    }
+
+    function updateFromNanoseconds() {
+        const nanoseconds = parseFloat(nanosecondsInput.value);
+        if (!isNaN(nanoseconds)) {
+            microsecondsInput.value = (nanoseconds / 1000).toFixed(6);
+        }
+    }
+
+    microsecondsInput.addEventListener("input", updateFromMicroseconds);
+    nanosecondsInput.addEventListener("input", updateFromNanoseconds);
+</script>

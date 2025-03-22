@@ -1,0 +1,41 @@
+<div class="card shadow-lg">
+    <div class="card-header bg-primary text-white">
+        <h1 class="text-center mb-0">Pounds to Kilograms Converter</h1>
+    </div>
+    <div class="card-body">
+        <div class="row g-3">
+            <div class="col-md-6">
+                <label for="lbs" class="form-label">Pounds (lb):</label>
+                <input type="number" class="form-control" id="lbs" placeholder="Enter pounds">
+            </div>
+            <div class="col-md-6">
+                <label for="kg" class="form-label">Kilograms (kg):</label>
+                <input type="number" class="form-control" id="kg" placeholder="Enter kilograms">
+            </div>
+        </div>
+    </div>
+</div>
+<div class="mt-4">
+    <h5>Definition</h5>
+    <p>A pound is a unit of weight in the imperial and US customary systems, equal to 16 ounces or exactly 0.45359237 kilograms. A kilogram is the base unit of mass in the International System of Units (SI), defined by physical constants since 2019. One pound equals exactly 0.45359237 kilograms.</p>
+    <h5>History</h5>
+    <p>The pound has ancient origins, deriving from the Roman "libra" (hence the abbreviation "lb"). The current international pound was standardized in 1959 by agreement between the United States and countries of the Commonwealth. The kilogram was introduced in France during the French Revolution in the 1790s as part of the metric system. Originally, it was defined as the mass of one liter of water. In 1889, it was redefined as the mass of the International Prototype Kilogram, a platinum-iridium cylinder stored in Sèvres, France. In 2019, it was redefined in terms of Planck's constant and other physical constants.</p>
+</div>
+<script>
+    const lbsInput = document.getElementById("lbs");
+    const kgInput = document.getElementById("kg");
+    function updateFromLbs() {
+        const lbs = parseFloat(lbsInput.value);
+        if (!isNaN(lbs)) {
+            kgInput.value = (lbs * 0.45359237).toFixed(4);
+        }
+    }
+    function updateFromKg() {
+        const kg = parseFloat(kgInput.value);
+        if (!isNaN(kg)) {
+            lbsInput.value = (kg * 2.20462).toFixed(4);
+        }
+    }
+    lbsInput.addEventListener("input", updateFromLbs);
+    kgInput.addEventListener("input", updateFromKg);
+</script>

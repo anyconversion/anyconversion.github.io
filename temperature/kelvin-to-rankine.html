@@ -1,0 +1,44 @@
+<div class="card shadow-lg">
+    <div class="card-header bg-primary text-white">
+        <h1 class="text-center mb-0">Kelvin to Rankine Converter</h1>
+    </div>
+    <div class="card-body">
+        <div class="row g-3">
+            <div class="col-md-6">
+                <label for="kelvin" class="form-label">Kelvin:</label>
+                <input type="number" class="form-control" id="kelvin" placeholder="Enter K">
+            </div>
+            <div class="col-md-6">
+                <label for="rankine" class="form-label">Rankine:</label>
+                <input type="number" class="form-control" id="rankine" placeholder="Enter °R">
+            </div>
+        </div>
+    </div>
+</div>
+<div class="mt-4">
+    <h5>Definition</h5>
+    <p>The Kelvin scale (K) is an absolute temperature scale starting at 0 K (absolute zero, -273.15°C), with increments matching Celsius, used in science. The Rankine scale (°R or °Ra) is an absolute scale where 0 °R is absolute zero (-459.67°F), with degrees equal to Fahrenheit, primarily in engineering.</p>
+    <h5>History</h5>
+    <p>Lord Kelvin introduced the Kelvin scale in 1848, refining absolute temperature concepts for scientific use, standardized in the SI system by the 20th century. The Rankine scale was developed by William John Macquorn Rankine in 1859, adapting Fahrenheit’s increments for thermodynamic calculations in British and American engineering.</p>
+</div>
+<script>
+    const kelvinInput = document.getElementById("kelvin");
+    const rankineInput = document.getElementById("rankine");
+
+    function updateFromKelvin() {
+        const kelvin = parseFloat(kelvinInput.value);
+        if (!isNaN(kelvin)) {
+            rankineInput.value = (kelvin * 1.8).toFixed(6);
+        }
+    }
+
+    function updateFromRankine() {
+        const rankine = parseFloat(rankineInput.value);
+        if (!isNaN(rankine)) {
+            kelvinInput.value = (rankine / 1.8).toFixed(6);
+        }
+    }
+
+    kelvinInput.addEventListener("input", updateFromKelvin);
+    rankineInput.addEventListener("input", updateFromRankine);
+</script>

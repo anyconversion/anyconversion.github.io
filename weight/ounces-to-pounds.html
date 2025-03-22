@@ -1,0 +1,44 @@
+
+                <div class="card shadow-lg">
+                    <div class="card-header bg-primary text-white">
+                        <h1 class="text-center mb-0">Ounces to Pounds Converter (oz to lbs)</h1>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="ounces" class="form-label">Ounces:</label>
+                                    <input type="number" class="form-control" id="ounces" placeholder="Enter oz">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="pounds" class="form-label">Pounds:</label>
+                                    <input type="number" class="form-control" id="pounds" placeholder="Enter lbs">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+    <script>
+        const ouncesInput = document.getElementById("ounces");
+        const poundsInput = document.getElementById("pounds");
+
+        function updateFromOunces() {
+            const ounces = parseFloat(ouncesInput.value);
+            if (!isNaN(ounces)) {
+                poundsInput.value = (ounces / 16).toFixed(6);
+            }
+        }
+
+        function updateFromPounds() {
+            const pounds = parseFloat(poundsInput.value);
+            if (!isNaN(pounds)) {
+                ouncesInput.value = (pounds * 16).toFixed(6);
+            }
+        }
+
+        ouncesInput.addEventListener("input", updateFromOunces);
+        poundsInput.addEventListener("input", updateFromPounds);
+    </script>
