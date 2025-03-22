@@ -1,0 +1,44 @@
+<div class="card shadow-lg">
+    <div class="card-header bg-primary text-white">
+        <h1 class="text-center mb-0">Terabytes to Petabytes Converter</h1>
+    </div>
+    <div class="card-body">
+        <div class="row g-3">
+            <div class="col-md-6">
+                <label for="terabytes" class="form-label">Terabytes (TB):</label>
+                <input type="number" class="form-control" id="terabytes" placeholder="Enter TB">
+            </div>
+            <div class="col-md-6">
+                <label for="petabytes" class="form-label">Petabytes (PB):</label>
+                <input type="number" class="form-control" id="petabytes" placeholder="Enter PB">
+            </div>
+        </div>
+    </div>
+</div>
+<div class="mt-4">
+    <h5>Definition</h5>
+    <p>A terabyte (TB) is a unit of digital storage equal to 1,000 gigabytes or 10¹² bytes, used for large datasets like backups or media libraries. A petabyte (PB) is 1,000 terabytes or 10¹⁵ bytes, applied to massive storage systems such as data centers or cloud archives.</p>
+    <h5>History</h5>
+    <p>The terabyte emerged in the 1990s as personal computing and enterprise storage scaled up, named with the metric prefix “tera” (10¹²). The petabyte followed in the 2000s with the rise of big data and internet infrastructure, coined from “peta” (10¹⁵), reflecting exponential growth in digital storage needs.</p>
+</div>
+<script>
+    const tbInput = document.getElementById("terabytes");
+    const pbInput = document.getElementById("petabytes");
+
+    function updateFromTerabytes() {
+        const tb = parseFloat(tbInput.value);
+        if (!isNaN(tb)) {
+            pbInput.value = (tb / 1000).toFixed(6);
+        }
+    }
+
+    function updateFromPetabytes() {
+        const pb = parseFloat(pbInput.value);
+        if (!isNaN(pb)) {
+            tbInput.value = (pb * 1000).toFixed(6);
+        }
+    }
+
+    tbInput.addEventListener("input", updateFromTerabytes);
+    pbInput.addEventListener("input", updateFromPetabytes);
+</script>

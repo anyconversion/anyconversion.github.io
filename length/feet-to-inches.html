@@ -1,0 +1,44 @@
+<div class="card shadow-lg">
+    <div class="card-header bg-primary text-white">
+        <h1 class="text-center mb-0">Feet to Inches Converter</h1>
+    </div>
+    <div class="card-body">
+        <div class="row g-3">
+            <div class="col-md-6">
+                <label for="feet" class="form-label">Feet (ft):</label>
+                <input type="number" class="form-control" id="feet" placeholder="Enter feet">
+            </div>
+            <div class="col-md-6">
+                <label for="inches" class="form-label">Inches (in):</label>
+                <input type="number" class="form-control" id="inches" placeholder="Enter inches">
+            </div>
+        </div>
+    </div>
+</div>
+<div class="mt-4">
+    <h5>Definition</h5>
+    <p>A foot (ft) is a unit of length in the imperial and US customary systems, equal to 12 inches or 0.3048 meters exactly. An inch (in) is a smaller unit of length equal to 1/12 of a foot or exactly 2.54 centimeters.</p>
+    <h5>History</h5>
+    <p>The foot as a unit of measurement has ancient origins, appearing in many early civilizations. The foot was standardized in England during the medieval period, though its exact length varied over time. The division of the foot into 12 inches likely comes from the Roman system, where an inch (uncia) was 1/12 of a foot (pes). In 1959, the international yard and pound agreement defined the foot as exactly 0.3048 meters, standardizing the slightly different definitions used in the US and UK. The 12-inch division of the foot remains an important part of everyday measurements in the US and, to a lesser extent, in the UK and other countries.</p>
+</div>
+<script>
+    const feetInput = document.getElementById("feet");
+    const inchesInput = document.getElementById("inches");
+
+    function updateFromFeet() {
+        const feet = parseFloat(feetInput.value);
+        if (!isNaN(feet)) {
+            inchesInput.value = (feet * 12).toFixed(6);
+        }
+    }
+
+    function updateFromInches() {
+        const inches = parseFloat(inchesInput.value);
+        if (!isNaN(inches)) {
+            feetInput.value = (inches / 12).toFixed(6);
+        }
+    }
+
+    feetInput.addEventListener("input", updateFromFeet);
+    inchesInput.addEventListener("input", updateFromInches);
+</script>

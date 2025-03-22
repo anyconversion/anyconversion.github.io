@@ -1,0 +1,41 @@
+<div class="card shadow-lg">
+    <div class="card-header bg-primary text-white">
+        <h1 class="text-center mb-0">Millimeters to Inches Converter</h1>
+    </div>
+    <div class="card-body">
+        <div class="row g-3">
+            <div class="col-md-6">
+                <label for="mm" class="form-label">Millimeters (mm):</label>
+                <input type="number" class="form-control" id="mm" placeholder="Enter millimeters">
+            </div>
+            <div class="col-md-6">
+                <label for="inches" class="form-label">Inches (in):</label>
+                <input type="number" class="form-control" id="inches" placeholder="Enter inches">
+            </div>
+        </div>
+    </div>
+</div>
+<div class="mt-4">
+    <h5>Definition</h5>
+    <p>A millimeter is a unit of length in the metric system, equal to one-thousandth of a meter. An inch is a unit of length in the imperial and US customary systems, defined as exactly 25.4 millimeters. One inch equals exactly 25.4 millimeters.</p>
+    <h5>History</h5>
+    <p>The millimeter is part of the metric system developed during the French Revolution in the late 18th century. The metric system was created to establish a universal decimal-based system of measurement. The inch has origins dating back to Anglo-Saxon England, where it was defined as the length of three barleycorns placed end to end. Over time, various standards were used until 1959 when the international yard and pound agreement standardized it as exactly 25.4 millimeters.</p>
+</div>
+<script>
+    const mmInput = document.getElementById("mm");
+    const inchesInput = document.getElementById("inches");
+    function updateFromMm() {
+        const mm = parseFloat(mmInput.value);
+        if (!isNaN(mm)) {
+            inchesInput.value = (mm / 25.4).toFixed(4);
+        }
+    }
+    function updateFromInches() {
+        const inches = parseFloat(inchesInput.value);
+        if (!isNaN(inches)) {
+            mmInput.value = (inches * 25.4).toFixed(2);
+        }
+    }
+    mmInput.addEventListener("input", updateFromMm);
+    inchesInput.addEventListener("input", updateFromInches);
+</script>

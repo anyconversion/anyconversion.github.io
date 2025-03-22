@@ -1,0 +1,44 @@
+<div class="card shadow-lg">
+    <div class="card-header bg-primary text-white">
+        <h1 class="text-center mb-0">Meters to Feet (m to ft) Converter</h1>
+    </div>
+    <div class="card-body">
+        <div class="row g-3">
+            <div class="col-md-6">
+                <label for="meters" class="form-label">Meters (m):</label>
+                <input type="number" class="form-control" id="meters" placeholder="Enter meters">
+            </div>
+            <div class="col-md-6">
+                <label for="feet" class="form-label">Feet (ft):</label>
+                <input type="number" class="form-control" id="feet" placeholder="Enter feet">
+            </div>
+        </div>
+    </div>
+</div>
+<div class="mt-4">
+    <h5>Definition</h5>
+    <p>A meter (m) is the SI base unit of length, defined as the distance traveled by light in a vacuum in 1/299,792,458 of a second. A foot (ft) is a unit of length equal to 0.3048 meters exactly, commonly used in the United States, United Kingdom, and other countries.</p>
+    <h5>History</h5>
+    <p>The meter was originally defined in 1793 during the French Revolution as one ten-millionth of the distance from the equator to the North Pole. After several redefinitions, it was standardized in 1983 based on the speed of light. The foot has ancient origins and varied in length across different cultures. The modern foot was standardized in 1959 as exactly 0.3048 meters through an international agreement, unifying the slightly different definitions used in the US and UK.</p>
+</div>
+<script>
+    const metersInput = document.getElementById("meters");
+    const feetInput = document.getElementById("feet");
+
+    function updateFromMeters() {
+        const meters = parseFloat(metersInput.value);
+        if (!isNaN(meters)) {
+            feetInput.value = (meters * 3.28084).toFixed(6);
+        }
+    }
+
+    function updateFromFeet() {
+        const feet = parseFloat(feetInput.value);
+        if (!isNaN(feet)) {
+            metersInput.value = (feet / 3.28084).toFixed(6);
+        }
+    }
+
+    metersInput.addEventListener("input", updateFromMeters);
+    feetInput.addEventListener("input", updateFromFeet);
+</script>

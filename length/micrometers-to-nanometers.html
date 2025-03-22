@@ -1,0 +1,44 @@
+<div class="card shadow-lg">
+    <div class="card-header bg-primary text-white">
+        <h1 class="text-center mb-0">Micrometers to Nanometers Converter</h1>
+    </div>
+    <div class="card-body">
+        <div class="row g-3">
+            <div class="col-md-6">
+                <label for="micrometers" class="form-label">Micrometers (μm):</label>
+                <input type="number" class="form-control" id="micrometers" placeholder="Enter micrometers">
+            </div>
+            <div class="col-md-6">
+                <label for="nanometers" class="form-label">Nanometers (nm):</label>
+                <input type="number" class="form-control" id="nanometers" placeholder="Enter nanometers">
+            </div>
+        </div>
+    </div>
+</div>
+<div class="mt-4">
+    <h5>Definition</h5>
+    <p>A micrometer (μm), also known as a micron, is a unit of length in the metric system equal to one-millionth (10^-6) of a meter. A nanometer (nm) is a unit of length equal to one-billionth (10^-9) of a meter. One micrometer equals 1,000 nanometers.</p>
+    <h5>History</h5>
+    <p>The terms "micrometer" and "nanometer" are derived from the Greek words "mikros" (small) and "nanos" (dwarf), respectively. These units became important with the development of microscopy and nanotechnology. The micrometer came into use in the 19th century for measuring microscopic objects, while the nanometer became more significant in the late 20th century with advances in nanotechnology and atomic-scale research. Both units were officially adopted into the International System of Units (SI) with the prefixes "micro-" and "nano-" being standardized in 1960. These units are essential in fields such as biology, materials science, electronics, and physics for describing very small dimensions.</p>
+</div>
+<script>
+    const micrometersInput = document.getElementById("micrometers");
+    const nanometersInput = document.getElementById("nanometers");
+
+    function updateFromMicrometers() {
+        const micrometers = parseFloat(micrometersInput.value);
+        if (!isNaN(micrometers)) {
+            nanometersInput.value = (micrometers * 1000).toFixed(6);
+        }
+    }
+
+    function updateFromNanometers() {
+        const nanometers = parseFloat(nanometersInput.value);
+        if (!isNaN(nanometers)) {
+            micrometersInput.value = (nanometers / 1000).toFixed(6);
+        }
+    }
+
+    micrometersInput.addEventListener("input", updateFromMicrometers);
+    nanometersInput.addEventListener("input", updateFromNanometers);
+</script>

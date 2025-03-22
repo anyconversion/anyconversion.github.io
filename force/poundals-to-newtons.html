@@ -1,0 +1,44 @@
+<div class="card shadow-lg">
+    <div class="card-header bg-primary text-white">
+        <h1 class="text-center mb-0">Poundals to Newtons Converter</h1>
+    </div>
+    <div class="card-body">
+        <div class="row g-3">
+            <div class="col-md-6">
+                <label for="poundals" class="form-label">Poundals (pdl):</label>
+                <input type="number" class="form-control" id="poundals" placeholder="Enter pdl">
+            </div>
+            <div class="col-md-6">
+                <label for="newtons" class="form-label">Newtons (N):</label>
+                <input type="number" class="form-control" id="newtons" placeholder="Enter N">
+            </div>
+        </div>
+    </div>
+</div>
+<div class="mt-4">
+    <h5>Definition</h5>
+    <p>A poundal (pdl) is a unit of force in the foot-pound-second (FPS) system, defined as the force required to accelerate a 1-pound mass by 1 foot per second squared (1 pdl = 1 lb·ft/s²), equal to approximately 0.1382549544 newtons. A newton (N) is the SI unit of force, equal to 1 kg·m/s², or about 7.233014 poundals.</p>
+    <h5>History</h5>
+    <p>The poundal was introduced in the late 19th century by James Clerk Maxwell and other physicists as part of the FPS system, designed to maintain coherence in British engineering units without relying on gravitational acceleration. The newton, named after Sir Isaac Newton, was adopted in 1948 with the SI system, replacing older units like the poundal in scientific practice.</p>
+</div>
+<script>
+    const poundalsInput = document.getElementById("poundals");
+    const newtonsInput = document.getElementById("newtons");
+
+    function updateFromPoundals() {
+        const poundals = parseFloat(poundalsInput.value);
+        if (!isNaN(poundals)) {
+            newtonsInput.value = (poundals * 0.1382549544).toFixed(6);
+        }
+    }
+
+    function updateFromNewtons() {
+        const newtons = parseFloat(newtonsInput.value);
+        if (!isNaN(newtons)) {
+            poundalsInput.value = (newtons * 7.233014).toFixed(6);
+        }
+    }
+
+    poundalsInput.addEventListener("input", updateFromPoundals);
+    newtonsInput.addEventListener("input", updateFromNewtons);
+</script>

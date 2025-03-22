@@ -1,0 +1,41 @@
+<div class="card shadow-lg">
+    <div class="card-header bg-primary text-white">
+        <h1 class="text-center mb-0">Square Feet to Acres Converter</h1>
+    </div>
+    <div class="card-body">
+        <div class="row g-3">
+            <div class="col-md-6">
+                <label for="sqft" class="form-label">Square Feet (ft²):</label>
+                <input type="number" class="form-control" id="sqft" placeholder="Enter square feet">
+            </div>
+            <div class="col-md-6">
+                <label for="acres" class="form-label">Acres (ac):</label>
+                <input type="number" class="form-control" id="acres" placeholder="Enter acres">
+            </div>
+        </div>
+    </div>
+</div>
+<div class="mt-4">
+    <h5>Definition</h5>
+    <p>Square foot (ft²) is an imperial and US customary unit of area, defined as the area of a square with sides of 1 foot. Acre (ac) is an imperial and US customary unit of land area equal to 43,560 square feet or 4,840 square yards. One acre equals exactly 43,560 square feet.</p>
+    <h5>History</h5>
+    <p>The square foot has been used in England since ancient times and was formalized in the imperial system. The acre has medieval origins, historically defined as the area of land that could be plowed in one day by a yoke of oxen, and was standardized in the British Weights and Measures Act of 1824. Both units remain in common use in the United States and some other countries, particularly for land measurement and real estate.</p>
+</div>
+<script>
+    const sqftInput = document.getElementById("sqft");
+    const acresInput = document.getElementById("acres");
+    function updateFromSqft() {
+        const sqft = parseFloat(sqftInput.value);
+        if (!isNaN(sqft)) {
+            acresInput.value = (sqft / 43560).toFixed(6);
+        }
+    }
+    function updateFromAcres() {
+        const acres = parseFloat(acresInput.value);
+        if (!isNaN(acres)) {
+            sqftInput.value = (acres * 43560).toFixed(2);
+        }
+    }
+    sqftInput.addEventListener("input", updateFromSqft);
+    acresInput.addEventListener("input", updateFromAcres);
+</script>

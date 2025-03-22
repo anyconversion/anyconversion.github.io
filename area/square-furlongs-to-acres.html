@@ -1,0 +1,41 @@
+<div class="card shadow-lg">
+    <div class="card-header bg-primary text-white">
+        <h1 class="text-center mb-0">Square Furlongs to Acres Converter</h1>
+    </div>
+    <div class="card-body">
+        <div class="row g-3">
+            <div class="col-md-6">
+                <label for="sqfurlong" class="form-label">Square Furlongs:</label>
+                <input type="number" class="form-control" id="sqfurlong" placeholder="Enter square furlongs">
+            </div>
+            <div class="col-md-6">
+                <label for="acres" class="form-label">Acres (ac):</label>
+                <input type="number" class="form-control" id="acres" placeholder="Enter acres">
+            </div>
+        </div>
+    </div>
+</div>
+<div class="mt-4">
+    <h5>Definition</h5>
+    <p>Square furlong is an imperial unit of area equal to the area of a square with sides of 1 furlong (220 yards or 660 feet). One square furlong equals 10 acres. Acre (ac) is an imperial and US customary unit of land area equal to 43,560 square feet or 4,840 square yards.</p>
+    <h5>History</h5>
+    <p>The furlong dates back to Anglo-Saxon times, originally defined as the length of a furrow in a common field. The square furlong was derived from this linear measure and was historically used in land measurement. While acres remain in common use, especially in the United States and United Kingdom, the square furlong is now primarily found in historical contexts and specialized applications like horse racing.</p>
+</div>
+<script>
+    const sqfurlongInput = document.getElementById("sqfurlong");
+    const acresInput = document.getElementById("acres");
+    function updateFromSqfurlong() {
+        const sqfurlong = parseFloat(sqfurlongInput.value);
+        if (!isNaN(sqfurlong)) {
+            acresInput.value = (sqfurlong * 10).toFixed(2);
+        }
+    }
+    function updateFromAcres() {
+        const acres = parseFloat(acresInput.value);
+        if (!isNaN(acres)) {
+            sqfurlongInput.value = (acres / 10).toFixed(4);
+        }
+    }
+    sqfurlongInput.addEventListener("input", updateFromSqfurlong);
+    acresInput.addEventListener("input", updateFromAcres);
+</script>

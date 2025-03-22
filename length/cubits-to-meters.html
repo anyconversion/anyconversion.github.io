@@ -1,0 +1,41 @@
+<div class="card shadow-lg">
+    <div class="card-header bg-primary text-white">
+        <h1 class="text-center mb-0">Cubits to Meters Converter</h1>
+    </div>
+    <div class="card-body">
+        <div class="row g-3">
+            <div class="col-md-6">
+                <label for="cubits" class="form-label">Cubits:</label>
+                <input type="number" class="form-control" id="cubits" placeholder="Enter cubits">
+            </div>
+            <div class="col-md-6">
+                <label for="meters" class="form-label">Meters (m):</label>
+                <input type="number" class="form-control" id="meters" placeholder="Enter meters">
+            </div>
+        </div>
+    </div>
+</div>
+<div class="mt-4">
+    <h5>Definition</h5>
+    <p>A cubit is an ancient unit of length based on the forearm length from the elbow to the tip of the middle finger. It varied across different cultures but is typically considered to be about 0.45-0.52 meters. The international standard conversion uses 0.4572 meters (18 inches) for one cubit. A meter is the base unit of length in the International System of Units (SI).</p>
+    <h5>History</h5>
+    <p>The cubit is one of the oldest recorded units of length, used by ancient civilizations including the Egyptians, Babylonians, and Hebrews since at least 3000 BCE. It was a practical unit based on human proportions. The meter, on the other hand, was introduced by the French in 1793 during the French Revolution as part of the metric system, originally defined as one ten-millionth of the distance from the equator to the North Pole.</p>
+</div>
+<script>
+    const cubitsInput = document.getElementById("cubits");
+    const metersInput = document.getElementById("meters");
+    function updateFromCubits() {
+        const cubits = parseFloat(cubitsInput.value);
+        if (!isNaN(cubits)) {
+            metersInput.value = (cubits * 0.4572).toFixed(4);
+        }
+    }
+    function updateFromMeters() {
+        const meters = parseFloat(metersInput.value);
+        if (!isNaN(meters)) {
+            cubitsInput.value = (meters / 0.4572).toFixed(4);
+        }
+    }
+    cubitsInput.addEventListener("input", updateFromCubits);
+    metersInput.addEventListener("input", updateFromMeters);
+</script>

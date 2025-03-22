@@ -1,0 +1,44 @@
+<div class="card shadow-lg">
+    <div class="card-header bg-primary text-white">
+        <h1 class="text-center mb-0">Miles to Nautical Miles Converter</h1>
+    </div>
+    <div class="card-body">
+        <div class="row g-3">
+            <div class="col-md-6">
+                <label for="miles" class="form-label">Miles (mi):</label>
+                <input type="number" class="form-control" id="miles" placeholder="Enter miles">
+            </div>
+            <div class="col-md-6">
+                <label for="nauticalMiles" class="form-label">Nautical Miles (nmi):</label>
+                <input type="number" class="form-control" id="nauticalMiles" placeholder="Enter nautical miles">
+            </div>
+        </div>
+    </div>
+</div>
+<div class="mt-4">
+    <h5>Definition</h5>
+    <p>A mile (mi) is a unit of length in the imperial and US customary systems, equal to 5,280 feet, 1,760 yards, or approximately 1.60934 kilometers. A nautical mile (nmi) is a unit of length used in marine navigation and aviation, defined as exactly 1,852 meters (approximately 1.15078 statute miles). One nautical mile represents one minute of latitude along any meridian.</p>
+    <h5>History</h5>
+    <p>The mile dates back to Roman times, when it was defined as 1,000 paces (mille passus). The modern statute mile was standardized in the 16th century during the reign of Queen Elizabeth I of England. The nautical mile has its origins in navigation, where it was traditionally defined as one minute of arc along a meridian of the Earth. This made it particularly useful for maritime navigation using charts and sextants. In 1929, the international nautical mile was standardized as exactly 1,852 meters by the International Hydrographic Organization, and this definition was adopted by the International Bureau of Weights and Measures in 1956.</p>
+</div>
+<script>
+    const milesInput = document.getElementById("miles");
+    const nauticalMilesInput = document.getElementById("nauticalMiles");
+
+    function updateFromMiles() {
+        const miles = parseFloat(milesInput.value);
+        if (!isNaN(miles)) {
+            nauticalMilesInput.value = (miles * 0.868976).toFixed(6);
+        }
+    }
+
+    function updateFromNauticalMiles() {
+        const nauticalMiles = parseFloat(nauticalMilesInput.value);
+        if (!isNaN(nauticalMiles)) {
+            milesInput.value = (nauticalMiles / 0.868976).toFixed(6);
+        }
+    }
+
+    milesInput.addEventListener("input", updateFromMiles);
+    nauticalMilesInput.addEventListener("input", updateFromNauticalMiles);
+</script>
