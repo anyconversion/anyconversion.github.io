@@ -141,6 +141,37 @@
     background-color: inherit;
 	padding:1rem;
 }
+.notification {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    padding: 20px;
+    border-radius: 5px;
+    color: #fff;
+    font-size: 16px;
+    font-family: Arial, sans-serif;
+    text-align: center;
+    z-index: 1000;
+    display: none;
+    min-width: 200px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.notification.success {
+    background-color: #d4edda; /* Light green */
+    color: #155724; /* Dark green text */
+}
+
+.notification.error {
+    background-color: #f8d7da; /* Light red */
+    color: #721c24; /* Dark red text */
+}
+
+.notification.fade-out {
+    opacity: 0;
+    transition: opacity 0.5s ease;
+}
     
         /* Float links to the right in the expanded dropdown */
         @media (max-width: 992px) {

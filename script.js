@@ -217,78 +217,6 @@ document.addEventListener('DOMContentLoaded', () => {
         'formtest' : 'content/let_us_know_test.html'
     };
 
-    // Load the appropriate content
-    const contentFile = contentMap[page] || contentMap['home'];
-    console.log('Fetching content from:', contentFile); // Debug: Check the file path
-
-    fetch(contentFile)
-        .then(response => {
-            if (!response.ok) throw new Error('Content not found');
-            return response.text();
-        })
-        .then(html => {
-            contentContainer.innerHTML = html;
-
-            // After loading content, execute any scripts within it
-            requestAnimationFrame(() => {
-                const scripts = contentContainer.getElementsByTagName('script');
-                for (let script of scripts) {
-                    const newScript = document.createElement('script');
-                    newScript.textContent = script.textContent;
-                    document.body.appendChild(newScript);
-                }
-            });
-        })
-        .catch(error => {
-            contentContainer.innerHTML = '<p>Error loading content. Please try again later.</p>';
-            console.error(error);
-        });
-    // Meta data for each page
-    const metaData = {
-        'home': {
-            title: 'AnyConversion - Unit Converter',
-            description: 'Discover a versatile unit converter for length, weight, volume, and more at AnyConversion. Convert units easily and accurately.',
-            keywords: 'unit converter, conversion tool, length, weight, volume'
-        },
-        'let-us-know': {
-            title: 'Let Us Know - AnyConversion',
-            description: 'Share your feedback or request a new unit conversion at AnyConversion. Help us improve our free online converter tool.',
-            keywords: 'feedback, conversion request, unit converter'
-        },
-        'length': {
-            title: 'Length Converter - AnyConversion',
-            description: 'Convert length units like meters to feet, kilometers to miles, and more with AnyConversion’s free length converter.',
-            keywords: 'length converter, meters to feet, kilometers to miles'
-        },
-        'meters-to-feet': {
-            title: 'Meters to Feet Converter - AnyConversion',
-            description: 'Easily convert meters to feet with AnyConversion’s accurate and free online tool.',
-            keywords: 'meters to feet, length conversion, unit converter'
-        },
-        'kilometers-to-miles': {
-            title: 'Kilometers to Miles Converter - AnyConversion',
-            description: 'Convert kilometers to miles quickly and accurately with AnyConversion’s free online converter.',
-            keywords: 'kilometers to miles, length conversion, unit converter'
-        },
-        'weight': {
-            title: 'Weight Converter - AnyConversion',
-            description: 'Convert weight units like kilograms to pounds, ounces to grams, and more with AnyConversion’s free tool.',
-            keywords: 'weight converter, kilograms to pounds, ounces to grams'
-        },
-        'kilograms-to-pounds': {
-            title: 'Kilograms to Pounds Converter - AnyConversion',
-            description: 'Convert kilograms to pounds effortlessly with AnyConversion’s free and precise online tool.',
-            keywords: 'kilograms to pounds, weight conversion, unit converter'
-        },
-        // Add more pages here (e.g., 'volume', 'liters-to-gallons', etc.)
-        // Default fallback
-        'default': {
-            title: 'AnyConversion - Unit Converter',
-            description: 'Convert units easily with AnyConversion’s free online tool for all your conversion needs.',
-            keywords: 'unit converter, conversion tool, online calculator'
-        }
-    };
-
     // Function to update meta tags dynamically
     function updateMetaTags(page) {
         const meta = metaData[page] || metaData['default'];
@@ -333,7 +261,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 updateMetaTags(page);
                 // Track page view in Google Analytics
                 gtag('config', 'G-25CMMZLTZ7', {
-                    'page_path': `/index.html?page=${page}`,
+                    'page_path': `/index.html`,
                     'page_title': metaData[page]?.title || 'AnyConversion - Unit Converter'
                 });
                 // Reattach scripts if needed
