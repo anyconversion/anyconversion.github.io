@@ -38,6 +38,22 @@
     min-height: 60px; /* Base height */
     transition: min-height 0.3s ease; /* Smooth height change on mobile */
 }
+.card-body .btn-outline-primary {
+    padding: 10px;
+    font-size: 14px;
+    transition: all 0.3s ease;
+}
+
+.card-body .btn-outline-primary:hover {
+    background-color: #007bff;
+    color: #fff;
+    border-color: #007bff;
+}
+
+.row-cols-lg-3 .col {
+    display: flex;
+    align-items: center; /* Vertically center buttons in columns */
+}
 
 /* Centered wrapper */
 .search-wrapper {
