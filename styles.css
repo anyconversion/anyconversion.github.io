@@ -293,6 +293,12 @@
             .navbar-collapse {
                 justify-content: flex-end;
             }
+            .navbar-nav .nav-item:nth-child(1) { 
+                order: 2; 
+            }
+            .navbar-nav .nav-item:nth-child(2) { 
+                order: 1; 
+            }
     
             .main {
                 order: 2; /* Unit converter section */
