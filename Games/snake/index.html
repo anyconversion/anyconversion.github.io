@@ -453,185 +453,186 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.min.js"></script>
     <script src="/script.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-                     <script>
-                         const canvas = document.getElementById('snakeCanvas');
-                         const ctx = canvas.getContext('2d');
-                         const scoreElement = document.getElementById('score');
-                 
-                         // Grid setup
-                         const gridSize = 20; // 20x20 grid
-                         let tileSize;
-                         const gridWidth = 20;
-                         let gridHeight = 20; // Dynamic on mobile
-                 
-                         // Snake and game state
-                         let snake = [{ x: 10, y: 10, posX: 10, posY: 10 }];
-                         let pathHistory = [{ x: 10, y: 10 }];
-                         let food = { x: 15, y: 10 }; // Start visible
-                         let dx = 0;
-                         let dy = 0;
-                         let score = 0;
-                         let unit = 'cm';
-                         const speed = 0.002; // 2 tiles per 1000ms (500ms per tile)
-                 
-                         // Resize canvas and set tileSize
-                         function resizeCanvas() {
-                             const containerWidth = document.querySelector('.game-container').offsetWidth;
-                             canvas.width = Math.min(containerWidth, 400);
-                             canvas.height = canvas.width;
-                             if (window.innerWidth <= 991) {
-                                 canvas.width = containerWidth;
-                                 canvas.height = Math.min(canvas.width * 0.75, 240); // Cap at 240px
-                             }
-                             tileSize = Math.min(canvas.width, canvas.height) / gridSize; // Fit grid to smaller dimension
-                             gridHeight = Math.floor(canvas.height / tileSize); // Adjust visible height
-                             draw();
-                         }
-                         window.addEventListener('resize', resizeCanvas);
-                         resizeCanvas();
-                 
-                         // Draw function
-                         function draw() {
-                             ctx.fillStyle = '#f0f0f0';
-                             ctx.fillRect(0, 0, canvas.width, canvas.height);
-                             ctx.fillStyle = '#4CAF50';
-                             snake.forEach(segment => {
-                                 const x = segment.posX * tileSize;
-                                 const y = segment.posY * tileSize;
-                                 if (x >= 0 && x < canvas.width && y >= 0 && y < canvas.height) {
-                                     ctx.fillRect(x, y, tileSize - 2, tileSize - 2);
-                                 }
-                             });
-                             ctx.fillStyle = '#ff4444';
-                             ctx.fillRect(food.x * tileSize, food.y * tileSize, tileSize - 2, tileSize - 2);
-                         }
-                 
-                         // Game loop
-                         let lastTime = 0;
-                         let gameRunning = false;
-                         function gameLoop(timestamp) {
-                             if (!lastTime) lastTime = timestamp;
-                             const deltaTime = timestamp - lastTime;
-                             lastTime = timestamp;
-                 
-                             if (gameRunning) {
-                                 const distance = speed * deltaTime;
-                                 snake[0].posX += dx * distance;
-                                 snake[0].posY += dy * distance;
-                 
-                                 const headGridX = Math.round(snake[0].posX);
-                                 const headGridY = Math.round(snake[0].posY);
-                                 if (headGridX !== snake[0].x || headGridY !== snake[0].y) {
-                                     snake[0].x = headGridX;
-                                     snake[0].y = headGridY;
-                                     pathHistory.unshift({ x: headGridX, y: headGridY });
-                 
-                                     if (headGridX === food.x && headGridY === food.y) {
-                                         score += 1;
-                                         scoreElement.textContent = `Length: ${score} ${unit}`;
-                                         const lastSegment = snake[snake.length - 1];
-                                         const newX = snake.length > 1 ? snake[snake.length - 2].x : (headGridX - dx);
-                                         const newY = snake.length > 1 ? snake[snake.length - 2].y : (headGridY - dy);
-                                         snake.push({ x: newX, y: newY, posX: newX, posY: newY });
-                                         pathHistory.push({ x: newX, y: newY });
-                                         spawnFood();
-                                     } else if (snake.length > 1) {
-                                         pathHistory.pop();
-                                     }
-                 
-                                     for (let i = 1; i < snake.length; i++) {
-                                         const target = pathHistory[i];
-                                         snake[i].x = target.x;
-                                         snake[i].y = target.y;
-                                         snake[i].posX = target.x;
-                                         snake[i].posY = target.y;
-                                     }
-                 
-                                     if (headGridX < 0 || headGridX >= gridWidth || headGridY < 0 || headGridY >= gridHeight ||
-                                         snake.slice(1).some(s => s.x === headGridX && s.y === headGridY)) {
-                                         alert(`Game Over! Length: ${score} ${unit}`);
-                                         resetGame();
-                                         return;
-                                     }
-                                 }
-                             }
-                 
-                             draw();
-                             requestAnimationFrame(gameLoop);
-                         }
-                 
-                         function spawnFood() {
-                             food.x = Math.floor(Math.random() * gridWidth);
-                             food.y = Math.floor(Math.random() * gridHeight); // Use dynamic height
-                             while (snake.some(segment => segment.x === food.x && segment.y === food.y)) {
-                                 food.x = Math.floor(Math.random() * gridWidth);
-                                 food.y = Math.floor(Math.random() * gridHeight);
-                             }
-                         }
-                 
-                         function resetGame() {
-                             snake = [{ x: 10, y: 10, posX: 10, posY: 10 }];
-                             pathHistory = [{ x: 10, y: 10 }];
-                             dx = 0;
-                             dy = 0;
-                             score = 0;
-                             gameRunning = false;
-                             scoreElement.textContent = `Length: ${score} ${unit}`;
-                             food = { x: 15, y: 10 }; // Reset to visible
-                             draw();
-                             requestAnimationFrame(gameLoop);
-                         }
-                 
-                         // Controls
-                         function updateDirection(newDx, newDy) {
-                             if ((newDx === -dx && newDx !== 0) || (newDy === -dy && newDy !== 0)) return;
-                             dx = newDx;
-                             dy = newDy;
-                             if (!gameRunning && (dx || dy)) {
-                                 gameRunning = true;
-                             }
-                         }
-                 
-                         document.addEventListener('keydown', e => {
-                             switch (e.key) {
-                                 case 'ArrowUp': updateDirection(0, -1); break;
-                                 case 'ArrowDown': updateDirection(0, 1); break;
-                                 case 'ArrowLeft': updateDirection(-1, 0); break;
-                                 case 'ArrowRight': updateDirection(1, 0); break;
-                             }
-                         });
-                 
-                         // Swipe controls for mobile
-                         let touchStartX = 0, touchStartY = 0;
-                         canvas.addEventListener('touchstart', e => {
-                             e.preventDefault();
-                             touchStartX = e.touches[0].clientX;
-                             touchStartY = e.touches[0].clientY;
-                         });
-                         canvas.addEventListener('touchmove', e => {
-                             e.preventDefault();
-                             const touchX = e.touches[0].clientX;
-                             const touchY = e.touches[0].clientY;
-                             const deltaX = touchX - touchStartX;
-                             const deltaY = touchY - touchStartY;
-                             if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > 20) {
-                                 updateDirection(deltaX > 0 ? 1 : -1, 0);
-                                 touchStartX = touchX;
-                             } else if (Math.abs(deltaY) > 20) {
-                                 updateDirection(0, deltaY > 0 ? 1 : -1);
-                                 touchStartY = touchY;
-                             }
-                         });
-                 
-                         // Start
-                         draw();
-                         requestAnimationFrame(gameLoop);
-                     </script>
+    <script>
+        const canvas = document.getElementById('snakeCanvas');
+        const ctx = canvas.getContext('2d');
+        const scoreElement = document.getElementById('score');
 
-            } else if (Math.abs(deltaY) > 20) {
-                updateDirection(0, deltaY > 0 ? 1 : -1);
-                touchStartY = touchY;
+        // Grid setup
+        const gridSize = 20; // 20x20 grid
+        let tileSize;
+        const gridWidth = 20;
+        let gridHeight = 20; // Dynamic on mobile
+
+        // Snake and game state
+        let snake = [{ x: 10, y: 10, posX: 10, posY: 10 }];
+        let pathHistory = [{ x: 10, y: 10 }];
+        let food = { x: 15, y: 10 }; // Start visible
+        let dx = 0;
+        let dy = 0;
+        let score = 0;
+        let unit = 'cm';
+        const speed = 0.002; // 2 tiles per 1000ms (500ms per tile)
+
+        // Resize canvas and set tileSize
+        function resizeCanvas() {
+            const containerWidth = document.querySelector('.game-container').offsetWidth;
+            canvas.width = Math.min(containerWidth, 400);
+            canvas.height = canvas.width;
+            if (window.innerWidth <= 991) {
+                canvas.width = containerWidth; // 90% of viewport
+                canvas.height = Math.min(canvas.width * 0.75, 240); // Fit vertically
             }
+            tileSize = canvas.height / gridSize; // Scale to height for full vertical fit
+            gridHeight = Math.floor(canvas.height / tileSize); // Adjust visible height
+            draw();
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        // Draw function
+        function draw() {
+            ctx.fillStyle = '#f0f0f0';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = '#4CAF50';
+            snake.forEach(segment => {
+                const x = segment.posX * tileSize;
+                const y = segment.posY * tileSize;
+                if (x >= 0 && x < canvas.width && y >= 0 && y < canvas.height) {
+                    ctx.fillRect(x, y, tileSize - 2, tileSize - 2);
+                }
+            });
+            ctx.fillStyle = '#ff4444';
+            ctx.fillRect(food.x * tileSize, food.y * tileSize, tileSize - 2, tileSize - 2);
+        }
+
+        // Game loop
+        let lastTime = 0;
+        let gameRunning = false;
+        function gameLoop(timestamp) {
+            if (!lastTime) lastTime = timestamp;
+            const deltaTime = timestamp - lastTime;
+            lastTime = timestamp;
+
+            if (gameRunning) {
+                const distance = speed * deltaTime;
+                snake[0].posX += dx * distance;
+                snake[0].posY += dy * distance;
+
+                const headGridX = Math.round(snake[0].posX);
+                const headGridY = Math.round(snake[0].posY);
+                if (headGridX !== snake[0].x || headGridY !== snake[0].y) {
+                    snake[0].x = headGridX;
+                    snake[0].y = headGridY;
+                    pathHistory.unshift({ x: headGridX, y: headGridY });
+
+                    if (headGridX === food.x && headGridY === food.y) {
+                        score += 1;
+                        scoreElement.textContent = `Length: ${score} ${unit}`;
+                        const lastSegment = snake[snake.length - 1];
+                        const newX = snake.length > 1 ? snake[snake.length - 2].x : (headGridX - dx);
+                        const newY = snake.length > 1 ? snake[snake.length - 2].y : (headGridY - dy);
+                        snake.push({ x: newX, y: newY, posX: newX, posY: newY });
+                        pathHistory.push({ x: newX, y: newY });
+                        spawnFood();
+                    } else if (snake.length > 1) {
+                        pathHistory.pop();
+                    }
+
+                    for (let i = 1; i < snake.length; i++) {
+                        const target = pathHistory[i];
+                        snake[i].x = target.x;
+                        snake[i].y = target.y;
+                        snake[i].posX = target.x;
+                        snake[i].posY = target.y;
+                    }
+
+                    if (headGridX < 0 || headGridX >= gridWidth || headGridY < 0 || headGridY >= gridHeight ||
+                        snake.slice(1).some(s => s.x === headGridX && s.y === headGridY)) {
+                        alert(`Game Over! Length: ${score} ${unit}`);
+                        resetGame();
+                        return;
+                    }
+                }
+            }
+
+            draw();
+            requestAnimationFrame(gameLoop);
+        }
+
+        function spawnFood() {
+            food.x = Math.floor(Math.random() * gridWidth);
+            food.y = Math.floor(Math.random() * gridHeight); // Fit visible height
+            while (snake.some(segment => segment.x === food.x && segment.y === food.y)) {
+                food.x = Math.floor(Math.random() * gridWidth);
+                food.y = Math.floor(Math.random() * gridHeight);
+            }
+        }
+
+        function resetGame() {
+            snake = [{ x: 10, y: 10, posX: 10, posY: 10 }];
+            pathHistory = [{ x: 10, y: 10 }];
+            dx = 0;
+            dy = 0;
+            score = 0;
+            gameRunning = false;
+            scoreElement.textContent = `Length: ${score} ${unit}`;
+            food = { x: 15, y: 10 }; // Reset to visible
+            draw();
+            requestAnimationFrame(gameLoop);
+        }
+
+        // Controls
+        function updateDirection(newDx, newDy) {
+          if ((newDx === -dx && newDx !== 0) || (newDy === -dy && newDy !== 0)) return;
+          dx = newDx;
+          dy = newDy;
+          if (!gameRunning && (dx || dy)) {
+            gameRunning = true;
+          }
+        }
+
+        document.addEventListener('keydown', e => {
+          switch (e.key) {
+            case 'ArrowUp':
+              e.preventDefault(); // Prevent scrolling
+              updateDirection(0, -1);
+              break;
+            case 'ArrowDown':
+              e.preventDefault(); // Prevent scrolling
+              updateDirection(0, 1);
+              break;
+            case 'ArrowLeft':
+              e.preventDefault(); // Prevent scrolling
+              updateDirection(-1, 0);
+              break;
+            case 'ArrowRight':
+              e.preventDefault(); // Prevent scrolling
+              updateDirection(1, 0);
+              break;
+          }
+        });
+
+        // Swipe controls for mobile
+        let touchStartX = 0, touchStartY = 0;
+        canvas.addEventListener('touchstart', e => {
+          e.preventDefault();
+          touchStartX = e.touches[0].clientX;
+          touchStartY = e.touches[0].clientY;
+        });
+        canvas.addEventListener('touchmove', e => {
+          e.preventDefault();
+          const touchX = e.touches[0].clientX;
+          const touchY = e.touches[0].clientY;
+          const deltaX = touchX - touchStartX;
+          const deltaY = touchY - touchStartY;
+          if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > 20) {
+            updateDirection(deltaX > 0 ? 1 : -1, 0);
+            touchStartX = touchX;
+          } else if (Math.abs(deltaY) > 20) {
+            updateDirection(0, deltaY > 0 ? 1 : -1);
+            touchStartY = touchY;
+          }
         });
 
         // Start
