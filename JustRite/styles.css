@@ -8,7 +8,7 @@ body {
   /* Header */
   .site-header {
     background-color: #1E3A8A; /* Deep blue */
-    padding: 20px 0;
+    padding: 15px 0;
     position: sticky;
     top: 0;
     z-index: 1000;
@@ -21,23 +21,28 @@ body {
     align-items: center;
   }
   
-  .site-header img {
-    float: left;
+  .site-header .logo {
     max-height: 200px;
     width: auto;
   }
   
   .navbar {
-    float: right;
     background-color: transparent;
   }
   
   .navbar-brand, .nav-link {
     color: #FFFFFF !important; /* White text */
+    font-size: 1rem;
+    padding: 8px 12px;
   }
   
   .nav-link:hover {
     color: #D1D5DB !important; /* Light gray on hover */
+  }
+  
+  .navbar-toggler {
+    border: none;
+    padding: 10px;
   }
   
   /* Banner Section */
@@ -62,11 +67,10 @@ body {
     position: absolute;
     top: 0;
     left: 10%; /* Align with the left edge of the 80% image */
-    width: 35%; /* Relative to the banner-section */
+    width: 40%; /* Relative to the banner-section */
     height: 100%;
-    background: linear-gradient(to right, rgba(30, 58, 138, 50), transparent); /* Less transparent */
+    background: linear-gradient(to right, rgba(30, 58, 138, 0.9), transparent); /* Less transparent */
     color: #FFFFFF;
-    font-weight: bold;
     padding: 40px;
     display: flex;
     flex-direction: column;
@@ -82,6 +86,21 @@ body {
     font-size: 1.1rem;
   }
   
+  .banner-text-full {
+    display: block;
+  }
+  
+  .banner-text-mobile {
+    display: none;
+  }
+  
+  /* About Preview Image */
+  .about-img {
+    width: 450px;
+    height: auto;
+    object-fit: cover;
+  }
+  
   /* Main Content */
   .main-content {
     margin: 0 5%;
@@ -90,19 +109,19 @@ body {
   /* Hero Section */
   .hero {
     background: #F3F4F6; /* Light gray */
-    padding: 60px 0;
+    padding: 40px 0;
     text-align: center;
   }
   
   .hero h1 {
     font-size: 2.5rem;
     color: #1E3A8A; /* Deep blue */
-    margin-bottom: 20px;
+    margin-bottom: 15px;
   }
   
   .hero p {
     font-size: 1.2rem;
-    margin-bottom: 20px;
+    margin-bottom: 15px;
   }
   
   /* Placeholder Images */
@@ -128,15 +147,17 @@ body {
   
   .card-title {
     color: #1E3A8A; /* Deep blue */
+    font-size: 1.25rem;
   }
   
   /* Buttons */
   .cta-button {
     background-color: #1E3A8A; /* Deep blue */
     color: #FFFFFF;
-    font-size: 1.2rem;
-    padding: 10px 20px;
+    font-size: 1.1rem;
+    padding: 12px 24px;
     border: none;
+    min-width: 200px;
   }
   
   .cta-button:hover {
@@ -147,6 +168,8 @@ body {
   .btn-outline {
     border-color: #1E3A8A; /* Deep blue */
     color: #1E3A8A;
+    font-size: 1rem;
+    padding: 8px 16px;
   }
   
   .btn-outline:hover {
@@ -164,6 +187,7 @@ body {
   
   .site-footer a {
     color: #D1D5DB; /* Light gray */
+    font-size: 0.9rem;
   }
   
   .site-footer a:hover {
@@ -172,52 +196,132 @@ body {
   
   /* Responsive Adjustments */
   @media (max-width: 768px) {
-    .site-header .container {
-      flex-direction: column;
-      align-items: flex-start;
+    .site-header {
+      padding: 10px 0;
+      height: auto;
     }
   
-    .site-header img {
-      margin-bottom: 10px;
+    .site-header .container {
+      flex-direction: row;
+      justify-content: space-between;
+      align-items: center;
+      padding: 5px 10px;
+    }
+  
+    .site-header .logo {
+      max-height: 80px;
+      float: left;
+      margin: 0;
     }
   
     .navbar {
-      float: none;
-      width: 100%;
+      width: auto;
+    }
+  
+    .navbar-toggler {
+      float: right;
+      margin: 0;
+    }
+  
+    .navbar-collapse {
+      background-color: #1E3A8A; /* Deep blue */
+      padding: 10px 0;
+      clear: both;
+    }
+  
+    .navbar-nav {
+      text-align: center;
+    }
+  
+    .nav-link {
+      font-size: 0.9rem;
+      padding: 6px 10px;
+    }
+  
+    .banner-section {
+      margin-top: 5px;
     }
   
     .banner-img {
       width: 90%;
-      max-height: 300px;
+      max-height: 250px;
     }
   
     .banner-text {
       left: 5%; /* Adjust for smaller image width */
-      width: 60%;
-      padding: 20px;
+      width: 70%;
+      padding: 15px;
     }
   
     .banner-text h2 {
-      font-size: 1.5rem;
+      font-size: 1.25rem;
+      margin-bottom: 10px;
     }
   
     .banner-text p {
-      font-size: 0.9rem;
+      font-size: 0.8rem;
+      line-height: 1.4;
+    }
+  
+    .banner-text-full {
+      display: none;
+    }
+  
+    .banner-text-mobile {
+      display: block;
+    }
+  
+    .about-img {
+      margin-top: 5px;
+      width: 99%;
+      max-width: 100%;
+    }
+  
+    .hero {
+      padding: 20px 0;
     }
   
     .hero h1 {
-      font-size: 2rem;
+      font-size: 1.75rem;
     }
   
     .hero p {
-      font-size: 1rem;
-    }
-  
-    .placeholder-img {
-      height: 150px;
+      font-size: 0.9rem;
     }
   
     .main-content {
       margin: 0 3%;
+    }
+  
+    .placeholder-img {
+      height: 150px;
+      font-size: 1rem;
+    }
+  
+    .card-title {
+      font-size: 1.1rem;
+    }
+  
+    .card-text {
+      font-size: 0.85rem;
+    }
+  
+    .cta-button {
+      font-size: 1rem;
+      padding: 10px 20px;
+      min-width: 180px;
+    }
+  
+    .btn-outline {
+      font-size: 0.9rem;
+      padding: 6px 12px;
+    }
+  
+    .site-footer {
+      padding: 15px 0;
+    }
+  
+    .site-footer p {
+      font-size: 0.85rem;
     }
   }
