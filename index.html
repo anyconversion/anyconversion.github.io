@@ -509,16 +509,90 @@ footer {
   const [title, setTitle] = React.useState('');
   const [description, setDescription] = React.useState('');
   const [image, setImage] = React.useState(null);
+  const [previewImageUrl, setPreviewImageUrl] = React.useState(null);
   const [error, setError] = React.useState(null);
   const [success, setSuccess] = React.useState(false);
   const [uploading, setUploading] = React.useState(false);
   const fileInputRef = React.useRef(null);
 
-  const getUserProfile = (userId) => { /* Unchanged */ };
+  // Clean up previewImageUrl to avoid memory leaks
+  React.useEffect(() => {
+    return () => {
+      if (previewImageUrl) {
+        console.log('Revoking preview image URL');
+        URL.revokeObjectURL(previewImageUrl);
+      }
+    };
+  }, [previewImageUrl]);
 
-  const handleImageChange = (e) => { /* Unchanged */ };
+  const getUserProfile = (userId) => {
+    // Unchanged: Check sessionStorage for cached profile
+    const cached = sessionStorage.getItem(`userProfile_${userId}`);
+    if (cached) {
+      const profile = JSON.parse(cached);
+      console.log(`Using cached profile for ${userId}:`, profile);
+      return profile;
+    }
+    return null;
+  };
 
-  const uploadImage = async () => { /* Unchanged */ };
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (!file) {
+      console.log('No file selected');
+      return;
+    }
+    if (!file.type.startsWith('image/')) {
+      console.error('Invalid file type:', file.type);
+      setError('Please upload an image file.');
+      setImage(null);
+      setPreviewImageUrl(null);
+      return;
+    }
+    console.log('Image selected:', file.name);
+    setImage(file);
+    setPreviewImageUrl(URL.createObjectURL(file));
+    setError(null);
+  };
+
+  const cancelImage = () => {
+    console.log('Cancelling image attachment');
+    if (previewImageUrl) {
+      URL.revokeObjectURL(previewImageUrl);
+    }
+    setImage(null);
+    setPreviewImageUrl(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = null;
+    }
+  };
+
+  const uploadImage = async () => {
+    if (!image) return null;
+    setUploading(true);
+    const formData = new FormData();
+    formData.append('file', image);
+    formData.append('upload_preset', window.CLOUDINARY_UPLOAD_PRESET);
+    try {
+      console.log('Uploading image to Cloudinary');
+      const response = await fetch(`https://api.cloudinary.com/v1_1/${window.CLOUDINARY_CLOUD_NAME}/image/upload`, {
+        method: 'POST',
+        body: formData
+      });
+      const data = await response.json();
+      if (data.secure_url) {
+        console.log('Image uploaded:', data.secure_url);
+        return data.secure_url;
+      }
+      throw new Error('Image upload failed');
+    } catch (error) {
+      console.error('Image upload error:', error);
+      setError('Failed to upload image: ' + error.message);
+      return null;
+    } finally {
+      setUploading(false);
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -557,11 +631,12 @@ footer {
       setTitle('');
       setDescription('');
       setImage(null);
+      setPreviewImageUrl(null);
       if (fileInputRef.current) {
         fileInputRef.current.value = null;
       }
       setTimeout(() => setSuccess(false), 3000);
-      onPostSubmit(); // Call to hide form and scroll
+      onPostSubmit();
     } catch (error) {
       console.error('Posting error:', { message: error.message || 'Unknown error', code: error.code || 'No code', stack: error.stack || 'No stack' });
       setError(`Error: ${error.message || 'An unexpected error occurred'}`);
@@ -615,8 +690,25 @@ footer {
             onChange={handleImageChange}
             className="form-input"
             ref={fileInputRef}
+            id="post-image-upload"
           />
         </div>
+        {previewImageUrl && (
+          <div className="relative w-[100px] h-[100px] mt-2">
+            <img
+              src={previewImageUrl}
+              alt="Post image preview"
+              className="w-full h-full object-cover rounded-lg"
+            />
+            <button
+              type="button"
+              className="absolute top-0 right-0 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center hover:bg-red-600"
+              onClick={cancelImage}
+            >
+              ✕
+            </button>
+          </div>
+        )}
         <button
           type="submit"
           className="bg-primary text-white font-semibold py-2 px-4 rounded-lg hover:bg-blue-700 transition"
@@ -1039,13 +1131,6 @@ footer {
       );
       unsubscribePostings = window.firebase.onSnapshot(q, async (snapshot) => {
         console.log(`Postings snapshot received, size: ${snapshot.size}`);
-        if (snapshot.empty) {
-          console.warn('No postings found in the postings collection');
-          setAllPostings([]);
-          setPostings([]);
-          setError('No postings available. Create one to get started!');
-          return;
-        }
         const postingsData = snapshot.docs.map(doc => {
           const data = doc.data();
           return {
@@ -1056,7 +1141,7 @@ footer {
             userId: data.userId || '',
             username: data.username || 'Unknown User',
             dob: data.dob || '',
-            gender: data.gender || '',
+            gender: data.getAttribute('gender') || '',
             race: data.race || '',
             relationshipType: data.relationshipType || '',
             height: data.height || 0,
@@ -1070,7 +1155,7 @@ footer {
         setAllPostings(postingsData);
         const filteredPostings = await applyFilters(postingsData, filters);
         setPostings(filteredPostings);
-        setError(null);
+        setError(null); // Clear any previous errors
       }, (error) => {
         console.error('Postings fetch error:', {
           message: error.message || 'Unknown error',
@@ -1128,10 +1213,6 @@ footer {
     }
   }, [loading, user]);
 
-  if (error) {
-    return <div className="text-center text-red-600 py-8">Error: {error}</div>;
-  }
-
   if (loading) {
     return <div className="text-center text-gray-600 py-8">Loading...</div>;
   }
@@ -1179,7 +1260,6 @@ footer {
     </div>
   );
 }
-
     try {
       console.log('Attempting to render React app');
       const root = ReactDOM.createRoot(document.getElementById('root'));
