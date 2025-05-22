@@ -1,0 +1,1198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Connect with like-minded people for fun chats, casual dating, or more on RealVibin.">
+  <meta name="keywords" content="RealVibin, dating, social platform, connect, chat, relationships">
+  <title>RealVibin</title>
+  <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#0080ff',
+            secondary: '#ff4d4f',
+            dark: '#1f2937'
+          }
+        }
+      }
+    }
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/react@18.2.0/umd/react.development.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/react-dom@18.2.0/umd/react-dom.development.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@babel/standalone@7.20.15/babel.min.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/zipcodes@8.0.0/dist/zipcodes.min.js"></script>
+  <script type="module">
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
+    import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
+    import { getFirestore, collection, addDoc, onSnapshot, orderBy, query, serverTimestamp, getDoc, doc, setDoc } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyCZavBCNmUx2lX4SqdXlYdloCdwmw-hYT8",
+      authDomain: "realvibin-9aac1.firebaseapp.com",
+      projectId: "realvibin-9aac1",
+      messagingSenderId: "155907884818",
+      appId: "1:155907884818:web:d499ac21bc81c3273d55cb"
+    };
+
+    try {
+      console.log('Initializing Firebase...');
+      const app = initializeApp(firebaseConfig);
+      const auth = getAuth(app);
+      const db = getFirestore(app);
+      console.log('Firebase initialized successfully');
+
+      window.CLOUDINARY_CLOUD_NAME = "ddmrplnut";
+      window.CLOUDINARY_UPLOAD_PRESET = "realvibin_unsigned";
+
+      window.firebase = {
+        app,
+        auth,
+        db,
+        signInWithEmailAndPassword,
+        signOut,
+        onAuthStateChanged,
+        collection,
+        addDoc,
+        onSnapshot,
+        orderBy,
+        query,
+        serverTimestamp,
+        getDoc,
+        doc,
+        setDoc
+      };
+      window.firebaseInitialized = true;
+    } catch (error) {
+      console.error('Firebase Initialization Error:', { message: error.message, code: error.code, stack: error.stack });
+      window.firebaseError = error;
+    }
+  </script>
+  <script src="./functions.js"></script>
+  <link rel="stylesheet" href="./style.css">
+  <style>
+    body {
+  font-family: 'Open Sans', Arial, sans-serif;
+  background-color: #f3f4f6;
+  margin: 0;
+}
+.hidden { display: none; }
+.error {
+  padding: 1.5rem;
+  background-color: #fef2f2;
+  color: #991b1b;
+  border: 1px solid #f87171;
+  border-radius: 8px;
+  max-width: 500px;
+  margin: 2rem auto;
+}
+.error h2 { font-size: 1.5rem; font-weight: bold; }
+.form-input {
+  width: 100%;
+  padding: 0.5rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.375rem;
+}
+.form-label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+}
+footer {
+  width: 100%;
+  background-color: #1f2937;
+  min-height: 120px;
+}
+.marg { margin-left: 10px;}
+@media (max-width: 639px) {
+  .marg { margin-left: 0;}
+  .translate-x-full { transform: translateX(100%); }
+  .-translate-x-full { transform: translateX(-100%); }
+  .translate-x-0 { transform: translateX(0); }
+}
+@media (min-width: 640px) {
+  .transform-none { transform: none !important; }
+  .duration-0 { transition-duration: 0ms !important; }
+}
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+  <script type="text/babel" data-presets="env,react">
+    if (!window.React || !window.ReactDOM || !window.Babel) {
+      console.error('Required libraries (React, ReactDOM, or Babel) not loaded.');
+      document.getElementById('root').innerHTML = '<div className="error"><h2>Error</h2><p>Failed to load essential libraries. Please check your internet connection and try again.</p></div>';
+      throw new Error('React, ReactDOM, or Babel is not available');
+    }
+
+    const fetchUserProfile = async (userId) => {
+      try {
+        const cached = sessionStorage.getItem(`userProfile_${userId}`);
+        if (cached) {
+          const profile = JSON.parse(cached);
+          console.log(`Using cached profile for ${userId} from sessionStorage:`, profile);
+          return profile;
+        }
+        const userDoc = await window.firebase.getDoc(window.firebase.doc(window.firebase.db, 'users', userId));
+        if (!userDoc.exists()) {
+          console.warn(`No user profile for UID: ${userId}, using defaults`);
+          return {
+            username: 'Unknown User',
+            dob: '',
+            gender: '',
+            race: '',
+            relationshipType: '',
+            height: 0,
+            weight: 0,
+            bodyType: '',
+            zipCode: ''
+          };
+        }
+        const data = userDoc.data();
+        console.log(`Raw user profile for ${userId}:`, JSON.stringify(data, null, 2));
+        const profile = {
+          username: data.basicInfo?.username || 'Unknown User',
+          dob: data.basicInfo?.dateOfBirth || '',
+          gender: data.basicInfo?.genderIdentity || '',
+          race: data.physicalAttributes?.ethnicity || '',
+          relationshipType: data.basicInfo?.relationshipStatus || '',
+          height: parseInt(data.physicalAttributes?.height, 10) || 0,
+          weight: parseInt(data.physicalAttributes?.weight, 10) || 0,
+          bodyType: data.physicalAttributes?.bodyType || '',
+          zipCode: data.locationLogistics?.zipCode || ''
+        };
+        sessionStorage.setItem(`userProfile_${userId}`, JSON.stringify(profile));
+        console.log(`Cached profile for ${userId} in sessionStorage:`, profile);
+        return profile;
+      } catch (error) {
+        console.error('fetchUserProfile error:', { message: error.message || 'Unknown error', code: error.code || 'No code', stack: error.stack || 'No stack' });
+        return {
+          username: 'Unknown User',
+          dob: '',
+          gender: '',
+          race: '',
+          relationshipType: '',
+          height: 0,
+          weight: 0,
+          bodyType: '',
+          zipCode: ''
+        };
+      }
+    };
+
+    const calculateAgeRange = (dob) => {
+      if (!dob) return 'Not provided';
+      try {
+        const birthDate = new Date(dob);
+        if (isNaN(birthDate.getTime())) throw new Error(`Invalid DOB: ${dob}`);
+        const today = new Date();
+        const age = today.getFullYear() - birthDate.getFullYear() - 
+          (today.getMonth() < birthDate.getMonth() || 
+           (today.getMonth() === birthDate.getMonth() && today.getDate() < birthDate.getDate()) ? 1 : 0);
+        if (age <= 17) throw new Error(`User under 18: ${age}`);
+        if (age >= 50) return '50+';
+        if (age >= 36) return '36-50';
+        if (age >= 26) return '26-35';
+        return '18-25';
+      } catch (error) {
+        console.error('calculateAgeRange error:', { message: error.message || 'Unknown error', stack: error.stack || 'No stack' });
+        return 'Not provided';
+      }
+    };
+
+    function Header({ user, setUser }) {
+      const [isMenuOpen, setIsMenuOpen] = React.useState(false);
+      const [email, setEmail] = React.useState('');
+      const [password, setPassword] = React.useState('');
+      const [loginError, setLoginError] = React.useState(null);
+      const [displayName, setDisplayName] = React.useState('User');
+	  const [unreadCount, setUnreadCount] = React.useState(0);
+      const firebase = window.firebase;
+
+      React.useEffect(() => {
+        const loadUserProfile = async () => {
+          if (user?.uid) {
+            const profile = await fetchUserProfile(user.uid);
+            setDisplayName(profile.username || 'User');
+            console.log('Header: Fetched profile for displayName:', { uid: user.uid, username: profile.username });
+            if (!user.profile?.username) {
+              setUser(prev => ({ ...prev, profile }));
+            }
+          } else {
+            setDisplayName('User');
+          }
+        };
+        loadUserProfile();
+      }, [user?.uid]);
+		
+	  React.useEffect(() => {
+        if (!user?.uid || !firebase.db) return;
+        const unsubscribe = firebase.onSnapshot(
+          firebase.collection(firebase.db, `users/${user.uid}/unreadConversations`),
+          (snapshot) => {
+            let totalUnread = 0;
+            snapshot.forEach(doc => {
+              totalUnread += doc.data().unreadCount || 0;
+            });
+            setUnreadCount(totalUnread);
+            console.log('Unread count updated:', totalUnread);
+          },
+          (error) => {
+            console.error('Unread count snapshot error:', error);
+          }
+        );
+        return () => unsubscribe();
+      }, [user?.uid]);
+	  
+      const debounce = (fn, delay) => {
+        let timeout;
+        return (...args) => {
+          clearTimeout(timeout);
+          timeout = setTimeout(() => fn(...args), delay);
+        };
+      };
+
+      const handleLogin = async (e) => {
+        e.preventDefault();
+        if (!firebase?.auth) {
+          setLoginError('Authentication service not available.');
+          return;
+        }
+        try {
+          setLoginError(null);
+          const userCredential = await firebase.signInWithEmailAndPassword(firebase.auth, email, password);
+          const user = userCredential.user;
+          const profile = await fetchUserProfile(user.uid);
+          await firebase.setDoc(
+            firebase.doc(firebase.db, 'users', user.uid),
+            { loginStatus: 'logged_in', lastLogin: firebase.serverTimestamp() },
+            { merge: true }
+          );
+          setEmail('');
+          setPassword('');
+          setUser({
+            ...user,
+            profile,
+            loginStatus: 'logged_in'
+          });
+          setDisplayName(profile.username || 'User');
+          console.log('Login successful, user data:', { uid: user.uid, username: profile.username });
+        } catch (error) {
+          console.error('Login error:', { message: error.message || 'Unknown error', code: error.code || 'No code', stack: error.stack || 'No stack' });
+          setLoginError(`Login error: ${error.message || 'An unexpected error occurred'}`);
+        }
+      };
+
+      const handleLogout = debounce(async () => {
+        if (!firebase?.auth) {
+          setLoginError('Authentication service not available.');
+          return;
+        }
+        try {
+          if (user) {
+            await firebase.setDoc(
+              firebase.doc(firebase.db, 'users', user.uid),
+              { loginStatus: 'logged_out', lastLogout: firebase.serverTimestamp() },
+              { merge: true }
+            );
+            sessionStorage.removeItem(`userProfile_${user.uid}`);
+          }
+          await firebase.signOut(firebase.auth);
+          setUser(null);
+          setDisplayName('User');
+          setIsMenuOpen(false);
+          console.log('Logout successful');
+        } catch (error) {
+          console.error('Logout error:', { message: error.message || 'Unknown error', code: error.code || 'No code', stack: error.stack || 'No stack' });
+          setLoginError(`Logout error: ${error.message || 'An unexpected error occurred'}`);
+        }
+      }, 300);
+
+      console.log('Header rendering, displayName:', displayName, 'user:', { uid: user?.uid, username: user?.profile?.username });
+
+      return (
+        <nav className="bg-primary shadow-md sticky top-0 z-50">
+          <div className="container flex items-center justify-between h-auto min-h-[64px] px-2 sm:px-4 py-2">
+            <div className="logo-container flex items-center">
+              <a href="/">
+                <img
+                  src="./img/RealVibin.png"
+                  alt="RealVibin Logo"
+                  className="h-12 sm:h-16 md:h-[100px] w-auto"
+                />
+              </a>
+            </div>
+            <div className="auth-container hidden md:flex items-center space-x-4">
+              {loginError && (
+                <div className="text-red-200 text-sm">{loginError}</div>
+              )}
+              {user && user.loginStatus === 'logged_in' ? (
+                <div className="flex items-center space-x-2">
+                  <a
+                    href="signup.html"
+                    className="text-white font-semibold hover:underline"
+                  >
+                    {displayName}
+                  </a>
+				  <a
+                    href="messages.html"
+                    className="relative text-white hover:text-white"
+                  >
+                    <svg
+                      className="h-6 w-6"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"
+                      />
+                    </svg>
+                    {unreadCount > 0 && (
+                      <span className="absolute -top-1 -right-1 bg-secondary text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                        {unreadCount}
+                      </span>
+                    )}
+                  </a>
+                  <button
+                    type="button"
+                    className="bg-secondary text-white font-semibold py-2 px-4 rounded-lg hover:bg-red-700 transition"
+                    onClick={handleLogout}
+                  >
+                    Logout
+                  </button>
+                </div>
+              ) : (
+                <div className="flex items-center space-x-2">
+                  <div className="flex flex-col space-y-2 w-full md:flex-row md:space-y-0 md:space-x-2">
+                    <input
+                      type="email"
+                      placeholder="Email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      className="form-input"
+                      required
+                      autoComplete="email"
+                    />
+                    <input
+                      type="password"
+                      placeholder="Password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      className="form-input"
+                      required
+                      autoComplete="current-password"
+                    />
+                    <button
+                      onClick={handleLogin}
+                      className="bg-primary text-white font-semibold py-2 px-4 rounded-lg hover:bg-blue-700 transition"
+                    >
+                      Login
+                    </button>
+                  </div>
+                  <a
+                    href="signup.html"
+                    className="bg-primary text-white font-semibold py-2 px-4 rounded-lg hover:bg-blue-700 transition text-sm"
+                  >
+                    Need an account?
+                  </a>
+                </div>
+              )}
+            </div>
+            <div className="md:hidden flex items-center">
+              <button
+                onClick={() => setIsMenuOpen(!isMenuOpen)}
+                className="text-white hover:text-white focus:outline-none"
+                type="button"
+              >
+                <svg
+                  className="h-6 w-6"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d={isMenuOpen ? 'M6 18L18 6M6 6l12 12' : 'M4 6h16M4 12h16M4 18h16'}
+                  />
+                </svg>
+              </button>
+            </div>
+          </div>
+          {isMenuOpen && (
+            <div className="md:hidden bg-primary shadow-md px-2 py-4">
+              {loginError && (
+                <div className="text-red-200 text-sm mb-2">{loginError}</div>
+              )}
+              {user && user.loginStatus === 'logged_in' ? (
+                <div className="flex flex-col space-y-2">
+                  <a
+                    href="signup.html"
+                    className="text-white font-semibold hover:underline text-center"
+                  >
+                    {displayName}
+                  </a>
+                  <button
+                    type="button"
+                    className="bg-secondary text-white font-semibold py-2 px-4 rounded-lg hover:bg-red-700 transition"
+                    onClick={handleLogout}
+                  >
+                    Logout
+                  </button>
+                </div>
+              ) : (
+                <div className="flex flex-col space-y-2">
+                  <div className="flex flex-col space-y-2">
+                    <input
+                      type="email"
+                      placeholder="Email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      className="form-input"
+                      required
+                      autoComplete="email"
+                    />
+                    <input
+                      type="password"
+                      placeholder="Password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      className="form-input"
+                      required
+                      autoComplete="current-password"
+                    />
+                    <button
+                      onClick={handleLogin}
+                      className="bg-primary text-white font-semibold py-2 px-4 rounded-lg hover:bg-blue-700 transition"
+                    >
+                      Login
+                    </button>
+                  </div>
+                  <a
+                    href="signup.html"
+                    className="bg-primary text-white font-semibold py-2 px-4 rounded-lg hover:bg-blue-700 transition text-center text-sm"
+                  >
+                    Need an account?
+                  </a>
+                </div>
+              )}
+            </div>
+          )}
+        </nav>
+      );
+    }
+
+    function Hero() {
+      return (
+        <div className="hero bg-gradient-to-r from-blue-500 to-purple-500 text-white py-16 text-center">
+          <h1 className="text-4xl font-bold">Welcome to RealVibin</h1>
+          <p className="text-xl mt-4">Connect with like-minded people for fun chats, casual dating, or more!</p>
+          <a
+            href="signup.html"
+            className="mt-6 inline-block bg-secondary text-white font-semibold py-2 px-4 rounded-lg hover:bg-red-700 transition"
+          >
+            Join Now
+          </a>
+        </div>
+      );
+    }
+
+    function PostingForm({ user, onPostSubmit }) {
+  const [title, setTitle] = React.useState('');
+  const [description, setDescription] = React.useState('');
+  const [image, setImage] = React.useState(null);
+  const [error, setError] = React.useState(null);
+  const [success, setSuccess] = React.useState(false);
+  const [uploading, setUploading] = React.useState(false);
+  const fileInputRef = React.useRef(null);
+
+  const getUserProfile = (userId) => { /* Unchanged */ };
+
+  const handleImageChange = (e) => { /* Unchanged */ };
+
+  const uploadImage = async () => { /* Unchanged */ };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!user || !window.firebase.db) {
+      setError('Please log in to create a posting.');
+      return;
+    }
+    if (!title || !description) {
+      setError('Please fill in title and description.');
+      return;
+    }
+    try {
+      setError(null);
+      const profile = getUserProfile(user.uid) || await fetchUserProfile(user.uid);
+      const imageUrl = await uploadImage();
+      const postingData = {
+        title,
+        description,
+        imageUrl: imageUrl || null,
+        userId: user.uid,
+        username: profile.username || 'Unknown User',
+        dob: profile.dob || '',
+        gender: profile.gender || '',
+        race: profile.race || '',
+        relationshipType: profile.relationshipType || '',
+        height: profile.height || 0,
+        weight: profile.weight || 0,
+        bodyType: profile.bodyType || '',
+        zipCode: profile.zipCode || '',
+        createdAt: window.firebase.serverTimestamp()
+      };
+      console.log('Submitting posting:', JSON.stringify(postingData, null, 2));
+      const docRef = await window.firebase.addDoc(window.firebase.collection(window.firebase.db, 'postings'), postingData);
+      console.log('Posting created, ID:', docRef.id, 'Data:', JSON.stringify(postingData, null, 2));
+      setSuccess(true);
+      setTitle('');
+      setDescription('');
+      setImage(null);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = null;
+      }
+      setTimeout(() => setSuccess(false), 3000);
+      onPostSubmit(); // Call to hide form and scroll
+    } catch (error) {
+      console.error('Posting error:', { message: error.message || 'Unknown error', code: error.code || 'No code', stack: error.stack || 'No stack' });
+      setError(`Error: ${error.message || 'An unexpected error occurred'}`);
+    }
+  };
+
+  if (!user) {
+    return <div className="text-center text-gray-600">Please log in to create a posting.</div>;
+  }
+
+  return (
+    <div className="bg-white rounded-lg marg shadow-md p-6 mb-3">
+      <h2 className="text-2xl font-semibold text-primary mb-4">Create a Posting</h2>
+      {success && (
+        <div className="bg-green-100 text-green-700 p-4 rounded-lg mb-4">
+          Posting created successfully!
+        </div>
+      )}
+      {error && (
+        <div className="bg-red-100 text-red-700 p-4 rounded-lg mb-4">
+          {error}
+        </div>
+      )}
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <div className="form-group">
+          <label className="form-label">Title</label>
+          <input
+            type="text"
+            placeholder="Enter posting title"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            className="form-input"
+            required
+          />
+        </div>
+        <div className="form-group">
+          <label className="form-label">Description</label>
+          <textarea
+            placeholder="Describe yourself or what you're looking for"
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            className="form-input min-h-[100px]"
+            required
+          />
+        </div>
+        <div className="form-group">
+          <label className="form-label">Image (Optional)</label>
+          <input
+            type="file"
+            accept="image/*"
+            onChange={handleImageChange}
+            className="form-input"
+            ref={fileInputRef}
+          />
+        </div>
+        <button
+          type="submit"
+          className="bg-primary text-white font-semibold py-2 px-4 rounded-lg hover:bg-blue-700 transition"
+          disabled={uploading}
+        >
+          {uploading ? 'Uploading...' : 'Create Posting'}
+        </button>
+      </form>
+    </div>
+  );
+}
+
+    function PostingsList({ postings }) {
+      const transformImageUrl = (url) => {
+        if (!url) return url;
+        const publicIdMatch = url.match(/\/v\d+\/(.+?)(\.\w+)?$/);
+        if (!publicIdMatch) {
+          console.warn('Invalid Cloudinary URL:', url);
+          return url;
+        }
+        const publicId = publicIdMatch[1];
+        const transformedUrl = `https://res.cloudinary.com/${window.CLOUDINARY_CLOUD_NAME}/image/upload/w_300,h_200,c_fill,g_auto,f_auto,q_auto/${publicId}`;
+        console.log('Transformed image URL:', transformedUrl);
+        return transformedUrl;
+      };
+
+      const formatHeight = (inches) => {
+        if (!inches || isNaN(inches) || inches <= 0) return 'Not provided';
+        const feet = Math.floor(inches / 12);
+        const remainingInches = inches % 12;
+        return `${feet}'${remainingInches}"`;
+      };
+
+      console.log('PostingsList: Rendering with postings:', JSON.stringify(postings, null, 2));
+
+      return (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {postings.length === 0 ? (
+            <p className="text-gray-600 text-center col-span-full">
+              No postings available. Create one to get started!
+            </p>
+          ) : (
+            postings.map(post => {
+              console.log(`Rendering post ${post.id}, data:`, JSON.stringify(post, null, 2));
+              return (
+                <div
+                  key={post.id}
+                  className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition transform hover:scale-105"
+                >
+                  {post.imageUrl ? (
+                    <img
+                      src={transformImageUrl(post.imageUrl)}
+                      alt={post.title || 'Posting image'}
+                      className="w-full h-48 object-cover"
+                    />
+                  ) : (
+                    <div className="w-full h-48 bg-gray-200 flex items-center justify-center">
+                      <span className="text-gray-500">No Image</span>
+                    </div>
+                  )}
+                  <div className="p-4">
+                    <h3 className="text-lg font-semibold text-primary">{post.title || 'Untitled'}</h3>
+                    <p className="text-gray-600 mt-2 line-clamp-3">{post.description || 'No description'}</p>
+                    <p className="text-sm text-gray-500 mt-2">
+                      {[
+                        post.username && post.username !== 'Unknown User' ? (
+                          <a href={`profile.html?uid=${post.userId}`} className="text-primary hover:underline">
+                            By: {post.username}
+                          </a>
+                        ) : 'By: Unknown User',
+                        post.dob ? ` Age: ${calculateAgeRange(post.dob)}` : null,
+                        post.gender && post.gender !== '' ? `Gender: ${post.gender}` : null,
+                        post.race && post.race !== '' ? `Ethnicity: ${post.race}` : null,
+                        post.relationshipType && post.relationshipType !== '' ? `Looking for: ${post.relationshipType}` : null,
+                        post.height ? `Height: ${formatHeight(post.height)}` : null,
+                        post.weight ? `Weight: ${post.weight} lbs` : null,
+                        post.bodyType && post.bodyType !== '' ? `Body Type: ${post.bodyType}` : null,
+                        post.zipCode && post.zipCode !== '' ? `ZIP: ${post.zipCode}` : null
+                      ]
+                        .filter(Boolean)
+                        .map((item, index) => (
+                          <span key={index}>
+                            {item}
+                            {index < item.length - 1 ? ' | ' : ''}
+                          </span>
+                        ))}
+                    </p>
+                  </div>
+                </div>
+              );
+            })
+          )}
+        </div>
+      );
+    }
+
+    function FilterSection({ onFilterChange }) {
+  const [ageRange, setAgeRange] = React.useState('');
+  const [gender, setGender] = React.useState('');
+  const [race, setRace] = React.useState('');
+  const [relationshipType, setRelationshipType] = React.useState('');
+  const [height, setHeight] = React.useState('');
+  const [bodyType, setBodyType] = React.useState('');
+  const [zipCode, setZipCode] = React.useState('');
+  const [radius, setRadius] = React.useState('');
+  const [locationInfo, setLocationInfo] = React.useState('');
+
+  React.useEffect(() => { /* Unchanged ZIP code fetch */ }, [zipCode]);
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    const filters = { ageRange, gender, race, relationshipType, height, bodyType, zipCode, radius };
+    console.log('Filters applied:', filters);
+    onFilterChange(filters);
+  };
+
+  return (
+    <div className="bg-white rounded-lg shadow-md p-4 w-full mx-auto md:w-80 md:max-w-xs">
+      <h2 className="text-xl font-semibold text-primary mb-3">Filters</h2>
+      <form onSubmit={handleSubmit} className="space-y-3">
+        <div className="form-group">
+          <label className="form-label">Age Range</label>
+          <select value={ageRange} onChange={(e) => setAgeRange(e.target.value)} className="form-input">
+            <option value="">Select Age Range</option>
+            <option value="18-25">18-25</option>
+            <option value="26-35">26-35</option>
+            <option value="36-50">36-50</option>
+            <option value="50+">50+</option>
+          </select>
+        </div>
+        <div className="form-group">
+          <label className="form-label">Gender</label>
+          <select value={gender} onChange={(e) => setGender(e.target.value)} className="form-input">
+            <option value="">Select Gender</option>
+            <option value="Male">Male</option>
+            <option value="Female">Female</option>
+            <option value="M/F Couple">M/F Couple</option>
+            <option value="W/W Couple">W/W Couple</option>
+            <option value="M/M Couple">M/M Couple</option>
+          </select>
+        </div>
+        <div className="form-group">
+          <label className="form-label">Ethnicity</label>
+          <select value={race} onChange={(e) => setRace(e.target.value)} className="form-input">
+            <option value="">Select Ethnicity</option>
+            <option value="Asian">Asian</option>
+            <option value="Black">Black</option>
+            <option value="Hispanic">Hispanic</option>
+            <option value="White">White</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+        <div className="form-group">
+          <label className="form-label">Relationship Type</label>
+          <select value={relationshipType} onChange={(e) => setRelationshipType(e.target.value)} className="form-input">
+            <option value="">Select Type</option>
+            <option value="Single">Single</option>
+            <option value="Fun Chat">Fun Chat</option>
+            <option value="Casual Dating">Casual Dating</option>
+            <option value="Long Term Fun">Long Term Fun</option>
+            <option value="Friends with Benefits">Friends with Benefits</option>
+            <option value="One-Night Stand">One-Night Stand</option>
+          </select>
+        </div>
+        <div className="form-group">
+          <label className="form-label">Height</label>
+          <select value={height} onChange={(e) => setHeight(e.target.value)} className="form-input">
+            <option value="">Select Height</option>
+            {[...Array(55).keys()].map(i => {
+              const inches = 40 + i;
+              const feet = Math.floor(inches / 12);
+              const remainingInches = inches % 12;
+              return <option key={inches} value={inches}>{`${feet}'${remainingInches}"`}</option>;
+            })}
+          </select>
+        </div>
+        <div className="form-group">
+          <label className="form-label">Body Type</label>
+          <select value={bodyType} onChange={(e) => setBodyType(e.target.value)} className="form-input">
+            <option value="">Select Body Type</option>
+            <option value="Athletic">Athletic</option>
+            <option value="Fit">Fit</option>
+            <option value="Skinny">Skinny</option>
+            <option value="Fat">Fat</option>
+            <option value="Chunky">Chunky</option>
+            <option value="Fluffy">Fluffy</option>
+            <option value="Round">Round</option>
+            <option value="Stick Figure">Stick Figure</option>
+            <option value="Perfect">Perfect</option>
+            <option value="Almost Perfect">Almost Perfect</option>
+          </select>
+        </div>
+        <div className="form-group">
+          <label className="form-label">ZIP Code</label>
+          <input
+            type="text"
+            placeholder="Enter ZIP Code"
+            value={zipCode}
+            onChange={(e) => setZipCode(e.target.value)}
+            className="form-input"
+            maxLength="5"
+          />
+          {locationInfo && <span className="text-xs text-gray-600">{locationInfo}</span>}
+        </div>
+        <div className="form-group">
+          <label className="form-label">Search Radius (miles)</label>
+          <input
+            type="number"
+            placeholder="Enter radius"
+            value={radius}
+            onChange={(e) => setRadius(e.target.value)}
+            className="form-input"
+            min="1"
+          />
+        </div>
+        <button
+          type="submit"
+          className="bg-primary text-white font-semibold py-1 px-3 rounded-lg hover:bg-blue-700 transition w-full text-sm"
+        >
+          Apply Filters
+        </button>
+      </form>
+    </div>
+  );
+}
+
+    function Footer() {
+  return (
+    <footer className="bg-dark text-white py-8 w-full mt-auto">
+      <div className="text-center px-2 sm:px-4 mx-auto">
+        <p>© 2025 RealVibin. All rights reserved.</p>
+        <div className="mt-4 flex justify-center space-x-4">
+          <a href="#" className="text-gray-400 hover:text-white">Privacy Policy</a>
+          <a href="#" className="text-gray-400 hover:text-white">Terms of Service</a>
+          <a href="#" className="text-gray-400 hover:text-white">Contact</a>
+        </div>
+      </div>
+    </footer>
+  );
+}
+
+    function ErrorBoundary({ children }) {
+      const [error, setError] = React.useState(null);
+      const [errorInfo, setErrorInfo] = React.useState(null);
+
+      React.useEffect(() => {
+        const handleError = (event) => {
+          if (event.error) {
+            setError(event.error);
+            setErrorInfo({ componentStack: event.error.stack });
+            console.error('ErrorBoundary caught:', { message: event.error.message || 'Unknown error', stack: event.error.stack || 'No stack' });
+          }
+        };
+        window.addEventListener('error', handleError);
+        return () => window.removeEventListener('error', handleError);
+      }, []);
+
+      if (error) {
+        return (
+          <div className="error">
+            <h2>Something went wrong</h2>
+            <p>{error.message || 'An unexpected error occurred'}</p>
+            <details className="mt-4">
+              <summary className="cursor-pointer">Stack trace</summary>
+              <pre className="text-sm">{errorInfo?.componentStack}</pre>
+            </details>
+          </div>
+        );
+      }
+      return children;
+    }
+
+    function App() {
+  const [user, setUser] = React.useState(null);
+  const [loading, setLoading] = React.useState(true);
+  const [allPostings, setAllPostings] = React.useState([]);
+  const [postings, setPostings] = React.useState([]);
+  const [filters, setFilters] = React.useState({
+    ageRange: '',
+    gender: '',
+    race: '',
+    relationshipType: '',
+    height: '',
+    bodyType: '',
+    zipCode: '',
+    radius: ''
+  });
+  const [error, setError] = React.useState(null);
+  const [showFilters, setShowFilters] = React.useState(false);
+  const [showPostForm, setShowPostForm] = React.useState(false);
+  const postingsRef = React.useRef(null);
+  const [layoutClasses, setLayoutClasses] = React.useState({
+    mainClasses: 'flex-grow pt-20 py-4 px-2 sm:py-12 sm:px-4',
+    divClasses: 'flex flex-col md:flex-row'
+  });
+
+  const parseAgeRange = (range) => {
+    if (!range || range === 'Not provided') return { min: 0, max: Infinity };
+    if (range === '50+') return { min: 50, max: Infinity };
+    const [min, max] = range.split('-').map(Number);
+    return { min, max: max || Infinity };
+  };
+
+  React.useEffect(() => {
+    try {
+      const updateClasses = () => {
+        const isMobile = window.innerWidth < 640;
+        console.log('Updating layout classes, isMobile:', isMobile);
+        setLayoutClasses(getLayoutClasses(isMobile));
+      };
+      updateClasses();
+      window.addEventListener('resize', updateClasses);
+      return () => window.removeEventListener('resize', updateClasses);
+    } catch (err) {
+      console.error('Error in layout classes effect:', err);
+      setError('Failed to set layout');
+    }
+  }, []);
+
+  const applyFilters = async (postings, filters) => {
+    let filtered = [...postings];
+    const { ageRange, gender, race, relationshipType, height, bodyType, zipCode, radius } = filters;
+
+    if (ageRange) {
+      const filterAge = parseAgeRange(ageRange);
+      filtered = filtered.filter(post => {
+        const postAge = parseAgeRange(post.dob ? calculateAgeRange(post.dob) : 'Not provided');
+        return postAge.min <= filterAge.max && postAge.max >= filterAge.min;
+      });
+    }
+
+    if (gender) {
+      filtered = filtered.filter(post => post.gender === gender);
+    }
+
+    if (race) {
+      filtered = filtered.filter(post => post.race === race);
+    }
+
+    if (relationshipType) {
+      filtered = filtered.filter(post => post.relationshipType === relationshipType);
+    }
+
+    if (height) {
+      filtered = filtered.filter(post => post.height === parseInt(height));
+    }
+
+    if (bodyType) {
+      filtered = filtered.filter(post => post.bodyType === bodyType);
+    }
+
+    if (zipCode && radius) {
+      filtered = filtered.filter(post => {
+        if (!post.zipCode) return false;
+        try {
+          const distance = window.functions.calculateDistance(zipCode, post.zipCode);
+          if (distance === null || distance > parseInt(radius)) {
+            return false;
+          }
+          return true;
+        } catch (error) {
+          console.error(`Error calculating distance for ${post.zipCode}:`, error);
+          return false;
+        }
+      });
+    } else if (zipCode) {
+      filtered = filtered.filter(post => post.zipCode === zipCode);
+    }
+
+    return filtered;
+  };
+
+  React.useEffect(() => {
+    let unsubscribeAuth;
+    let unsubscribePostings;
+    try {
+      if (window.firebaseError) {
+        throw window.firebaseError;
+      }
+      if (!window.firebase) {
+        throw new Error('Firebase not initialized');
+      }
+
+      unsubscribeAuth = window.firebase.onAuthStateChanged(window.firebase.auth, async (currentUser) => {
+        if (currentUser) {
+          try {
+            const profile = await fetchUserProfile(currentUser.uid);
+            setUser({
+              ...currentUser,
+              profile,
+              loginStatus: 'logged_in'
+            });
+            console.log('Auth state updated:', {
+              uid: currentUser.uid,
+              username: profile.username,
+              loginStatus: 'logged_in'
+            });
+          } catch (error) {
+            console.error('Error fetching user data:', { message: error.message || 'Unknown error', code: error.code || 'No code', stack: error.stack || 'No stack' });
+            setUser({
+              ...currentUser,
+              profile: {},
+              loginStatus: 'logged_in'
+            });
+          }
+        } else {
+          setUser(null);
+          console.log('Auth state: No user');
+        }
+        setLoading(false);
+      }, (err) => {
+        console.error('Auth state error:', { message: err.message || 'Unknown error', code: err.code || 'No code', stack: err.stack || 'No stack' });
+        setLoading(false);
+      });
+
+      console.log('Setting up postings snapshot listener...');
+      const q = window.firebase.query(
+        window.firebase.collection(window.firebase.db, 'postings'),
+        window.firebase.orderBy('createdAt', 'desc')
+      );
+      unsubscribePostings = window.firebase.onSnapshot(q, async (snapshot) => {
+        console.log(`Postings snapshot received, size: ${snapshot.size}`);
+        if (snapshot.empty) {
+          console.warn('No postings found in the postings collection');
+          setAllPostings([]);
+          setPostings([]);
+          setError('No postings available. Create one to get started!');
+          return;
+        }
+        const postingsData = snapshot.docs.map(doc => {
+          const data = doc.data();
+          return {
+            id: doc.id,
+            title: data.title || 'Untitled',
+            description: data.description || 'No description',
+            imageUrl: data.imageUrl || null,
+            userId: data.userId || '',
+            username: data.username || 'Unknown User',
+            dob: data.dob || '',
+            gender: data.gender || '',
+            race: data.race || '',
+            relationshipType: data.relationshipType || '',
+            height: data.height || 0,
+            weight: data.weight || 0,
+            bodyType: data.bodyType || '',
+            zipCode: data.zipCode || '',
+            createdAt: data.createdAt || { seconds: Math.floor(Date.now() / 1000) }
+          };
+        });
+        console.log('Postings updated:', JSON.stringify(postingsData, null, 2));
+        setAllPostings(postingsData);
+        const filteredPostings = await applyFilters(postingsData, filters);
+        setPostings(filteredPostings);
+        setError(null);
+      }, (error) => {
+        console.error('Postings fetch error:', {
+          message: error.message || 'Unknown error',
+          code: error.code || 'No code',
+          stack: error.stack || 'No stack'
+        });
+        setError(`Failed to load postings: ${error.message || 'An unexpected error occurred'}`);
+      });
+
+    } catch (error) {
+      console.error('App initialization error:', { message: error.message || 'Unknown error', code: error.code || 'No code', stack: error.stack || 'No stack' });
+      setError(`App initialization failed: ${error.message || 'An unexpected error occurred'}`);
+      setLoading(false);
+    }
+
+    return () => {
+      console.log('Cleaning up listeners');
+      unsubscribeAuth && unsubscribeAuth();
+      unsubscribePostings && unsubscribePostings();
+    };
+  }, []);
+
+  const handleFilterChange = async (newFilters) => {
+    try {
+      setFilters(newFilters);
+      const filteredPostings = await applyFilters(allPostings, newFilters);
+      setPostings(filteredPostings);
+      setShowFilters(false);
+      if (postingsRef.current) {
+        postingsRef.current.scrollIntoView({ behavior: 'smooth' });
+      }
+      console.log('Filtered postings:', JSON.stringify(filteredPostings, null, 2));
+    } catch (err) {
+      console.error('Filter error:', err);
+      setError('Failed to apply filters');
+    }
+  };
+
+  const handlePostSubmit = () => {
+    try {
+      setShowPostForm(false);
+      if (postingsRef.current) {
+        postingsRef.current.scrollIntoView({ behavior: 'smooth' });
+      }
+    } catch (err) {
+      console.error('Post submit error:', err);
+    }
+  };
+
+  React.useEffect(() => {
+    if (!loading) {
+      console.log('Hero in DOM:', !!document.querySelector('.hero'));
+      console.log('User:', user ? { uid: user.uid, username: user.profile?.username } : null);
+      console.log('Loading:', loading);
+    }
+  }, [loading, user]);
+
+  if (error) {
+    return <div className="text-center text-red-600 py-8">Error: {error}</div>;
+  }
+
+  if (loading) {
+    return <div className="text-center text-gray-600 py-8">Loading...</div>;
+  }
+
+  return (
+    <div className="flex flex-col min-h-screen">
+      <Header user={user} setUser={setUser} />
+      {!user && <Hero />}
+      <main className={layoutClasses.mainClasses}>
+        <div className={layoutClasses.divClasses}>
+          <div className="w-full mb-6 md:w-80 md:max-w-xs">
+            <button
+              className="sm:hidden bg-primary text-white font-semibold py-1.5 px-3 text-sm rounded-md shadow-sm hover:bg-blue-700 transition w-full mb-4 z-10 relative"
+              onClick={() => setShowFilters(!showFilters)}
+            >
+              {showFilters ? 'Hide Filters' : 'Show Filters'}
+            </button>
+            <div className={`${showFilters ? 'block' : 'hidden'} sm:block sm:transform-none transition-transform duration-300 sm:duration-0 ${showFilters ? 'translate-x-0' : '-translate-x-full'} sm:translate-x-0 z-10 relative`}>
+              <FilterSection onFilterChange={handleFilterChange} />
+            </div>
+          </div>
+          <div className="flex-1 w-full pad">
+            {user && (
+              <>
+                <button
+                  className="sm:hidden bg-primary text-white font-semibold py-1.5 px-3 text-sm rounded-md shadow-sm hover:bg-blue-700 transition w-full mb-4 z-10 relative"
+                  onClick={() => setShowPostForm(!showPostForm)}
+                >
+                  {showPostForm ? 'Hide Create Post' : 'Create Post'}
+                </button>
+                <div className={`${showPostForm ? 'block' : 'hidden'} sm:block sm:transform-none transition-transform duration-300 sm:duration-0 ${showPostForm ? 'translate-x-0' : 'translate-x-full'} sm:translate-x-0 z-10 relative`}>
+                  <PostingForm user={user} onPostSubmit={handlePostSubmit} />
+                </div>
+              </>
+            )}
+            <div ref={postingsRef} className="bg-white marg rounded-lg shadow-md p-6">
+              <h2 className="text-2xl font-semibold text-primary mb-4">Recent Postings</h2>
+              {error && <div className="bg-red-100 text-red-700 p-4 rounded-lg mb-4">{error}</div>}
+              <PostingsList postings={postings} />
+            </div>
+          </div>
+        </div>
+      </main>
+      <Footer />
+    </div>
+  );
+}
+
+    try {
+      console.log('Attempting to render React app');
+      const root = ReactDOM.createRoot(document.getElementById('root'));
+      root.render(
+        <ErrorBoundary>
+          <App />
+        </ErrorBoundary>
+      );
+      console.log('React app rendered successfully');
+    } catch (error) {
+      console.error('React render error:', { message: error.message || 'Unknown error', stack: error.stack || 'No stack' });
+      document.getElementById('root').innerHTML = '<div className="error"><h2>Error</h2><p>Failed to render the app: ' + (error.message || 'An unexpected error occurred') + '</p></div>';
+    }
+  </script>
+</body>
+</html>
