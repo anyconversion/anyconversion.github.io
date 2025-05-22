@@ -1141,7 +1141,7 @@ footer {
             userId: data.userId || '',
             username: data.username || 'Unknown User',
             dob: data.dob || '',
-            gender: data.getAttribute('gender') || '',
+            gender: data.gender || '', // Fixed: Use data.gender instead of data.getAttribute
             race: data.race || '',
             relationshipType: data.relationshipType || '',
             height: data.height || 0,
