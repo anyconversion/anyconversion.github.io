@@ -1,0 +1,1038 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Browse all users on RealVibin to connect and chat.">
+  <meta name="keywords" content="RealVibin, users, social platform, connect, chat">
+  <title>RealVibin - Browse Users</title>
+  <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#0080ff',
+            secondary: '#ff4d4f',
+            dark: '#1f2937'
+          }
+        }
+      }
+    }
+  </script>
+  <script type="module">
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.13.1/firebase-app.js';
+    import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.13.1/firebase-auth.js';
+    import { getFirestore, collection, onSnapshot, orderBy, query, getDoc, doc, setDoc } from 'https://www.gstatic.com/firebasejs/10.13.1/firebase-firestore.js';
+
+    console.log('Loading Firebase...');
+    try {
+      const firebaseConfig = {
+        apiKey: "AIzaSyCZavBCNmUx2lX4SqdXlYdloCdwmw-hYT8",
+        authDomain: "realvibin-9aac1.firebaseapp.com",
+        projectId: "realvibin-9aac1",
+        messagingSenderId: "155907884818",
+        appId: "1:155907884818:web:d499ac21bc81c3273d55cb"
+      };
+
+      console.log('Initializing Firebase...');
+      const app = initializeApp(firebaseConfig);
+      const auth = getAuth(app);
+      const db = getFirestore(app);
+      console.log('Firebase initialized');
+
+      window.firebase = {
+        app,
+        auth,
+        db,
+        signInWithEmailAndPassword,
+        signOut,
+        onAuthStateChanged,
+        collection,
+        onSnapshot,
+        orderBy,
+        query,
+        getDoc,
+        doc,
+        setDoc,
+        serverTimestamp: () => ({ _nanoseconds: 0, _seconds: Math.floor(Date.now() / 1000) })
+      };
+      window.firebaseInitialized = true;
+    } catch (error) {
+      console.error('Firebase init error:', error);
+      window.firebaseError = error;
+      document.getElementById('root').innerHTML = '<div class="error"><h2>Firebase Error</h2><p>' + error.message + '</p></div>';
+    }
+  </script>
+  <script>
+    console.log('Loading stubbed functions...');
+    window.functions = {
+      calculateDistance: function(zip1, zip2) {
+        console.log(`Stubbed calculateDistance(${zip1}, ${zip2})`);
+        return null;
+      }
+    };
+    window.getLayoutClasses = function(isMobile) {
+      return {
+        mainClasses: 'flex-grow py-4 px-2 sm:py-12 sm:px-4',
+        divClasses: 'flex flex-col md:flex-row marg p-8'
+      };
+    };
+  </script>
+  <link rel="stylesheet" href="./style.css">
+  <style>
+    :root {
+      --header-height: 64px;
+    }
+    @media (min-width: 640px) {
+      :root {
+        --header-height: 80px;
+      }
+    }
+    @media (min-width: 768px) {
+      :root {
+        --header-height: 120px;
+      }
+    }
+    body {
+      font-family: 'Open Sans', Arial, sans-serif;
+      background-color: #f3f4f6;
+      margin: 0;
+    }
+    .hidden { display: none; }
+    .error {
+      padding: 1.5rem;
+      background-color: #fef2f2;
+      color: #991b1b;
+      border: 1px solid #f87171;
+      border-radius: 8px;
+      max-width: 500px;
+      margin: 2rem auto;
+    }
+    .error h2 { font-size: 1.5rem; font-weight: bold; }
+    .form-input {
+      width: 100%;
+      padding: 0.5rem;
+      border: 1px solid #d1d5db;
+      border-radius: 0.375rem;
+    }
+    .form-label {
+      display: block;
+      font-weight: 600;
+      margin-bottom: 0.25rem;
+    }
+    footer {
+      width: 100%;
+      background-color: #1f2937;
+      min-height: 120px;
+    }
+    .marg { margin-left: 10px;}
+    @media (max-width: 639px) {
+      .marg { margin-left: 0;}
+      .translate-x-full { transform: translateX(100%); }
+      .-translate-x-full { transform: translateX(-100%); }
+      .translate-x-0 { transform: translateX(0); }
+    }
+    @media (min-width: 640px) {
+      .transform-none { transform: none !important; }
+      .duration-0 { transition-duration: 0ms !important; }
+    }
+  </style>
+</head>
+<body>
+  <div id="root"><p>Loading RealVibin Users...</p></div>
+  <script src="https://unpkg.com/react@18.3.1/umd/react.development.js"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js"></script>
+  <script type="text/javascript">
+    console.log('Starting RealVibin Users app...');
+    const React = window.React;
+    const ReactDOM = window.ReactDOM;
+
+    console.log('React:', !!React, React);
+    console.log('ReactDOM:', !!ReactDOM, ReactDOM);
+    console.log('useRef:', !!React?.useRef, React?.useRef);
+    console.log('Firebase:', !!window.firebase, window.firebase);
+    console.log('Functions:', !!window.functions, window.functions);
+    console.log('getLayoutClasses:', !!window.getLayoutClasses, window.getLayoutClasses);
+
+    if (!React || !ReactDOM || !React.useRef) {
+      console.error('Dependency failure:', {
+        React: !!React,
+        ReactDOM: !!ReactDOM,
+        useRef: !!React?.useRef
+      });
+      document.getElementById('root').innerHTML = '<div class="error"><h2>Dependency Error</h2><p>Failed to load React or ReactDOM. Check network and console for details.</p></div>';
+      throw new Error('Missing dependencies');
+    }
+
+    const fetchUserProfile = async (userId) => {
+      console.log('Fetching profile for:', userId);
+      try {
+        const cached = sessionStorage.getItem(`userProfile_${userId}`);
+        if (cached) {
+          const profile = JSON.parse(cached);
+          console.log(`Cached profile for ${userId}:`, profile);
+          return profile;
+        }
+        const userDoc = await window.firebase.getDoc(window.firebase.doc(window.firebase.db, 'users', userId));
+        if (!userDoc.exists()) {
+          console.warn(`No profile for UID: ${userId}`);
+          return {
+            username: 'Unknown User',
+            dob: '',
+            gender: '',
+            race: '',
+            relationshipType: '',
+            height: 0,
+            bodyType: '',
+            zipCode: '',
+            city: '',
+            state: '',
+            profilePicture: null
+          };
+        }
+        const data = userDoc.data();
+        console.log(`Raw Firestore data for ${userId}:`, data);
+        const basicInfo = data.basicInfo || {};
+        const images = data.images || {};
+        const mainProfilePic = images.mainProfilePic || {};
+        const locationLogistics = data.locationLogistics || {};
+        const physicalAttributes = data.physicalAttributes || {};
+        const profile = {
+          username: basicInfo.username || 'Unknown User',
+          dob: basicInfo.dateOfBirth || '',
+          gender: basicInfo.genderIdentity || '',
+          race: physicalAttributes.ethnicity || '',
+          relationshipType: basicInfo.relationshipStatus || '',
+          height: physicalAttributes.height || 0,
+          bodyType: physicalAttributes.bodyType || '',
+          zipCode: locationLogistics.zipCode || '',
+          city: locationLogistics.currentCity || '',
+          state: '', // State not available; could derive from zipCode if needed
+          profilePicture: mainProfilePic.url || null
+        };
+        const missingFields = Object.entries(profile).filter(([key, value]) => !value || value === 'Unknown User' || value === 0).map(([key]) => key);
+        if (missingFields.length > 0) {
+          console.warn(`Missing or empty fields for ${userId}:`, missingFields);
+        }
+        if (profile.profilePicture && !profile.profilePicture.startsWith('http')) {
+          console.warn(`Invalid profilePicture URL for ${userId}:`, profile.profilePicture);
+          profile.profilePicture = null;
+        }
+        sessionStorage.setItem(`userProfile_${userId}`, JSON.stringify(profile));
+        console.log(`Fetched profile for ${userId}:`, profile);
+        return profile;
+      } catch (error) {
+        console.error('fetchUserProfile error:', error);
+        return {
+          username: 'Unknown User',
+          dob: '',
+          gender: '',
+          race: '',
+          relationshipType: '',
+          height: 0,
+          bodyType: '',
+          zipCode: '',
+          city: '',
+          state: '',
+          profilePicture: null
+        };
+      }
+    };
+
+    const calculateAge = (dob) => {
+      if (!dob) {
+        console.warn('No DOB provided');
+        return null;
+      }
+      try {
+        const birthDate = new Date(dob);
+        if (isNaN(birthDate.getTime())) {
+          console.warn(`Invalid DOB: ${dob}`);
+          return null;
+        }
+        const today = new Date();
+        if (birthDate > today) {
+          console.warn(`Future DOB: ${dob}`);
+          return null;
+        }
+        const age = today.getFullYear() - birthDate.getFullYear() - 
+          (today.getMonth() < birthDate.getMonth() || 
+           (today.getMonth() === birthDate.getMonth() && today.getDate() < birthDate.getDate()) ? 1 : 0);
+        if (age < 18) {
+          console.warn(`User under 18: ${age}`);
+          return null;
+        }
+        return age;
+      } catch (error) {
+        console.error('calculateAge error:', error);
+        return null;
+      }
+    };
+
+    function Header({ user, setUser }) {
+      const [isMenuOpen, setIsMenuOpen] = React.useState(false);
+      const [email, setEmail] = React.useState('');
+      const [password, setPassword] = React.useState('');
+      const [loginError, setLoginError] = React.useState(null);
+      const [displayName, setDisplayName] = React.useState('User');
+      const [unreadCount, setUnreadCount] = React.useState(0);
+      const firebase = window.firebase;
+
+      React.useEffect(() => {
+        const loadUserProfile = async () => {
+          if (user?.uid && firebase) {
+            const profile = await fetchUserProfile(user.uid);
+            setDisplayName(profile.username || 'User');
+            if (!user.profile?.username) {
+              setUser(prev => ({ ...prev, profile }));
+            }
+          } else {
+            setDisplayName('User');
+          }
+        };
+        loadUserProfile();
+      }, [user?.uid, firebase]);
+
+      React.useEffect(() => {
+        if (!user?.uid || !firebase?.db) return;
+        const unsubscribe = firebase.onSnapshot(
+          firebase.collection(firebase.db, `users/${user.uid}/unreadConversations`),
+          (snapshot) => {
+            let totalUnread = 0;
+            snapshot.forEach(doc => {
+              totalUnread += doc.data().unreadCount || 0;
+            });
+            setUnreadCount(totalUnread);
+            console.log('Unread count updated:', totalUnread);
+          },
+          (error) => {
+            console.error('Unread count snapshot error:', error);
+          }
+        );
+        return () => unsubscribe();
+      }, [user?.uid, firebase]);
+
+      const debounce = (fn, delay) => {
+        let timeout;
+        return (...args) => {
+          clearTimeout(timeout);
+          timeout = setTimeout(() => fn(...args), delay);
+        };
+      };
+
+      const handleLogin = async (e) => {
+        e.preventDefault();
+        if (!firebase?.auth) {
+          setLoginError('Authentication service not available.');
+          return;
+        }
+        try {
+          setLoginError(null);
+          const userCredential = await firebase.signInWithEmailAndPassword(firebase.auth, email, password);
+          const user = userCredential.user;
+          const profile = await fetchUserProfile(user.uid);
+          await firebase.setDoc(
+            firebase.doc(firebase.db, 'users', user.uid),
+            { loginStatus: 'logged_in', lastLogin: firebase.serverTimestamp() },
+            { merge: true }
+          );
+          setEmail('');
+          setPassword('');
+          setUser({
+            ...user,
+            profile,
+            loginStatus: 'logged_in'
+          });
+          setDisplayName(profile.username || 'User');
+          console.log('Login successful:', { uid: user.uid, username: profile.username });
+        } catch (error) {
+          console.error('Login error:', error);
+          setLoginError(`Login error: ${error.message}`);
+        }
+      };
+
+      const handleLogout = debounce(async () => {
+        if (!firebase?.auth) {
+          setLoginError('Authentication service not available.');
+          return;
+        }
+        try {
+          if (user) {
+            await firebase.setDoc(
+              firebase.doc(firebase.db, 'users', user.uid),
+              { loginStatus: 'logged_out', lastLogout: firebase.serverTimestamp() },
+              { merge: true }
+            );
+            sessionStorage.removeItem(`userProfile_${user.uid}`);
+          }
+          await firebase.signOut(firebase.auth);
+          setUser(null);
+          setDisplayName('User');
+          setIsMenuOpen(false);
+          console.log('Logout successful');
+        } catch (error) {
+          console.error('Logout error:', error);
+          setLoginError(`Logout error: ${error.message}`);
+        }
+      }, 300);
+
+      const handleMessagesClick = (e) => {
+        e.preventDefault();
+        console.log('Messages navigation not implemented:', '/messages');
+        alert('Messages page not implemented yet.');
+      };
+
+      const handleSignupClick = (e) => {
+        e.preventDefault();
+        console.log('Signup navigation not implemented:', '/signup');
+        alert('Signup page not implemented yet.');
+      };
+
+      return React.createElement(
+        'nav',
+        { className: 'bg-primary shadow-md sticky top-0 z-50' },
+        React.createElement(
+          'div',
+          { className: 'container flex items-center justify-between h-auto min-h-[64px] px-2 sm:px-4 py-2' },
+          React.createElement(
+            'div',
+            { className: 'logo-container flex items-center' },
+            React.createElement(
+              'a',
+              { href: './index.html' },
+              React.createElement('img', {
+                src: './img/RealVibin.png',
+                alt: 'RealVibin Logo',
+                className: 'h-12 sm:h-16 md:h-[100px] w-auto'
+              })
+            )
+          ),
+          React.createElement(
+            'div',
+            { className: 'auth-container hidden md:flex items-center space-x-4' },
+            loginError && React.createElement('div', { className: 'text-red-200 text-sm' }, loginError),
+            user && user.loginStatus === 'logged_in' ? React.createElement(
+              'div',
+              { className: 'flex items-center space-x-2' },
+              React.createElement('a', {
+                href: `profile.html?uid=${user.uid}`,
+                className: 'text-white font-semibold hover:underline'
+              }, displayName),
+              React.createElement('a', {
+                href: '#',
+                onClick: handleMessagesClick,
+                className: 'relative text-white hover:text-white'
+              }, React.createElement('svg', {
+                className: 'h-6 w-6',
+                fill: 'none',
+                stroke: 'currentColor',
+                viewBox: '0 0 24 24'
+              }, React.createElement('path', {
+                strokeLinecap: 'round',
+                strokeLinejoin: 'round',
+                strokeWidth: '2',
+                d: 'M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z'
+              })), unreadCount > 0 && React.createElement('span', {
+                className: 'absolute -top-1 -right-1 bg-secondary text-white text-xs rounded-full h-5 w-5 flex items-center justify-center'
+              }, unreadCount)),
+              React.createElement('button', {
+                type: 'button',
+                className: 'bg-secondary text-white font-semibold py-2 px-4 rounded-lg hover:bg-red-700 transition',
+                onClick: handleLogout
+              }, 'Logout')
+            ) : React.createElement(
+              'div',
+              { className: 'flex items-center space-x-2' },
+              React.createElement(
+                'div',
+                { className: 'flex flex-col space-y-2 w-full md:flex-row md:space-y-0 md:space-x-2' },
+                React.createElement('input', {
+                  type: 'email',
+                  placeholder: 'Email',
+                  value: email,
+                  onChange: (e) => setEmail(e.target.value),
+                  className: 'form-input',
+                  required: true,
+                  autoComplete: 'email'
+                }),
+                React.createElement('input', {
+                  type: 'password',
+                  placeholder: 'Password',
+                  value: password,
+                  onChange: (e) => setPassword(e.target.value),
+                  className: 'form-input',
+                  required: true,
+                  autoComplete: 'current-password'
+                }),
+                React.createElement('button', {
+                  onClick: handleLogin,
+                  className: 'bg-primary text-white font-semibold py-2 px-4 rounded-lg hover:bg-blue-700 transition'
+                }, 'Login')
+              ),
+              React.createElement('a', {
+                href: '#',
+                onClick: handleSignupClick,
+                className: 'bg-primary text-white font-semibold py-2 px-4 rounded-lg hover:bg-blue-700 transition text-sm'
+              }, 'Need an account?')
+            )
+          ),
+          React.createElement(
+            'div',
+            { className: 'md:hidden flex items-center' },
+            React.createElement('button', {
+              onClick: () => setIsMenuOpen(!isMenuOpen),
+              className: 'text-white hover:text-white focus:outline-none',
+              type: 'button'
+            }, React.createElement('svg', {
+              className: 'h-6 w-6',
+              fill: 'none',
+              stroke: 'currentColor',
+              viewBox: '0 0 24 24'
+            }, React.createElement('path', {
+              strokeLinecap: 'round',
+              strokeLinejoin: 'round',
+              strokeWidth: '2',
+              d: isMenuOpen ? 'M6 18L18 6M6 6l12 12' : 'M4 6h16M4 12h16M4 18h16'
+            })))
+          )
+        ),
+        isMenuOpen && React.createElement(
+          'div',
+          { className: 'md:hidden bg-primary shadow-md px-2 py-4' },
+          loginError && React.createElement('div', { className: 'text-red-200 text-sm mb-2' }, loginError),
+          user && user.loginStatus === 'logged_in' ? React.createElement(
+            'div',
+            { className: 'flex flex-col space-y-2' },
+            React.createElement('a', {
+              href: `profile.html?uid=${user.uid}`,
+              className: 'text-white font-semibold hover:underline text-center'
+            }, displayName),
+            React.createElement('a', {
+              href: '#',
+              onClick: handleMessagesClick,
+              className: 'text-white font-semibold hover:underline text-center'
+            }, `Messages ${unreadCount > 0 ? `(${unreadCount})` : ''}`),
+            React.createElement('button', {
+              type: 'button',
+              className: 'bg-secondary text-white font-semibold py-2 px-4 rounded-lg hover:bg-red-700 transition',
+              onClick: handleLogout
+            }, 'Logout')
+          ) : React.createElement(
+            'div',
+            { className: 'flex flex-col space-y-2' },
+            React.createElement(
+              'div',
+              { className: 'flex flex-col space-y-2' },
+              React.createElement('input', {
+                type: 'email',
+                placeholder: 'Email',
+                value: email,
+                onChange: (e) => setEmail(e.target.value),
+                className: 'form-input',
+                required: true,
+                autoComplete: 'email'
+              }),
+              React.createElement('input', {
+                type: 'password',
+                placeholder: 'Password',
+                value: password,
+                onChange: (e) => setPassword(e.target.value),
+                className: 'form-input',
+                required: true,
+                autoComplete: 'current-password'
+              }),
+              React.createElement('button', {
+                onClick: handleLogin,
+                className: 'bg-primary text-white font-semibold py-2 px-4 rounded-lg hover:bg-blue-700 transition'
+              }, 'Login')
+            ),
+            React.createElement('a', {
+              href: '#',
+              onClick: handleSignupClick,
+              className: 'bg-primary text-white font-semibold py-2 px-4 rounded-lg hover:bg-blue-700 transition text-center text-sm'
+            }, 'Need an account?')
+          )
+        )
+      );
+    }
+
+    function FilterSection({ onFilterChange }) {
+      const [ageRange, setAgeRange] = React.useState('');
+      const [gender, setGender] = React.useState('');
+      const [race, setRace] = React.useState('');
+      const [relationshipType, setRelationshipType] = React.useState('');
+      const [height, setHeight] = React.useState('');
+      const [bodyType, setBodyType] = React.useState('');
+
+      const handleSubmit = (e) => {
+        e.preventDefault();
+        const filters = { ageRange, gender, race, relationshipType, height, bodyType, zipCode: '', radius: '' };
+        console.log('Filters applied:', filters);
+        onFilterChange(filters);
+      };
+
+      return React.createElement(
+        'div',
+        { className: 'bg-white rounded-lg shadow-md p-4 w-full mx-auto md:w-80 md:max-w-xs' },
+        React.createElement('h2', { className: 'text-xl font-semibold text-primary mb-3' }, 'Filters'),
+        React.createElement(
+          'form',
+          { onSubmit: handleSubmit, className: 'space-y-3' },
+          React.createElement(
+            'div',
+            { className: 'form-group' },
+            React.createElement('label', { className: 'form-label' }, 'Age Range'),
+            React.createElement(
+              'select',
+              { value: ageRange, onChange: (e) => setAgeRange(e.target.value), className: 'form-input' },
+              React.createElement('option', { value: '' }, 'Select Age Range'),
+              React.createElement('option', { value: '18-25' }, '18-25'),
+              React.createElement('option', { value: '26-35' }, '26-35'),
+              React.createElement('option', { value: '36-50' }, '36-50'),
+              React.createElement('option', { value: '50+' }, '50+')
+            )
+          ),
+          React.createElement(
+            'div',
+            { className: 'form-group' },
+            React.createElement('label', { className: 'form-label' }, 'Gender'),
+            React.createElement(
+              'select',
+              { value: gender, onChange: (e) => setGender(e.target.value), className: 'form-input' },
+              React.createElement('option', { value: '' }, 'Select Gender'),
+              React.createElement('option', { value: 'Male' }, 'Male'),
+              React.createElement('option', { value: 'Female' }, 'Female'),
+              React.createElement('option', { value: 'M/F Couple' }, 'M/F Couple'),
+              React.createElement('option', { value: 'W/W Couple' }, 'W/W Couple'),
+              React.createElement('option', { value: 'M/M Couple' }, 'M/M Couple')
+            )
+          ),
+          React.createElement(
+            'div',
+            { className: 'form-group' },
+            React.createElement('label', { className: 'form-label' }, 'Ethnicity'),
+            React.createElement(
+              'select',
+              { value: race, onChange: (e) => setRace(e.target.value), className: 'form-input' },
+              React.createElement('option', { value: '' }, 'Select Ethnicity'),
+              React.createElement('option', { value: 'Asian' }, 'Asian'),
+              React.createElement('option', { value: 'Black' }, 'Black'),
+              React.createElement('option', { value: 'Hispanic' }, 'Hispanic'),
+              React.createElement('option', { value: 'White' }, 'White'),
+              React.createElement('option', { value: 'Other' }, 'Other')
+            )
+          ),
+          React.createElement(
+            'div',
+            { className: 'form-group' },
+            React.createElement('label', { className: 'form-label' }, 'Relationship Type'),
+            React.createElement(
+              'select',
+              { value: relationshipType, onChange: (e) => setRelationshipType(e.target.value), className: 'form-input' },
+              React.createElement('option', { value: '' }, 'Select Type'),
+              React.createElement('option', { value: 'Fun Chat' }, 'Fun Chat'),
+              React.createElement('option', { value: 'Casual Dating' }, 'Casual Dating'),
+              React.createElement('option', { value: 'Long Term Fun' }, 'Long Term Fun'),
+              React.createElement('option', { value: 'Friends with Benefits' }, 'Friends with Benefits'),
+              React.createElement('option', { value: 'One-Night Stand' }, 'One-Night Stand')
+            )
+          ),
+          React.createElement(
+            'div',
+            { className: 'form-group' },
+            React.createElement('label', { className: 'form-label' }, 'Height'),
+            React.createElement(
+              'select',
+              { value: height, onChange: (e) => setHeight(e.target.value), className: 'form-input' },
+              React.createElement('option', { value: '' }, 'Select Height'),
+              [...Array(55).keys()].map(i => {
+                const inches = 40 + i;
+                const feet = Math.floor(inches / 12);
+                const remainingInches = inches % 12;
+                return React.createElement('option', { key: inches, value: inches }, `${feet}'${remainingInches}"`);
+              })
+            )
+          ),
+          React.createElement(
+            'div',
+            { className: 'form-group' },
+            React.createElement('label', { className: 'form-label' }, 'Body Type'),
+            React.createElement(
+              'select',
+              { value: bodyType, onChange: (e) => setBodyType(e.target.value), className: 'form-input' },
+              React.createElement('option', { value: '' }, 'Select Body Type'),
+              React.createElement('option', { value: 'Athletic' }, 'Athletic'),
+              React.createElement('option', { value: 'Fit' }, 'Fit'),
+              React.createElement('option', { value: 'Skinny' }, 'Skinny'),
+              React.createElement('option', { value: 'Fat' }, 'Fat'),
+              React.createElement('option', { value: 'Chunky' }, 'Chunky'),
+              React.createElement('option', { value: 'Fluffy' }, 'Fluffy'),
+              React.createElement('option', { value: 'Round' }, 'Round'),
+              React.createElement('option', { value: 'Stick Figure' }, 'Stick Figure'),
+              React.createElement('option', { value: 'Perfect' }, 'Perfect'),
+              React.createElement('option', { value: 'Almost Perfect' }, 'Almost Perfect')
+            )
+          ),
+          React.createElement('button', {
+            type: 'submit',
+            className: 'bg-primary text-white font-semibold py-1 px-3 rounded-lg hover:bg-blue-700 transition w-full text-sm'
+          }, 'Apply Filters')
+        )
+      );
+    }
+
+    function UsersList({ users }) {
+      console.log('Rendering UsersList:', users);
+      if (!users || users.length === 0) {
+        return React.createElement(
+          'div',
+          { className: 'bg-white marg rounded-lg shadow-md p-6' },
+          React.createElement('h2', { className: 'text-2xl font-semibold text-primary mb-4' }, 'All Users'),
+          React.createElement('p', { className: 'text-gray-600' }, 'No users available. Invite some to get started!')
+        );
+      }
+
+      users.forEach(user => {
+        if (!user.profilePicture || !user.age || !user.gender || !user.city || !user.state) {
+          console.warn(`Incomplete user data for ${user.id}:`, {
+            profilePicture: user.profilePicture,
+            age: user.age,
+            gender: user.gender,
+            city: user.city,
+            state: user.state
+          });
+        }
+      });
+
+      return React.createElement(
+        'div',
+        { className: 'bg-white marg rounded-lg shadow-md p-6' },
+        React.createElement('h2', { className: 'text-2xl font-semibold text-primary mb-4' }, 'All Users'),
+        React.createElement(
+          'div',
+          { className: 'grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4' },
+          users.map(user => React.createElement(
+            'a',
+            {
+              key: user.id,
+              href: `profile.html?uid=${user.id}`,
+              className: 'flex flex-col items-center text-center p-2 rounded-lg hover:bg-gray-100 transition cursor-pointer'
+            },
+            React.createElement('img', {
+              src: user.profilePicture || 'https://placehold.co/100x100',
+              alt: `${user.username}'s profile`,
+              className: 'w-[100px] h-[100px] rounded-none object-cover mb-2'
+            }),
+            React.createElement('p', { className: 'text-sm font-medium text-gray-800' }, user.username),
+            React.createElement('p', { className: 'text-xs text-gray-600' }, user.age ? `Age: ${user.age}` : 'Age not provided'),
+            React.createElement('p', { className: 'text-xs text-gray-600' }, user.gender || 'Gender not provided'),
+            React.createElement('p', { className: 'text-xs text-gray-600' }, user.city && user.state ? `${user.city}, ${user.state}` : user.city || 'Location not provided')
+          ))
+        )
+      );
+    }
+
+    function Footer() {
+      const handleLinkClick = (e, path) => {
+        e.preventDefault();
+        console.log(`Footer navigation not implemented: ${path}`);
+        alert('Page not implemented yet.');
+      };
+
+      return React.createElement(
+        'footer',
+        { className: 'bg-dark text-white py-8 w-full mt-auto' },
+        React.createElement(
+          'div',
+          { className: 'text-center px-2 sm:px-4 mx-auto' },
+          React.createElement('p', null, '© 2025 RealVibin. All rights reserved.'),
+          React.createElement(
+            'div',
+            { className: 'mt-4 flex justify-center space-x-4' },
+            React.createElement('a', { href: '#', onClick: (e) => handleLinkClick(e, '/privacy'), className: 'text-gray-400 hover:text-white' }, 'Privacy Policy'),
+            React.createElement('a', { href: '#', onClick: (e) => handleLinkClick(e, '/terms'), className: 'text-gray-400 hover:text-white' }, 'Terms of Service'),
+            React.createElement('a', { href: '#', onClick: (e) => handleLinkClick(e, '/contact'), className: 'text-gray-400 hover:text-white' }, 'Contact')
+          )
+        )
+      );
+    }
+
+    function ErrorBoundary({ children }) {
+      const [error, setError] = React.useState(null);
+      const [errorInfo, setErrorInfo] = React.useState(null);
+
+      React.useEffect(() => {
+        const handleError = (event) => {
+          if (event.error) {
+            setError(event.error);
+            setErrorInfo({ componentStack: event.error.stack });
+            console.error('ErrorBoundary caught:', event.error);
+          }
+        };
+        window.addEventListener('error', handleError);
+        return () => window.removeEventListener('error', handleError);
+      }, []);
+
+      if (error) {
+        return React.createElement(
+          'div',
+          { className: 'error' },
+          React.createElement('h2', null, 'Something went wrong'),
+          React.createElement('p', null, error.message || 'An unexpected error occurred'),
+          React.createElement(
+            'details',
+            { className: 'mt-4' },
+            React.createElement('summary', { className: 'cursor-pointer' }, 'Stack trace'),
+            React.createElement('pre', { className: 'text-sm' }, errorInfo?.componentStack)
+          )
+        );
+      }
+      return children;
+    }
+
+    function App() {
+      const [user, setUser] = React.useState(null);
+      const [loading, setLoading] = React.useState(true);
+      const [allUsers, setAllUsers] = React.useState([]);
+      const [filteredUsers, setFilteredUsers] = React.useState([]);
+      const [filters, setFilters] = React.useState({
+        ageRange: '',
+        gender: '',
+        race: '',
+        relationshipType: '',
+        height: '',
+        bodyType: '',
+        zipCode: '',
+        radius: ''
+      });
+      const [error, setError] = React.useState(null);
+      const [showFilters, setShowFilters] = React.useState(false);
+      const [layoutClasses, setLayoutClasses] = React.useState(window.getLayoutClasses(window.innerWidth < 640));
+
+      console.log('Rendering App...');
+
+      const parseAgeRange = (range) => {
+        if (!range || range === 'Not provided') return { min: 0, max: Infinity };
+        if (range === '50+') return { min: 50, max: Infinity };
+        const [min, max] = range.split('-').map(Number);
+        return { min, max: max || Infinity };
+      };
+
+      React.useEffect(() => {
+        const updateClasses = () => {
+          const isMobile = window.innerWidth < 640;
+          setLayoutClasses(window.getLayoutClasses(isMobile));
+        };
+        updateClasses();
+        window.addEventListener('resize', updateClasses);
+        return () => window.removeEventListener('resize', updateClasses);
+      }, []);
+
+      const applyFilters = async (items, filters) => {
+        let filtered = [...items];
+        const { ageRange, gender, race, relationshipType, height, bodyType } = filters;
+
+        if (ageRange) {
+          const filterAge = parseAgeRange(ageRange);
+          filtered = filtered.filter(item => {
+            const itemAge = calculateAge(item.dob);
+            return itemAge !== null && itemAge >= filterAge.min && itemAge <= filterAge.max;
+          });
+        }
+
+        if (gender) {
+          filtered = filtered.filter(item => item.gender === gender);
+        }
+
+        if (race) {
+          filtered = filtered.filter(item => item.race === race);
+        }
+
+        if (relationshipType) {
+          filtered = filtered.filter(item => item.relationshipType === relationshipType);
+        }
+
+        if (height) {
+          filtered = filtered.filter(item => item.height === parseInt(height));
+        }
+
+        if (bodyType) {
+          filtered = filtered.filter(item => item.bodyType === bodyType);
+        }
+
+        return filtered;
+      };
+
+      React.useEffect(() => {
+        let unsubscribeAuth;
+        let unsubscribeUsers;
+        const initializeFirebaseListeners = async () => {
+          try {
+            let attempts = 0;
+            while (!window.firebaseInitialized && attempts < 10) {
+              await new Promise(resolve => setTimeout(resolve, 500));
+              attempts++;
+            }
+            if (!window.firebaseInitialized || !window.firebase) {
+              throw new Error('Firebase failed to initialize after retries');
+            }
+
+            unsubscribeAuth = window.firebase.onAuthStateChanged(window.firebase.auth, async (currentUser) => {
+              if (currentUser) {
+                try {
+                  const profile = await fetchUserProfile(currentUser.uid);
+                  setUser({
+                    ...currentUser,
+                    profile,
+                    loginStatus: 'logged_in'
+                  });
+                  console.log('Auth state updated:', { uid: currentUser.uid, username: profile.username });
+                } catch (error) {
+                  console.error('Error fetching user data:', error);
+                  setUser({
+                    ...currentUser,
+                    profile: {},
+                    loginStatus: 'logged_in'
+                  });
+                }
+              } else {
+                setUser(null);
+                console.log('Auth state: No user');
+              }
+              setLoading(false);
+            }, (err) => {
+              console.error('Auth state error:', err);
+              setLoading(false);
+            });
+
+            const usersQuery = window.firebase.query(
+              window.firebase.collection(window.firebase.db, 'users'),
+              window.firebase.orderBy('createdAt', 'desc')
+            );
+            unsubscribeUsers = window.firebase.onSnapshot(usersQuery, async (snapshot) => {
+              const usersData = snapshot.docs.map(doc => {
+                const data = doc.data();
+                const basicInfo = data.basicInfo || {};
+                const images = data.images || {};
+                const mainProfilePic = images.mainProfilePic || {};
+                const locationLogistics = data.locationLogistics || {};
+                const physicalAttributes = data.physicalAttributes || {};
+                return {
+                  id: doc.id,
+                  username: basicInfo.username || 'Unknown User',
+                  dob: basicInfo.dateOfBirth || '',
+                  age: calculateAge(basicInfo.dateOfBirth),
+                  gender: basicInfo.genderIdentity || '',
+                  race: physicalAttributes.ethnicity || '',
+                  relationshipType: basicInfo.relationshipStatus || '',
+                  height: physicalAttributes.height || 0,
+                  bodyType: physicalAttributes.bodyType || '',
+                  zipCode: locationLogistics.zipCode || '',
+                  city: locationLogistics.currentCity || '',
+                  state: '', // State not available
+                  profilePicture: mainProfilePic.url || null,
+                  createdAt: data.createdAt || { seconds: Math.floor(Date.now() / 1000) }
+                };
+              });
+              setAllUsers(usersData);
+              const filteredUsers = await applyFilters(usersData, filters);
+              setFilteredUsers(filteredUsers);
+              setError(null);
+              console.log('Users updated:', usersData.length);
+            }, (error) => {
+              console.error('Users fetch error:', error);
+              setError(`Failed to load users: ${error.message}`);
+            });
+          } catch (error) {
+            console.error('App initialization error:', error);
+            setError(`App initialization failed: ${error.message}`);
+            setLoading(false);
+          }
+        };
+
+        initializeFirebaseListeners();
+
+        return () => {
+          console.log('Cleaning up listeners');
+          unsubscribeAuth && unsubscribeAuth();
+          unsubscribeUsers && unsubscribeUsers();
+        };
+      }, []);
+
+      const handleFilterChange = async (newFilters) => {
+        try {
+          setFilters(newFilters);
+          const filteredUsers = await applyFilters(allUsers, newFilters);
+          setFilteredUsers(filteredUsers);
+          setShowFilters(false);
+          console.log('Filtered users:', filteredUsers.length);
+        } catch (err) {
+          console.error('Filter error:', err);
+          setError('Failed to apply filters');
+        }
+      };
+
+      if (loading) {
+        return React.createElement('div', { className: 'text-center text-gray-600 py-8' }, 'Loading...');
+      }
+
+      return React.createElement(
+        'div',
+        { className: 'flex flex-col min-h-screen' },
+        React.createElement(Header, { user, setUser }),
+        React.createElement(
+          'main',
+          { className: `${layoutClasses.mainClasses} pt-[var(--header-height)]` },
+          React.createElement(
+            'div',
+            { className: layoutClasses.divClasses },
+            React.createElement(
+              'div',
+              { className: 'w-full mb-6 md:w-80 md:max-w-xs marg p-8' },
+              React.createElement('button', {
+                className: 'sm:hidden bg-primary text-white font-semibold py-1.5 px-3 text-sm rounded-md shadow-sm hover:bg-blue-700 transition w-full mb-4 z-10 relative',
+                onClick: () => setShowFilters(!showFilters)
+              }, showFilters ? 'Hide Filters' : 'Show Filters'),
+              React.createElement(
+                'div',
+                { className: `${showFilters ? 'block' : 'hidden'} sm:block sm:transform-none transition-transform duration-300 sm:duration-0 ${showFilters ? 'translate-x-0' : '-translate-x-full'} sm:translate-x-0 z-10 relative` },
+                React.createElement(FilterSection, { onFilterChange: handleFilterChange })
+              )
+            ),
+            React.createElement(
+              'div',
+              { className: 'flex-1 w-full marg p-8' },
+              error && React.createElement('div', { className: 'bg-red-100 text-red-700 p-4 rounded-lg mb-4' }, error),
+              React.createElement(UsersList, { users: filteredUsers })
+            )
+          )
+        ),
+        React.createElement(Footer)
+      );
+    }
+
+    try {
+      console.log('Creating root...');
+      const root = ReactDOM.createRoot(document.getElementById('root'));
+      console.log('Rendering app...');
+      root.render(
+        React.createElement(
+          React.StrictMode,
+          null,
+          React.createElement(
+            ErrorBoundary,
+            null,
+            React.createElement(App)
+          )
+        )
+      );
+      console.log('App rendered');
+    } catch (error) {
+      console.error('Render error:', error);
+      document.getElementById('root').innerHTML = '<div class="error"><h2>Render Error</h2><p>' + error.message + '</p></div>';
+    }
+  </script>
+</body>
+</html>

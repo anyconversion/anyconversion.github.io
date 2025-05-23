@@ -865,63 +865,63 @@
   }, [previewImageUrl]);
 
   const startConversation = async (recipientId) => {
-    if (!user?.uid || !recipientId || user.uid === recipientId) {
-      console.warn('Invalid startConversation params:', { userId: user?.uid, recipientId });
-      return;
-    }
-    try {
-      console.log('Starting conversation with recipientId:', recipientId);
-      if (!firebase.auth.currentUser) {
-        throw new Error('User not authenticated');
-      }
-      console.log('Authenticated user:', firebase.auth.currentUser.uid);
-      const isUsername = !recipientId.match(/^[a-zA-Z0-9]{20,}$/);
-      const recipientProfile = await fetchUserProfile(recipientId, isUsername);
-      const recipientUserId = recipientProfile.uid;
-      console.log('Recipient resolved:', { recipientId, recipientUserId, username: recipientProfile.username });
-      if (user.uid === recipientUserId) {
-        console.warn('Cannot start conversation with self:', recipientUserId);
+      if (!user?.uid || !recipientId || user.uid === recipientId) {
+        console.warn('Invalid startConversation params:', { userId: user?.uid, recipientId });
         return;
       }
-      const chatId = [user.uid, recipientUserId].sort().join('_');
-      const convoRef = firebase.doc(firebase.db, 'conversations', chatId);
-      console.log('Checking conversation:', chatId);
-      const convoSnap = await firebase.getDoc(convoRef);
-      if (!convoSnap.exists()) {
-        console.log('Creating new conversation:', chatId);
-        await firebase.setDoc(convoRef, {
-          participants: [user.uid, recipientUserId],
-          createdAt: firebase.serverTimestamp(),
-          lastMessage: {},
-          unreadCount: 0,
-          unreadCounts: { [user.uid]: 0, [recipientUserId]: 0 }
-        });
-        console.log('New conversation created:', chatId);
-        setConversations(prev => {
-          const exists = prev.some(c => c.id === chatId);
-          if (exists) return prev;
-          const newConvo = {
-            id: chatId,
-            otherUserId: recipientUserId,
-            otherUsername: recipientProfile.username,
-            profilePicture: recipientProfile.profilePicture,
+      try {
+        console.log('Starting conversation with recipientId:', recipientId);
+        if (!firebase.auth.currentUser) {
+          throw new Error('User not authenticated');
+        }
+        console.log('Authenticated user:', firebase.auth.currentUser.uid);
+        const isUsername = !recipientId.match(/^[a-zA-Z0-9]{20,}$/);
+        const recipientProfile = await fetchUserProfile(recipientId, isUsername);
+        const recipientUserId = recipientProfile.uid;
+        console.log('Recipient resolved:', { recipientId, recipientUserId, username: recipientProfile.username });
+        if (user.uid === recipientUserId) {
+          console.warn('Cannot start conversation with self:', recipientUserId);
+          return;
+        }
+        const chatId = [user.uid, recipientUserId].sort().join('_');
+        const convoRef = firebase.doc(firebase.db, 'conversations', chatId);
+        console.log('Checking conversation:', chatId);
+        const convoSnap = await firebase.getDoc(convoRef);
+        if (!convoSnap.exists()) {
+          console.log('Creating new conversation:', chatId);
+          await firebase.setDoc(convoRef, {
+            participants: [user.uid, recipientUserId],
+            createdAt: firebase.serverTimestamp(),
             lastMessage: {},
-            unreadCount: 0
-          };
-          console.log('Added placeholder conversation:', newConvo);
-          return [newConvo, ...prev];
-        });
-      } else {
-        console.log('Existing conversation found:', chatId, convoSnap.data());
+            unreadCount: 0,
+            unreadCounts: { [user.uid]: 0, [recipientUserId]: 0 }
+          });
+          console.log('New conversation created:', chatId);
+          setConversations(prev => {
+            const exists = prev.some(c => c.id === chatId);
+            if (exists) return prev;
+            const newConvo = {
+              id: chatId,
+              otherUserId: recipientUserId,
+              otherUsername: recipientProfile.username,
+              profilePicture: recipientProfile.profilePicture,
+              lastMessage: {},
+              unreadCount: 0
+            };
+            console.log('Added placeholder conversation:', newConvo);
+            return [newConvo, ...prev];
+          });
+        } else {
+          console.log('Existing conversation found:', chatId, convoSnap.data());
+        }
+        setSelectedChatId(chatId);
+        console.log('Selected chat:', chatId);
+      } catch (error) {
+        console.error('startConversation error:', error.code, error.message, error.stack);
+        setError('Failed to start conversation: ' + error.message);
       }
-      setSelectedChatId(chatId);
-      console.log('Selected chat:', chatId);
-    } catch (error) {
-      console.error('startConversation error:', error.code, error.message, error.stack);
-      setError('Failed to start conversation: ' + error.message);
-    }
-  };
-
+    };
+    
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (!file) {

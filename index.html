@@ -120,6 +120,26 @@ footer {
   </style>
 </head>
 <body>
+  <script type="module">
+    import React from 'https://esm.sh/react@18.3.1';
+    import ReactDOM from 'https://esm.sh/react-dom@18.3.1';
+    import { BrowserRouter } from 'https://unpkg.com/react-router-dom@6.26.2/dist/main.js';
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.13.1/firebase-app.js';
+    import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.13.1/firebase-auth.js';
+    import { getFirestore, collection, addDoc, onSnapshot, orderBy, query, serverTimestamp, getDoc, doc, setDoc } from 'https://www.gstatic.com/firebasejs/10.13.1/firebase-firestore.js';
+  
+    // Your Firebase config and other imports...
+  
+    // Main app render
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(
+      <React.StrictMode>
+        <BrowserRouter>
+          <App />
+        </BrowserRouter>
+      </React.StrictMode>
+    );
+  </script>
   <div id="root"></div>
   <script type="text/babel" data-presets="env,react">
     if (!window.React || !window.ReactDOM || !window.Babel) {
@@ -129,16 +149,17 @@ footer {
     }
 
     const fetchUserProfile = async (userId) => {
+      console.log('Fetching profile for:', userId);
       try {
         const cached = sessionStorage.getItem(`userProfile_${userId}`);
         if (cached) {
           const profile = JSON.parse(cached);
-          console.log(`Using cached profile for ${userId} from sessionStorage:`, profile);
+          console.log(`Cached profile for ${userId}:`, profile);
           return profile;
         }
         const userDoc = await window.firebase.getDoc(window.firebase.doc(window.firebase.db, 'users', userId));
         if (!userDoc.exists()) {
-          console.warn(`No user profile for UID: ${userId}, using defaults`);
+          console.warn(`No profile for UID: ${userId}`);
           return {
             username: 'Unknown User',
             dob: '',
@@ -146,29 +167,54 @@ footer {
             race: '',
             relationshipType: '',
             height: 0,
-            weight: 0,
             bodyType: '',
-            zipCode: ''
+            zipCode: '',
+            city: '',
+            state: '',
+            profilePicture: null
           };
         }
         const data = userDoc.data();
-        console.log(`Raw user profile for ${userId}:`, JSON.stringify(data, null, 2));
+        console.log(`Raw Firestore data for ${userId}:`, data);
+        const basicInfo = data.basicInfo || {};
+        const images = data.images || {};
+        const mainProfilePic = images.mainProfilePic || {};
+        const locationLogistics = basicInfo.locationLogistics || {};
+        const physicalAttributes = data.physicalAttributes || {};
+        let state = '';
+        if (locationLogistics.zipCode && window.zipcodes && window.zipcodes.lookup) {
+          const zipData = window.zipcodes.lookup(locationLogistics.zipCode);
+          console.log('Zipcode lookup result for', locationLogistics.zipCode, ':', zipData);
+          state = zipData && zipData.state ? zipData.state : '';
+        } else {
+          console.warn('Zipcodes library not available or no zipCode for', userId);
+        }
         const profile = {
-          username: data.basicInfo?.username || 'Unknown User',
-          dob: data.basicInfo?.dateOfBirth || '',
-          gender: data.basicInfo?.genderIdentity || '',
-          race: data.physicalAttributes?.ethnicity || '',
-          relationshipType: data.basicInfo?.relationshipStatus || '',
-          height: parseInt(data.physicalAttributes?.height, 10) || 0,
-          weight: parseInt(data.physicalAttributes?.weight, 10) || 0,
-          bodyType: data.physicalAttributes?.bodyType || '',
-          zipCode: data.locationLogistics?.zipCode || ''
+          username: basicInfo.username || 'Unknown User',
+          dob: basicInfo.dateOfBirth || '',
+          gender: basicInfo.genderIdentity || '',
+          race: physicalAttributes.ethnicity || '',
+          relationshipType: basicInfo.relationshipStatus || '',
+          height: physicalAttributes.height || 0,
+          bodyType: physicalAttributes.bodyType || '',
+          zipCode: locationLogistics.zipCode || '',
+          city: locationLogistics.currentCity || '',
+          state: state,
+          profilePicture: mainProfilePic.url || null
         };
+        const missingFields = Object.entries(profile).filter(([key, value]) => !value || value === 'Unknown User' || value === 0).map(([key]) => key);
+        if (missingFields.length > 0) {
+          console.warn(`Missing or empty fields for ${userId}:`, missingFields);
+        }
+        if (profile.profilePicture && !profile.profilePicture.startsWith('http')) {
+          console.warn(`Invalid profilePicture URL for ${userId}:`, profile.profilePicture);
+          profile.profilePicture = null;
+        }
         sessionStorage.setItem(`userProfile_${userId}`, JSON.stringify(profile));
-        console.log(`Cached profile for ${userId} in sessionStorage:`, profile);
+        console.log(`Fetched profile for ${userId}:`, profile);
         return profile;
       } catch (error) {
-        console.error('fetchUserProfile error:', { message: error.message || 'Unknown error', code: error.code || 'No code', stack: error.stack || 'No stack' });
+        console.error('fetchUserProfile error:', error);
         return {
           username: 'Unknown User',
           dob: '',
@@ -176,13 +222,45 @@ footer {
           race: '',
           relationshipType: '',
           height: 0,
-          weight: 0,
           bodyType: '',
-          zipCode: ''
+          zipCode: '',
+          city: '',
+          state: '',
+          profilePicture: null
         };
       }
     };
 
+    const calculateAge = (dob) => {
+      if (!dob) {
+        console.warn('No DOB provided');
+        return null;
+      }
+      try {
+        const birthDate = new Date(dob);
+        if (isNaN(birthDate.getTime())) {
+          console.warn(`Invalid DOB: ${dob}`);
+          return null;
+        }
+        const today = new Date();
+        if (birthDate > today) {
+          console.warn(`Future DOB: ${dob}`);
+          return null;
+        }
+        const age = today.getFullYear() - birthDate.getFullYear() - 
+          (today.getMonth() < birthDate.getMonth() || 
+           (today.getMonth() === birthDate.getMonth() && today.getDate() < birthDate.getDate()) ? 1 : 0);
+        if (age < 18) {
+          console.warn(`User under 18: ${age}`);
+          return null;
+        }
+        return age;
+      } catch (error) {
+        console.error('calculateAge error:', error);
+        return null;
+      }
+    };
+    
     const calculateAgeRange = (dob) => {
       if (!dob) return 'Not provided';
       try {
@@ -865,7 +943,6 @@ footer {
           <label className="form-label">Relationship Type</label>
           <select value={relationshipType} onChange={(e) => setRelationshipType(e.target.value)} className="form-input">
             <option value="">Select Type</option>
-            <option value="Single">Single</option>
             <option value="Fun Chat">Fun Chat</option>
             <option value="Casual Dating">Casual Dating</option>
             <option value="Long Term Fun">Long Term Fun</option>
@@ -980,286 +1057,455 @@ footer {
       }
       return children;
     }
-
-    function App() {
-  const [user, setUser] = React.useState(null);
-  const [loading, setLoading] = React.useState(true);
-  const [allPostings, setAllPostings] = React.useState([]);
-  const [postings, setPostings] = React.useState([]);
-  const [filters, setFilters] = React.useState({
-    ageRange: '',
-    gender: '',
-    race: '',
-    relationshipType: '',
-    height: '',
-    bodyType: '',
-    zipCode: '',
-    radius: ''
-  });
-  const [error, setError] = React.useState(null);
-  const [showFilters, setShowFilters] = React.useState(false);
-  const [showPostForm, setShowPostForm] = React.useState(false);
-  const postingsRef = React.useRef(null);
-  const [layoutClasses, setLayoutClasses] = React.useState({
-    mainClasses: 'flex-grow pt-20 py-4 px-2 sm:py-12 sm:px-4',
-    divClasses: 'flex flex-col md:flex-row'
-  });
-
-  const parseAgeRange = (range) => {
-    if (!range || range === 'Not provided') return { min: 0, max: Infinity };
-    if (range === '50+') return { min: 50, max: Infinity };
-    const [min, max] = range.split('-').map(Number);
-    return { min, max: max || Infinity };
-  };
-
-  React.useEffect(() => {
-    try {
-      const updateClasses = () => {
-        const isMobile = window.innerWidth < 640;
-        console.log('Updating layout classes, isMobile:', isMobile);
-        setLayoutClasses(getLayoutClasses(isMobile));
-      };
-      updateClasses();
-      window.addEventListener('resize', updateClasses);
-      return () => window.removeEventListener('resize', updateClasses);
-    } catch (err) {
-      console.error('Error in layout classes effect:', err);
-      setError('Failed to set layout');
-    }
-  }, []);
-
-  const applyFilters = async (postings, filters) => {
-    let filtered = [...postings];
-    const { ageRange, gender, race, relationshipType, height, bodyType, zipCode, radius } = filters;
-
-    if (ageRange) {
-      const filterAge = parseAgeRange(ageRange);
-      filtered = filtered.filter(post => {
-        const postAge = parseAgeRange(post.dob ? calculateAgeRange(post.dob) : 'Not provided');
-        return postAge.min <= filterAge.max && postAge.max >= filterAge.min;
-      });
-    }
-
-    if (gender) {
-      filtered = filtered.filter(post => post.gender === gender);
-    }
-
-    if (race) {
-      filtered = filtered.filter(post => post.race === race);
-    }
-
-    if (relationshipType) {
-      filtered = filtered.filter(post => post.relationshipType === relationshipType);
-    }
-
-    if (height) {
-      filtered = filtered.filter(post => post.height === parseInt(height));
-    }
-
-    if (bodyType) {
-      filtered = filtered.filter(post => post.bodyType === bodyType);
-    }
-
-    if (zipCode && radius) {
-      filtered = filtered.filter(post => {
-        if (!post.zipCode) return false;
-        try {
-          const distance = window.functions.calculateDistance(zipCode, post.zipCode);
-          if (distance === null || distance > parseInt(radius)) {
-            return false;
-          }
-          return true;
-        } catch (error) {
-          console.error(`Error calculating distance for ${post.zipCode}:`, error);
-          return false;
-        }
-      });
-    } else if (zipCode) {
-      filtered = filtered.filter(post => post.zipCode === zipCode);
-    }
-
-    return filtered;
-  };
-
-  React.useEffect(() => {
-    let unsubscribeAuth;
-    let unsubscribePostings;
-    try {
-      if (window.firebaseError) {
-        throw window.firebaseError;
-      }
-      if (!window.firebase) {
-        throw new Error('Firebase not initialized');
-      }
-
-      unsubscribeAuth = window.firebase.onAuthStateChanged(window.firebase.auth, async (currentUser) => {
-        if (currentUser) {
-          try {
-            const profile = await fetchUserProfile(currentUser.uid);
-            setUser({
-              ...currentUser,
-              profile,
-              loginStatus: 'logged_in'
-            });
-            console.log('Auth state updated:', {
-              uid: currentUser.uid,
-              username: profile.username,
-              loginStatus: 'logged_in'
-            });
-          } catch (error) {
-            console.error('Error fetching user data:', { message: error.message || 'Unknown error', code: error.code || 'No code', stack: error.stack || 'No stack' });
-            setUser({
-              ...currentUser,
-              profile: {},
-              loginStatus: 'logged_in'
-            });
-          }
-        } else {
-          setUser(null);
-          console.log('Auth state: No user');
-        }
-        setLoading(false);
-      }, (err) => {
-        console.error('Auth state error:', { message: err.message || 'Unknown error', code: err.code || 'No code', stack: err.stack || 'No stack' });
-        setLoading(false);
-      });
-
-      console.log('Setting up postings snapshot listener...');
-      const q = window.firebase.query(
-        window.firebase.collection(window.firebase.db, 'postings'),
-        window.firebase.orderBy('createdAt', 'desc')
-      );
-      unsubscribePostings = window.firebase.onSnapshot(q, async (snapshot) => {
-        console.log(`Postings snapshot received, size: ${snapshot.size}`);
-        const postingsData = snapshot.docs.map(doc => {
-          const data = doc.data();
-          return {
-            id: doc.id,
-            title: data.title || 'Untitled',
-            description: data.description || 'No description',
-            imageUrl: data.imageUrl || null,
-            userId: data.userId || '',
-            username: data.username || 'Unknown User',
-            dob: data.dob || '',
-            gender: data.gender || '', // Fixed: Use data.gender
-            race: data.race || '',
-            relationshipType: data.relationshipType || '',
-            height: data.height || 0,
-            weight: data.weight || 0,
-            bodyType: data.bodyType || '',
-            zipCode: data.zipCode || '',
-            createdAt: data.createdAt || { seconds: Math.floor(Date.now() / 1000) }
-          };
-        });
-        console.log('Postings updated:', JSON.stringify(postingsData, null, 2));
-        setAllPostings(postingsData);
-        const filteredPostings = await applyFilters(postingsData, filters);
-        setPostings(filteredPostings);
-        setError(null); // Clear any previous errors
-      }, (error) => {
-        console.error('Postings fetch error:', {
-          message: error.message || 'Unknown error',
-          code: error.code || 'No code',
-          stack: error.stack || 'No stack'
-        });
-        setError(`Failed to load postings: ${error.message || 'An unexpected error occurred'}`);
-      });
-
-    } catch (error) {
-      console.error('App initialization error:', { message: error.message || 'Unknown error', code: error.code || 'No code', stack: error.stack || 'No stack' });
-      setError(`App initialization failed: ${error.message || 'An unexpected error occurred'}`);
-      setLoading(false);
-    }
-
-    return () => {
-      console.log('Cleaning up listeners');
-      unsubscribeAuth && unsubscribeAuth();
-      unsubscribePostings && unsubscribePostings();
-    };
-  }, []);
-
-  const handleFilterChange = async (newFilters) => {
-    try {
-      setFilters(newFilters);
-      const filteredPostings = await applyFilters(allPostings, newFilters);
-      setPostings(filteredPostings);
-      setShowFilters(false);
-      if (postingsRef.current) {
-        postingsRef.current.scrollIntoView({ behavior: 'smooth' });
-      }
-      console.log('Filtered postings:', JSON.stringify(filteredPostings, null, 2));
-    } catch (err) {
-      console.error('Filter error:', err);
-      setError('Failed to apply filters');
-    }
-  };
-
-  const handlePostSubmit = () => {
-    try {
-      setShowPostForm(false);
-      if (postingsRef.current) {
-        postingsRef.current.scrollIntoView({ behavior: 'smooth' });
-      }
-    } catch (err) {
-      console.error('Post submit error:', err);
-    }
-  };
-
-  React.useEffect(() => {
-    if (!loading) {
-      console.log('Hero in DOM:', !!document.querySelector('.hero'));
-      console.log('User:', user ? { uid: user.uid, username: user.profile?.username } : null);
-      console.log('Loading:', loading);
-    }
-  }, [loading, user]);
-
-  if (loading) {
-    return <div className="text-center text-gray-600 py-8">Loading...</div>;
-  }
-
-  return (
-    <div className="flex flex-col min-h-screen">
-      <Header user={user} setUser={setUser} />
-      {!user && <Hero />}
-      <main className={layoutClasses.mainClasses}>
-        <div className={layoutClasses.divClasses}>
-          <div className="w-full mb-6 md:w-80 md:max-w-xs">
-            <button
-              className="sm:hidden bg-primary text-white font-semibold py-1.5 px-3 text-sm rounded-md shadow-sm hover:bg-blue-700 transition w-full mb-4 z-10 relative"
-              onClick={() => setShowFilters(!showFilters)}
-            >
-              {showFilters ? 'Hide Filters' : 'Show Filters'}
-            </button>
-            <div className={`${showFilters ? 'block' : 'hidden'} sm:block sm:transform-none transition-transform duration-300 sm:duration-0 ${showFilters ? 'translate-x-0' : '-translate-x-full'} sm:translate-x-0 z-10 relative`}>
-              <FilterSection onFilterChange={handleFilterChange} />
-            </div>
+    
+    function NewUsersSection({ users }) {
+      if (!users || users.length === 0) {
+        return (
+          <div className="bg-white marg rounded-lg shadow-md p-6 mt-6">
+            <h2 className="text-2xl font-semibold text-primary mb-4">New Users</h2>
+            <p className="text-gray-600">No users available. Invite some to get started!</p>
           </div>
-          <div className="flex-1 w-full pad">
-            {user && (
-              <>
-                <button
-                  className="sm:hidden bg-primary text-white font-semibold py-1.5 px-3 text-sm rounded-md shadow-sm hover:bg-blue-700 transition w-full mb-4 z-10 relative"
-                  onClick={() => setShowPostForm(!showPostForm)}
+        );
+      }
+
+      return (
+        <div className="bg-white marg rounded-lg shadow-md p-6 mt-6">
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-2xl font-semibold text-primary">New Users</h2>
+            <a
+              href="./users.html"
+              className="bg-primary text-white font-semibold py-1.5 px-3 rounded-md hover:bg-blue-700 transition"
+            >
+              View All Users
+            </a>
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+            {users.slice(0, 5).map(user => (
+              <div key={user.id} className="flex flex-col items-center text-center">
+                <a href={`./profile.html?uid=${user.id}`}>
+                  <img
+                    src={user.profilePicture || 'https://placehold.co/100x100'}
+                    alt={`${user.username}'s profile`}
+                    className="w-[100px] h-[100px] rounded-none object-cover mb-2 hover:opacity-80 transition"
+                  />
+                </a>
+                <a
+                  href={`./profile.html?uid=${user.id}`}
+                  className="text-sm font-medium text-gray-800 hover:underline"
                 >
-                  {showPostForm ? 'Hide Create Post' : 'Create Post'}
-                </button>
-                <div className={`${showPostForm ? 'block' : 'hidden'} sm:block sm:transform-none transition-transform duration-300 sm:duration-0 ${showPostForm ? 'translate-x-0' : 'translate-x-full'} sm:translate-x-0 z-10 relative`}>
-                  <PostingForm user={user} onPostSubmit={handlePostSubmit} />
-                </div>
-              </>
-            )}
-            <div ref={postingsRef} className="bg-white marg rounded-lg shadow-md p-6">
-              <h2 className="text-2xl font-semibold text-primary mb-4">Recent Postings</h2>
-              {error && <div className="bg-red-100 text-red-700 p-4 rounded-lg mb-4">{error}</div>}
-              <PostingsList postings={postings} />
-            </div>
+                  {user.username}
+                </a>
+                <p className="text-xs text-gray-600">
+                  {user.age !== null ? `Age: ${user.age}` : 'Age not provided'}
+                </p>
+                <p className="text-xs text-gray-600">
+                  {user.city ? (user.state ? `${user.city}, ${user.state}` : user.city) : 'Location not provided'}
+                </p>
+              </div>
+            ))}
           </div>
         </div>
-      </main>
-      <Footer />
-    </div>
-  );
-}
+      );
+    }
+    function DevelopmentPopup() {
+      const [isVisible, setIsVisible] = React.useState(true);
+
+      React.useEffect(() => {
+        const timer = setTimeout(() => {
+          setIsVisible(false);
+        }, 15000); // 15 seconds
+        return () => clearTimeout(timer);
+      }, []);
+
+      if (!isVisible) return null;
+
+      return (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-lg shadow-lg text-center max-w-md">
+            <h2 className="text-4xl font-bold text-red-600 mb-4">
+              UNDER DEVELOPMENT
+            </h2>
+            <p className="text-lg mb-4">
+              This site is on a development server. You may encounter broken pieces and mistakes, but all will be corrected before the site goes live.
+            </p>
+            <button
+              onClick={() => setIsVisible(false)}
+              className="bg-red-600 text-white font-semibold py-2 px-4 rounded hover:bg-red-700 transition"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      );
+    }
+
+    function App() {
+      const [user, setUser] = React.useState(null);
+      const [loading, setLoading] = React.useState(true);
+      const [allPostings, setAllPostings] = React.useState([]);
+      const [postings, setPostings] = React.useState([]);
+      const [allUsers, setAllUsers] = React.useState([]);
+      const [filteredUsers, setFilteredUsers] = React.useState([]);
+      const [filters, setFilters] = React.useState({
+        ageRange: '',
+        gender: '',
+        race: '',
+        relationshipType: '',
+        height: '',
+        bodyType: '',
+        zipCode: '',
+        radius: ''
+      });
+      const [error, setError] = React.useState(null);
+      const [showFilters, setShowFilters] = React.useState(false);
+      const [showPostForm, setShowPostForm] = React.useState(false);
+      const postingsRef = React.useRef(null);
+      const [layoutClasses, setLayoutClasses] = React.useState({
+        mainClasses: 'flex-grow pt-20 py-4 px-2 sm:py-12 sm:px-4',
+        divClasses: 'flex flex-col md:flex-row'
+      });
+
+      const parseAgeRange = (range) => {
+        if (!range || range === 'Not provided') return { min: 0, max: Infinity };
+        if (range === '50+') return { min: 50, max: Infinity };
+        const [min, max] = range.split('-').map(Number);
+        return { min, max: max || Infinity };
+      };
+
+      const calculateAge = (dob) => {
+        if (!dob) {
+          console.warn('No DOB provided');
+          return null;
+        }
+        try {
+          const birthDate = new Date(dob);
+          if (isNaN(birthDate.getTime())) {
+            console.warn(`Invalid DOB: ${dob}`);
+            return null;
+          }
+          const today = new Date();
+          if (birthDate > today) {
+            console.warn(`Future DOB: ${dob}`);
+            return null;
+          }
+          const age = today.getFullYear() - birthDate.getFullYear() - 
+            (today.getMonth() < birthDate.getMonth() || 
+             (today.getMonth() === birthDate.getMonth() && today.getDate() < birthDate.getDate()) ? 1 : 0);
+          if (age < 18) {
+            console.warn(`User under 18: ${age}`);
+            return null;
+          }
+          return age;
+        } catch (error) {
+          console.error('calculateAge error:', error);
+          return null;
+        }
+      };
+
+      React.useEffect(() => {
+        try {
+          const updateClasses = () => {
+            const isMobile = window.innerWidth < 640;
+            console.log('Updating layout classes, isMobile:', isMobile);
+            setLayoutClasses(getLayoutClasses(isMobile));
+          };
+          updateClasses();
+          window.addEventListener('resize', updateClasses);
+          return () => window.removeEventListener('resize', updateClasses);
+        } catch (err) {
+          console.error('Error in layout classes effect:', err);
+          setError('Failed to set layout');
+        }
+      }, []);
+
+      const applyFilters = async (items, filters, isUser = false) => {
+        let filtered = [...items];
+        const { ageRange, gender, race, relationshipType, height, bodyType, zipCode, radius } = filters;
+
+        if (ageRange) {
+          const filterAge = parseAgeRange(ageRange);
+          filtered = filtered.filter(item => {
+            const itemAge = isUser
+              ? calculateAge(item.dob)
+              : parseAgeRange(item.dob ? calculateAgeRange(item.dob) : 'Not provided');
+            if (isUser) {
+              return itemAge !== null && itemAge >= filterAge.min && itemAge <= filterAge.max;
+            }
+            return itemAge.min <= filterAge.max && itemAge.max >= filterAge.min;
+          });
+        }
+
+        if (gender) {
+          filtered = filtered.filter(item => item.gender === gender);
+        }
+
+        if (race) {
+          filtered = filtered.filter(item => item.race === race);
+        }
+
+        if (relationshipType) {
+          filtered = filtered.filter(item => item.relationshipType === relationshipType);
+        }
+
+        if (height) {
+          filtered = filtered.filter(item => item.height === parseInt(height));
+        }
+
+        if (bodyType) {
+          filtered = filtered.filter(item => item.bodyType === bodyType);
+        }
+
+        if (zipCode && radius) {
+          filtered = filtered.filter(item => {
+            if (!item.zipCode) return false;
+            try {
+              const distance = window.functions.calculateDistance(zipCode, item.zipCode);
+              if (distance === null || distance > parseInt(radius)) {
+                return false;
+              }
+              return true;
+            } catch (error) {
+              console.error(`Error calculating distance for ${item.zipCode}:`, error);
+              return false;
+            }
+          });
+        } else if (zipCode) {
+          filtered = filtered.filter(item => item.zipCode === zipCode);
+        }
+
+        return filtered;
+      };
+
+      React.useEffect(() => {
+        let unsubscribeAuth;
+        let unsubscribePostings;
+        let unsubscribeUsers;
+        try {
+          if (window.firebaseError) {
+            throw window.firebaseError;
+          }
+          if (!window.firebase) {
+            throw new Error('Firebase not initialized');
+          }
+
+          unsubscribeAuth = window.firebase.onAuthStateChanged(window.firebase.auth, async (currentUser) => {
+            if (currentUser) {
+              try {
+                const profile = await fetchUserProfile(currentUser.uid);
+                setUser({
+                  ...currentUser,
+                  profile,
+                  loginStatus: 'logged_in'
+                });
+                console.log('Auth state updated:', {
+                  uid: currentUser.uid,
+                  username: profile.username,
+                  loginStatus: 'logged_in'
+                });
+                if (!sessionStorage.getItem(`userProfile_${currentUser.uid}`)) {
+                  window.location.reload();
+                }
+              } catch (error) {
+                console.error('Error fetching user data:', { message: error.message || 'Unknown error', code: error.code || 'No code', stack: error.stack || 'No stack' });
+                setUser({
+                  ...currentUser,
+                  profile: {},
+                  loginStatus: 'logged_in'
+                });
+              }
+            } else {
+              setUser(null);
+              console.log('Auth state: No user');
+            }
+            setLoading(false);
+          }, (err) => {
+            console.error('Auth state error:', { message: err.message || 'Unknown error', code: err.code || 'No code', stack: err.stack || 'No stack' });
+            setLoading(false);
+          });
+
+          console.log('Setting up postings snapshot listener...');
+          const postingsQuery = window.firebase.query(
+            window.firebase.collection(window.firebase.db, 'postings'),
+            window.firebase.orderBy('createdAt', 'desc')
+          );
+          unsubscribePostings = window.firebase.onSnapshot(postingsQuery, async (snapshot) => {
+            console.log(`Postings snapshot received, size: ${snapshot.size}`);
+            const postingsData = snapshot.docs.map(doc => {
+              const data = doc.data();
+              return {
+                id: doc.id,
+                title: data.title || 'Untitled',
+                description: data.description || 'No description',
+                imageUrl: data.imageUrl || null,
+                userId: data.userId || '',
+                username: data.username || 'Unknown User',
+                dob: data.dob || '',
+                gender: data.gender || '',
+                race: data.race || '',
+                relationshipType: data.relationshipType || '',
+                height: data.height || 0,
+                weight: data.weight || 0,
+                bodyType: data.bodyType || '',
+                zipCode: data.zipCode || '',
+                createdAt: data.createdAt || { seconds: Math.floor(Date.now() / 1000) }
+              };
+            });
+            console.log('Postings updated:', JSON.stringify(postingsData, null, 2));
+            setAllPostings(postingsData);
+            const filteredPostings = await applyFilters(postingsData, filters);
+            setPostings(filteredPostings);
+            setError(null);
+          }, (error) => {
+            console.error('Postings fetch error:', {
+              message: error.message || 'Unknown error',
+              code: error.code || 'No code',
+              stack: error.stack || 'No stack'
+            });
+            setError(`Failed to load postings: ${error.message || 'An unexpected error occurred'}`);
+          });
+
+          console.log('Setting up users snapshot listener...');
+          const usersQuery = window.firebase.query(
+            window.firebase.collection(window.firebase.db, 'users'),
+            window.firebase.orderBy('createdAt', 'desc')
+          );
+          unsubscribeUsers = window.firebase.onSnapshot(usersQuery, async (snapshot) => {
+            console.log(`Users snapshot received, size: ${snapshot.size}`);
+            const usersData = await Promise.all(snapshot.docs.map(async (doc) => {
+              const data = doc.data();
+              const profile = await fetchUserProfile(doc.id);
+              return {
+                id: doc.id,
+                username: profile.username,
+                dob: profile.dob,
+                age: calculateAge(profile.dob),
+                gender: profile.gender,
+                race: profile.race,
+                relationshipType: profile.relationshipType,
+                height: profile.height,
+                bodyType: profile.bodyType,
+                zipCode: profile.zipCode,
+                city: profile.city,
+                state: profile.state,
+                profilePicture: profile.profilePicture,
+                createdAt: data.createdAt || { seconds: Math.floor(Date.now() / 1000) }
+              };
+            }));
+            console.log('Users updated:', JSON.stringify(usersData, null, 2));
+            setAllUsers(usersData);
+            const filteredUsers = await applyFilters(usersData, filters, true);
+            setFilteredUsers(filteredUsers);
+            setError(null);
+          }, (error) => {
+            console.error('Users fetch error:', {
+              message: error.message || 'Unknown error',
+              code: error.code || 'No code',
+              stack: error.stack || 'No stack'
+            });
+            setError(`Failed to load users: ${error.message || 'An unexpected error occurred'}`);
+          });
+
+        } catch (error) {
+          console.error('App initialization error:', { message: error.message || 'Unknown error', code: error.code || 'No code', stack: error.stack || 'No stack' });
+          setError(`App initialization failed: ${error.message || 'An unexpected error occurred'}`);
+          setLoading(false);
+        }
+
+        return () => {
+          console.log('Cleaning up listeners');
+          unsubscribeAuth && unsubscribeAuth();
+          unsubscribePostings && unsubscribePostings();
+          unsubscribeUsers && unsubscribeUsers();
+        };
+      }, []);
+
+      const handleFilterChange = async (newFilters) => {
+        try {
+          setFilters(newFilters);
+          const filteredPostings = await applyFilters(allPostings, newFilters);
+          const filteredUsers = await applyFilters(allUsers, newFilters, true);
+          setPostings(filteredPostings);
+          setFilteredUsers(filteredUsers);
+          setShowFilters(false);
+          if (postingsRef.current) {
+            postingsRef.current.scrollIntoView({ behavior: 'smooth' });
+          }
+          console.log('Filtered postings:', JSON.stringify(filteredPostings, null, 2));
+          console.log('Filtered users:', JSON.stringify(filteredUsers, null, 2));
+        } catch (err) {
+          console.error('Filter error:', err);
+          setError('Failed to apply filters');
+        }
+      };
+
+      const handlePostSubmit = () => {
+        try {
+          setShowPostForm(false);
+          if (postingsRef.current) {
+            postingsRef.current.scrollIntoView({ behavior: 'smooth' });
+          }
+        } catch (err) {
+          console.error('Post submit error:', err);
+        }
+      };
+
+      React.useEffect(() => {
+        if (!loading) {
+          console.log('Hero in DOM:', !!document.querySelector('.hero'));
+          console.log('User:', user ? { uid: user.uid, username: user.profile?.username } : null);
+          console.log('Loading:', loading);
+        }
+      }, [loading, user]);
+
+      if (loading) {
+        return <div className="text-center text-gray-600 py-8">Loading...</div>;
+      }
+
+      return (
+        <div className="flex flex-col min-h-screen">
+          <DevelopmentPopup />
+          <Header user={user} setUser={setUser} />
+          {!user && <Hero />}
+          <main className={layoutClasses.mainClasses}>
+            <div className={layoutClasses.divClasses}>
+              <div className="w-full mb-6 md:w-80 md:max-w-xs">
+                <button
+                  className="sm:hidden bg-primary text-white font-semibold py-1.5 px-3 text-sm rounded-md shadow-sm hover:bg-blue-700 transition w-full mb-4 z-10 relative"
+                  onClick={() => setShowFilters(!showFilters)}
+                >
+                  {showFilters ? 'Hide Filters' : 'Show Filters'}
+                </button>
+                <div className={`${showFilters ? 'block' : 'hidden'} sm:block sm:transform-none transition-transform duration-300 sm:duration-0 ${showFilters ? 'translate-x-0' : '-translate-x-full'} sm:translate-x-0 z-10 relative`}>
+                  <FilterSection onFilterChange={handleFilterChange} />
+                </div>
+              </div>
+              <div className="flex-1 w-full pad">
+                {user && (
+                  <>
+                    <button
+                      className="sm:hidden bg-primary text-white font-semibold py-1.5 px-3 text-sm rounded-md shadow-sm hover:bg-blue-700 transition w-full mb-4 z-10 relative"
+                      onClick={() => setShowPostForm(!showPostForm)}
+                    >
+                      {showPostForm ? 'Hide Create Post' : 'Create Post'}
+                    </button>
+                    <div className={`${showPostForm ? 'block' : 'hidden'} sm:block sm:transform-none transition-transform duration-300 sm:duration-0 ${showPostForm ? 'translate-x-0' : 'translate-x-full'} sm:translate-x-0 z-10 relative`}>
+                      <PostingForm user={user} onPostSubmit={handlePostSubmit} />
+                    </div>
+                  </>
+                )}
+                <div ref={postingsRef} className="bg-white marg rounded-lg shadow-md p-6">
+                  <h2 className="text-2xl font-semibold text-primary mb-4">Recent Postings</h2>
+                  {error && <div className="bg-red-100 text-red-700 p-4 rounded-lg mb-4">{error}</div>}
+                  <PostingsList postings={postings} />
+                </div>
+                <NewUsersSection users={filteredUsers} />
+              </div>
+            </div>
+          </main>
+          <Footer />
+        </div>
+      );
+    }
     try {
       console.log('Attempting to render React app');
       const root = ReactDOM.createRoot(document.getElementById('root'));
