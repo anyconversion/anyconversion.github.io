@@ -109,6 +109,7 @@
     .marg { margin-left: 10px;}
     @media (max-width: 639px) {
       .marg { margin-left: 0;}
+      .marg2 { margin-top: 0;}
       .translate-x-full { transform: translateX(100%); }
       .-translate-x-full { transform: translateX(-100%); }
       .translate-x-0 { transform: translateX(0); }
@@ -837,9 +838,10 @@
             postings.map(post => {
               console.log(`Rendering post ${post.id}, data:`, JSON.stringify(post, null, 2));
               return (
-                <div
+                <a
                   key={post.id}
-                  className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition transform hover:scale-105"
+                  href={`post.html?postid=${post.id}`}
+                  className="block bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition transform hover:scale-105"
                 >
                   {post.imageUrl ? (
                     <img
@@ -880,7 +882,7 @@
                         ))}
                     </p>
                   </div>
-                </div>
+                </a>
               );
             })
           )}
@@ -1236,7 +1238,7 @@
             console.log('Updating layout classes, isMobile:', isMobile);
             setLayoutClasses({
               mainClasses: 'flex-grow pt-20 py-4 px-2 sm:py-12 sm:px-4',
-              divClasses: 'flex flex-col md:flex-row'
+              divClasses: 'flex flex-col mt-0 md:mt-16 md:flex-row'
             });
           };
           updateClasses();

@@ -1,0 +1,822 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="View a specific posting on RealVibin, including post details and user profile information.">
+  <meta name="keywords" content="RealVibin, dating, social platform, post, profile">
+  <title>Post Details | RealVibin</title>
+  <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#0080ff',
+            secondary: '#ff4d4f',
+            dark: '#1f2937'
+          }
+        }
+      }
+    }
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/react@18.2.0/umd/react.development.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/react-dom@18.2.0/umd/react-dom.development.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@babel/standalone@7.20.15/babel.min.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/zipcodes@8.0.0/dist/zipcodes.min.js"></script>
+  <script type="module">
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
+    import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
+    import { getFirestore, doc, getDoc, setDoc, collection, onSnapshot } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyCZavBCNmUx2lX4SqdXlYdloCdwmw-hYT8",
+      authDomain: "realvibin-9aac1.firebaseapp.com",
+      projectId: "realvibin-9aac1",
+      messagingSenderId: "155907884818",
+      appId: "1:155907884818:web:d499ac21bc81c3273d55cb"
+    };
+
+    try {
+      console.log('Initializing Firebase...');
+      const app = initializeApp(firebaseConfig);
+      const auth = getAuth(app);
+      const db = getFirestore(app);
+      console.log('Firebase initialized successfully');
+
+      window.CLOUDINARY_CLOUD_NAME = "ddmrplnut";
+      window.CLOUDINARY_UPLOAD_PRESET = "realvibin_unsigned";
+
+      window.firebase = {
+        app,
+        auth,
+        db,
+        signInWithEmailAndPassword,
+        signOut,
+        onAuthStateChanged,
+        doc,
+        getDoc,
+        setDoc,
+        collection,
+        onSnapshot
+      };
+      window.firebaseInitialized = true;
+    } catch (error) {
+      console.error('Firebase Initialization Error:', { message: error.message, code: error.code, stack: error.stack });
+      window.firebaseError = error;
+    }
+  </script>
+  <link rel="stylesheet" href="./style.css">
+  <style>
+    body {
+      font-family: 'Open Sans', Arial, sans-serif;
+      background-color: #f3f4f6;
+      margin: 0;
+    }
+    .hidden { display: none; }
+    .error {
+      padding: 1.5rem;
+      background-color: #fef2f2;
+      color: #991b1b;
+      border: 1px solid #f87171;
+      border-radius: 8px;
+      max-width: 500px;
+      margin: 2rem auto;
+    }
+    .error h2 { font-size: 1.5rem; font-weight: bold; }
+    .form-input {
+      width: 100%;
+      padding: 0.5rem;
+      border: 1px solid #d1d5db;
+      border-radius: 0.375rem;
+    }
+    .form-label {
+      display: block;
+      font-weight: 600;
+      margin-bottom: 0.25rem;
+    }
+    footer {
+      width: 100%;
+      background-color: #1f2937;
+      min-height: 120px;
+    }
+    .marg { margin-left: 10px;}
+    @media (max-width: 639px) {
+      .marg { margin-left: 0;}
+      .translate-x-full { transform: translateX(100%); }
+      .-translate-x-full { transform: translateX(-100%); }
+      .translate-x-0 { transform: translateX(0); }
+    }
+    @media (min-width: 640px) {
+      .transform-none { transform: none !important; }
+      .duration-0 { transition-duration: 0ms !important; }
+    }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+  <script type="text/babel" data-presets="env,react">
+    if (!window.React || !window.ReactDOM || !window.Babel) {
+      console.error('Required libraries (React, ReactDOM, or Babel) not loaded.');
+      document.getElementById('root').innerHTML = '<div className="error"><h2>Error</h2><p>Failed to load essential libraries. Please check your internet connection and try again.</p></div>';
+      throw new Error('React, ReactDOM, or Babel is not available');
+    }
+
+    const fetchUserProfile = async (userId, forceRefresh = false) => {
+      console.log(`Fetching profile for userId: ${userId}, forceRefresh: ${forceRefresh}`);
+      try {
+        if (!forceRefresh) {
+          const cached = sessionStorage.getItem(`userProfile_${userId}`);
+          if (cached) {
+            const profile = JSON.parse(cached);
+            console.log(`Cached profile for ${userId}:`, profile);
+            if (profile.profilePicture && profile.profilePicture.startsWith('https://res.cloudinary.com/ddmrplnut/image/upload/')) {
+              console.log(`Valid cached profile picture for ${userId}: ${profile.profilePicture}`);
+              return profile;
+            } else {
+              console.warn(`Invalid or missing cached profilePicture for ${userId}:`, profile.profilePicture);
+              sessionStorage.removeItem(`userProfile_${userId}`);
+            }
+          }
+        }
+
+        const userDoc = await window.firebase.getDoc(window.firebase.doc(window.firebase.db, 'users', userId));
+        if (!userDoc.exists()) {
+          console.warn(`No profile found for UID: ${userId}`);
+          return {
+            username: 'Unknown User',
+            dob: '',
+            gender: '',
+            race: '',
+            intent: '',
+            height: 0,
+            bodyType: '',
+            zipCode: '',
+            city: '',
+            state: '',
+            profilePicture: null
+          };
+        }
+
+        const data = userDoc.data();
+        console.log(`Raw Firestore data for ${userId}:`, data);
+        const basicInfo = data.basicInfo || {};
+        const images = data.images || {};
+        const mainProfilePic = images.mainProfilePic || {};
+        const locationLogistics = basicInfo.locationLogistics || {};
+        const physicalAttributes = data.physicalAttributes || {};
+        const relationshipPreferences = data.relationshipPreferences || {};
+
+        let state = '';
+        if (locationLogistics.zipCode && window.zipcodes && window.zipcodes.lookup) {
+          const zipData = window.zipcodes.lookup(locationLogistics.zipCode);
+          console.log(`Zipcode lookup for ${locationLogistics.zipCode}:`, zipData);
+          state = zipData && zipData.state ? zipData.state : '';
+        } else {
+          console.warn(`Zipcodes library not available or no zipCode for ${userId}`);
+        }
+
+        const profile = {
+          username: basicInfo.username || 'Unknown User',
+          dob: basicInfo.dateOfBirth || '',
+          gender: basicInfo.genderIdentity || '',
+          race: physicalAttributes.ethnicity || '',
+          intent: relationshipPreferences.intent || '',
+          height: physicalAttributes.height || 0,
+          bodyType: physicalAttributes.bodyType || '',
+          zipCode: locationLogistics.zipCode || '',
+          city: locationLogistics.currentCity || '',
+          state: state,
+          profilePicture: mainProfilePic.active && mainProfilePic.url && mainProfilePic.url.startsWith('https://res.cloudinary.com/ddmrplnut/image/upload/') ? mainProfilePic.url : null
+        };
+
+        if (profile.profilePicture) {
+          console.log(`Profile picture URL for ${userId}: ${profile.profilePicture}`);
+        } else {
+          console.warn(`No valid profile picture for ${userId}. Active: ${mainProfilePic.active}, URL: ${mainProfilePic.url}`);
+        }
+
+        sessionStorage.setItem(`userProfile_${userId}`, JSON.stringify(profile));
+        console.log(`Fetched and cached profile for ${userId}:`, profile);
+        return profile;
+      } catch (error) {
+        console.error(`fetchUserProfile error for ${userId}:`, { message: error.message, code: error.code, stack: error.stack });
+        return {
+          username: 'Unknown User',
+          dob: '',
+          gender: '',
+          race: '',
+          intent: '',
+          height: 0,
+          bodyType: '',
+          zipCode: '',
+          city: '',
+          state: '',
+          profilePicture: null
+        };
+      }
+    };
+
+    const calculateAgeRange = (dob) => {
+      if (!dob) return 'Not provided';
+      try {
+        const birthDate = new Date(dob);
+        if (isNaN(birthDate.getTime())) throw new Error(`Invalid DOB: ${dob}`);
+        const today = new Date();
+        const age = today.getFullYear() - birthDate.getFullYear() - 
+          (today.getMonth() < birthDate.getMonth() || 
+           (today.getMonth() === birthDate.getMonth() && today.getDate() < birthDate.getDate()) ? 1 : 0);
+        if (age <= 17) throw new Error(`User under 18: ${age}`);
+        if (age >= 50) return '50+';
+        if (age >= 36) return '36-50';
+        if (age >= 26) return '26-35';
+        return '18-25';
+      } catch (error) {
+        console.error('calculateAgeRange error:', { message: error.message || 'Unknown error', stack: error.stack || 'No stack' });
+        return 'Not provided';
+      }
+    };
+
+    function Header({ user, setUser }) {
+      const [isMenuOpen, setIsMenuOpen] = React.useState(false);
+      const [email, setEmail] = React.useState('');
+      const [password, setPassword] = React.useState('');
+      const [loginError, setLoginError] = React.useState(null);
+      const [displayName, setDisplayName] = React.useState('User');
+      const [unreadCount, setUnreadCount] = React.useState(0);
+      const firebase = window.firebase;
+
+      React.useEffect(() => {
+        const loadUserProfile = async () => {
+          if (user?.uid) {
+            const profile = await fetchUserProfile(user.uid);
+            setDisplayName(profile.username || 'User');
+            console.log('Header: Fetched profile for displayName:', { uid: user.uid, username: profile.username });
+            if (!user.profile?.username) {
+              setUser(prev => ({ ...prev, profile }));
+            }
+          } else {
+            setDisplayName('User');
+          }
+        };
+        loadUserProfile();
+      }, [user?.uid]);
+
+      React.useEffect(() => {
+        if (!user?.uid || !firebase.db) return;
+        const unsubscribe = firebase.onSnapshot(
+          firebase.collection(firebase.db, `users/${user.uid}/unreadConversations`),
+          (snapshot) => {
+            let totalUnread = 0;
+            snapshot.forEach(doc => {
+              totalUnread += doc.data().unreadCount || 0;
+            });
+            setUnreadCount(totalUnread);
+            console.log('Unread count updated:', totalUnread);
+          },
+          (error) => {
+            console.error('Unread count snapshot error:', error);
+          }
+        );
+        return () => unsubscribe();
+      }, [user?.uid]);
+
+      const debounce = (fn, delay) => {
+        let timeout;
+        return (...args) => {
+          clearTimeout(timeout);
+          timeout = setTimeout(() => fn(...args), delay);
+        };
+      };
+
+      const handleLogin = async (e) => {
+        e.preventDefault();
+        if (!firebase?.auth) {
+          setLoginError('Authentication service not available.');
+          return;
+        }
+        try {
+          setLoginError(null);
+          const userCredential = await firebase.signInWithEmailAndPassword(firebase.auth, email, password);
+          const user = userCredential.user;
+          const profile = await fetchUserProfile(user.uid);
+          await firebase.setDoc(
+            firebase.doc(firebase.db, 'users', user.uid),
+            { loginStatus: 'logged_in', lastLogin: firebase.serverTimestamp() },
+            { merge: true }
+          );
+          setEmail('');
+          setPassword('');
+          setUser({
+            ...user,
+            profile,
+            loginStatus: 'logged_in'
+          });
+          setDisplayName(profile.username || 'User');
+          console.log('Login successful, user data:', { uid: user.uid, username: profile.username });
+        } catch (error) {
+          console.error('Login error:', { message: error.message || 'Unknown error', code: error.code || 'No code', stack: error.stack || 'No stack' });
+          setLoginError(`Login error: ${error.message || 'An unexpected error occurred'}`);
+        }
+      };
+
+      const handleLogout = debounce(async () => {
+        if (!firebase?.auth) {
+          setLoginError('Authentication service not available.');
+          return;
+        }
+        try {
+          if (user) {
+            await firebase.setDoc(
+              firebase.doc(firebase.db, 'users', user.uid),
+              { loginStatus: 'logged_out', lastLogout: firebase.serverTimestamp() },
+              { merge: true }
+            );
+            sessionStorage.removeItem(`userProfile_${user.uid}`);
+          }
+          await firebase.signOut(firebase.auth);
+          setUser(null);
+          setDisplayName('User');
+          setIsMenuOpen(false);
+          console.log('Logout successful');
+        } catch (error) {
+          console.error('Logout error:', { message: error.message || 'Unknown error', code: error.code || 'No code', stack: error.stack || 'No stack' });
+          setLoginError(`Logout error: ${error.message || 'An unexpected error occurred'}`);
+        }
+      }, 300);
+
+      return (
+        <nav className="bg-primary shadow-md sticky top-0 z-50">
+          <div className="container flex items-center justify-between h-auto min-h-[64px] px-2 sm:px-4 py-2">
+            <div className="logo-container flex items-center">
+              <a href="/">
+                <img
+                  src="./img/RealVibin.png"
+                  alt="RealVibin Logo"
+                  className="h-12 sm:h-16 md:h-[100px] w-auto"
+                />
+              </a>
+            </div>
+            <div className="auth-container hidden md:flex items-center space-x-4">
+              {loginError && (
+                <div className="text-red-200 text-sm">{loginError}</div>
+              )}
+              {user && user.loginStatus === 'logged_in' ? (
+                <div className="flex items-center space-x-2">
+                  <a
+                    href="signup.html"
+                    className="text-white font-semibold hover:underline"
+                  >
+                    {displayName}
+                  </a>
+                  <a
+                    href="messages.html"
+                    className="relative text-white hover:text-white"
+                  >
+                    <svg
+                      className="h-6 w-6"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"
+                      />
+                    </svg>
+                    {unreadCount > 0 && (
+                      <span className="absolute -top-1 -right-1 bg-secondary text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                        {unreadCount}
+                      </span>
+                    )}
+                  </a>
+                  <button
+                    type="button"
+                    className="bg-secondary text-white font-semibold py-2 px-4 rounded-lg hover:bg-red-700 transition"
+                    onClick={handleLogout}
+                  >
+                    Logout
+                  </button>
+                </div>
+              ) : (
+                <div className="flex items-center space-x-2">
+                  <div className="flex flex-col space-y-2 w-full md:flex-row md:space-y-0 md:space-x-2">
+                    <input
+                      type="email"
+                      placeholder="Email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      className="form-input"
+                      required
+                      autoComplete="email"
+                    />
+                    <input
+                      type="password"
+                      placeholder="Password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      className="form-input"
+                      required
+                      autoComplete="current-password"
+                    />
+                    <button
+                      onClick={handleLogin}
+                      className="bg-primary text-white font-semibold py-2 px-4 rounded-lg hover:bg-blue-700 transition"
+                    >
+                      Login
+                    </button>
+                  </div>
+                  <a
+                    href="signup.html"
+                    className="bg-primary text-white font-semibold py-2 px-4 rounded-lg hover:bg-blue-700 transition text-sm"
+                  >
+                    Need an account?
+                  </a>
+                </div>
+              )}
+            </div>
+            <div className="md:hidden flex items-center">
+              <button
+                onClick={() => setIsMenuOpen(!isMenuOpen)}
+                className="text-white hover:text-white focus:outline-none"
+                type="button"
+              >
+                <svg
+                  className="h-6 w-6"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d={isMenuOpen ? 'M6 18L18 6M6 6l12 12' : 'M4 6h16M4 12h16M4 18h16'}
+                  />
+                </svg>
+              </button>
+            </div>
+          </div>
+          {isMenuOpen && (
+            <div className="md:hidden bg-primary shadow-md px-2 py-4">
+              <div className="flex flex-col space-y-2 mb-4">
+                <a
+                  href="index.html"
+                  className="text-white font-semibold py-2 hover:bg-blue-700 text-center"
+                >
+                  Home
+                </a>
+                <a
+                  href="users.html"
+                  className="text-white font-semibold py-2 hover:bg-blue-700 text-center"
+                >
+                  Browse
+                </a>
+                <a
+                  href="messages.html"
+                  className="text-white font-semibold py-2 hover:bg-blue-700 text-center relative"
+                >
+                  Messages
+                  {unreadCount > 0 && (
+                    <span className="absolute top-1 right-2 bg-secondary text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                      {unreadCount}
+                    </span>
+                  )}
+                </a>
+              </div>
+              {loginError && (
+                <div className="text-red-200 text-sm mb-2">{loginError}</div>
+              )}
+              {user && user.loginStatus === 'logged_in' ? (
+                <div className="flex flex-col space-y-2">
+                  <a
+                    href="signup.html"
+                    className="text-white font-semibold hover:underline text-center"
+                  >
+                    {displayName}
+                  </a>
+                  <button
+                    type="button"
+                    className="bg-secondary text-white font-semibold py-2 px-4 rounded-lg hover:bg-red-700 transition"
+                    onClick={handleLogout}
+                  >
+                    Logout
+                  </button>
+                </div>
+              ) : (
+                <div className="flex flex-col space-y-2">
+                  <div className="flex flex-col space-y-2">
+                    <input
+                      type="email"
+                      placeholder="Email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      className="form-input"
+                      required
+                      autoComplete="email"
+                    />
+                    <input
+                      type="password"
+                      placeholder="Password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      className="form-input"
+                      required
+                      autoComplete="current-password"
+                    />
+                    <button
+                      onClick={handleLogin}
+                      className="bg-primary text-white font-semibold py-2 px-4 rounded-lg hover:bg-blue-700 transition"
+                    >
+                      Login
+                    </button>
+                  </div>
+                  <a
+                    href="signup.html"
+                    className="bg-primary text-white font-semibold py-2 px-4 rounded-lg hover:bg-blue-700 transition text-center text-sm"
+                  >
+                    Need an account?
+                  </a>
+                </div>
+              )}
+            </div>
+          )}
+        </nav>
+      );
+    }
+
+    function Footer() {
+      return (
+        <footer className="bg-dark text-white py-8 w-full mt-auto">
+          <div className="text-center px-2 sm:px-4 mx-auto">
+            <p>© 2025 RealVibin. All rights reserved.</p>
+            <div className="mt-4 flex justify-center space-x-4">
+              <a href="#" className="text-gray-400 hover:text-white">Privacy Policy</a>
+              <a href="#" className="text-gray-400 hover:text-white">Terms of Service</a>
+              <a href="#" className="text-gray-400 hover:text-white">Contact</a>
+            </div>
+          </div>
+        </footer>
+      );
+    }
+
+    function ErrorBoundary({ children }) {
+      const [error, setError] = React.useState(null);
+      const [errorInfo, setErrorInfo] = React.useState(null);
+
+      React.useEffect(() => {
+        const handleError = (event) => {
+          if (event.error) {
+            setError(event.error);
+            setErrorInfo({ componentStack: event.error.stack });
+            console.error('ErrorBoundary caught:', { message: event.error.message || 'Unknown error', stack: event.error.stack || 'No stack' });
+          }
+        };
+        window.addEventListener('error', handleError);
+        return () => window.removeEventListener('error', handleError);
+      }, []);
+
+      if (error) {
+        return (
+          <div className="error">
+            <h2>Something went wrong</h2>
+            <p>{error.message || 'An unexpected error occurred'}</p>
+            <details className="mt-4">
+              <summary className="cursor-pointer">Stack trace</summary>
+              <pre className="text-sm">{errorInfo?.componentStack}</pre>
+            </details>
+          </div>
+        );
+      }
+      return children;
+    }
+
+    function PostPage() {
+      const [user, setUser] = React.useState(null);
+      const [loading, setLoading] = React.useState(true);
+      const [post, setPost] = React.useState(null);
+      const [userProfile, setUserProfile] = React.useState(null);
+      const [error, setError] = React.useState(null);
+      const [imageError, setImageError] = React.useState(false);
+
+      const transformImageUrl = (url) => {
+        if (!url) return url;
+        const publicIdMatch = url.match(/\/v\d+\/(.+?)(\.\w+)?$/);
+        if (!publicIdMatch) {
+          console.warn('Invalid Cloudinary URL:', url);
+          return url;
+        }
+        const publicId = publicIdMatch[1];
+        const transformedUrl = `https://res.cloudinary.com/${window.CLOUDINARY_CLOUD_NAME}/image/upload/w_600,h_400,c_fill,g_auto,f_auto,q_auto/${publicId}`;
+        console.log('Transformed image URL:', transformedUrl);
+        return transformedUrl;
+      };
+
+      const formatHeight = (inches) => {
+        if (!inches || isNaN(inches) || inches <= 0) return 'Not provided';
+        const feet = Math.floor(inches / 12);
+        const remainingInches = inches % 12;
+        return `${feet}'${remainingInches}"`;
+      };
+
+      React.useEffect(() => {
+        const fetchPostAndUser = async () => {
+          try {
+            if (window.firebaseError) {
+              throw window.firebaseError;
+            }
+            if (!window.firebase) {
+              throw new Error('Firebase not initialized');
+            }
+
+            const urlParams = new URLSearchParams(window.location.search);
+            const postId = urlParams.get('postid');
+            if (!postId) {
+              setError('No post ID provided in URL');
+              setLoading(false);
+              return;
+            }
+
+            const postDoc = await window.firebase.getDoc(window.firebase.doc(window.firebase.db, 'postings', postId));
+            if (!postDoc.exists()) {
+              setError('Post not found');
+              setLoading(false);
+              return;
+            }
+            const postData = postDoc.data();
+            const post = {
+              id: postDoc.id,
+              title: postData.title || 'Untitled',
+              description: postData.description || 'No description',
+              imageUrl: postData.imageUrl || null,
+              userId: postData.userId || '',
+              username: postData.username || 'Unknown User',
+              dob: postData.dob || '',
+              gender: postData.gender || '',
+              race: postData.race || '',
+              intent: postData.intent || '',
+              height: postData.height || 0,
+              weight: postData.weight || 0,
+              bodyType: postData.bodyType || '',
+              zipCode: postData.zipCode || '',
+              createdAt: postData.createdAt || { seconds: Math.floor(Date.now() / 1000) }
+            };
+            setPost(post);
+
+            let profile = await fetchUserProfile(post.userId);
+            if (!profile.profilePicture) {
+              console.warn(`No valid profile picture for ${post.userId}, retrying without cache`);
+              profile = await fetchUserProfile(post.userId, true);
+            }
+            setUserProfile(profile);
+
+            const unsubscribeAuth = window.firebase.onAuthStateChanged(window.firebase.auth, async (currentUser) => {
+              if (currentUser) {
+                const profile = await fetchUserProfile(currentUser.uid);
+                setUser({
+                  ...currentUser,
+                  profile,
+                  loginStatus: 'logged_in'
+                });
+                console.log('Auth state updated:', { uid: currentUser.uid, username: profile.username });
+              } else {
+                setUser(null);
+                console.log('Auth state: No user');
+              }
+              setLoading(false);
+            }, (err) => {
+              console.error('Auth state error:', err);
+              setError('Authentication error');
+              setLoading(false);
+            });
+
+            return () => unsubscribeAuth();
+          } catch (error) {
+            console.error('Fetch post/user error:', { message: error.message || 'Unknown error', code: error.code || 'No code', stack: error.stack || 'No stack' });
+            setError(`Failed to load post: ${error.message || 'An unexpected error occurred'}`);
+            setLoading(false);
+          }
+        };
+
+        fetchPostAndUser();
+      }, []);
+
+      if (loading) {
+        return <div className="text-center text-gray-600 py-8">Loading...</div>;
+      }
+
+      if (error) {
+        return (
+          <div className="error">
+            <h2>Error</h2>
+            <p>{error}</p>
+          </div>
+        );
+      }
+
+      if (!post || !userProfile) {
+        return (
+          <div className="error">
+            <h2>Error</h2>
+            <p>Post or user profile not found</p>
+          </div>
+        );
+      }
+
+      return (
+        <div className="flex flex-col min-h-screen">
+          <Header user={user} setUser={setUser} />
+          <main className="flex-grow pt-20 py-4 px-2 sm:py-12 sm:px-4">
+            <div className="bg-white marg mt-0 sm:mt-16 rounded-lg shadow-md p-6 max-w-3xl mx-auto">
+              <h2 className="text-2xl font-semibold text-primary mb-4">{post.title}</h2>
+              {post.imageUrl ? (
+                <img
+                  src={transformImageUrl(post.imageUrl)}
+                  alt={post.title || 'Post image'}
+                  className="w-full max-h-[400px] object-contain rounded-lg mb-4"
+                />
+              ) : (
+                <div className="w-full max-h-[400px] bg-gray-200 flex items-center justify-center rounded-lg mb-4">
+                  <span className="text-gray-500">No Image</span>
+                </div>
+              )}
+              <p className="text-gray-600 mb-4">{post.description}</p>
+              <div className="border-t pt-4">
+                <h3 className="text-xl font-semibold text-primary mb-2">Posted By</h3>
+                <div className="flex items-center space-x-4">
+                  {userProfile.profilePicture && !imageError ? (
+                    <a href={`profile.html?uid=${post.userId}`}>
+                      <img
+                        src={userProfile.profilePicture}
+                        alt={`${userProfile.username}'s profile`}
+                        className="w-16 h-16 rounded-full object-cover"
+                        onError={() => {
+                          console.error(`Failed to load profile picture for ${userProfile.username}: ${userProfile.profilePicture}`);
+                          setImageError(true);
+                        }}
+                        onLoad={() => console.log(`Successfully loaded profile picture for ${userProfile.username}: ${userProfile.profilePicture}`)}
+                      />
+                    </a>
+                  ) : (
+                    <div className="w-16 h-16 rounded-full bg-gray-200 flex items-center justify-center">
+                      <span className="text-gray-500">No Photo</span>
+                    </div>
+                  )}
+                  <div>
+                    <a
+                      href={`profile.html?uid=${post.userId}`}
+                      className="text-primary font-semibold hover:underline"
+                    >
+                      {userProfile.username}
+                    </a>
+                    <p className="text-sm text-gray-500">
+                      {[
+                        post.dob ? `Age: ${calculateAgeRange(post.dob)}` : null,
+                        userProfile.gender ? `Gender: ${userProfile.gender}` : null,
+                        userProfile.intent ? `Looking for: ${userProfile.intent}` : null,
+                        userProfile.height ? `Height: ${formatHeight(userProfile.height)}` : null,
+                        userProfile.bodyType ? `Body Type: ${userProfile.bodyType}` : null,
+                        userProfile.city && userProfile.state ? `Location: ${userProfile.city}, ${userProfile.state}` : userProfile.zipCode ? `ZIP: ${userProfile.zipCode}` : null
+                      ]
+                        .filter(Boolean)
+                        .join(' | ')}
+                    </p>
+                  </div>
+                </div>
+              </div>
+              {user && user.uid !== post.userId && (
+                <div className="mt-4">
+                  <a
+                    href={`messages.html?recipient=${post.userId}`}
+                    className="bg-primary text-white font-semibold py-2 px-4 rounded-lg hover:bg-blue-700 transition"
+                  >
+                    Message {userProfile.username}
+                  </a>
+                </div>
+              )}
+            </div>
+          </main>
+          <Footer />
+        </div>
+      );
+    }
+
+    try {
+      console.log('Attempting to render React app');
+      const root = ReactDOM.createRoot(document.getElementById('root'));
+      root.render(
+        <ErrorBoundary>
+          <PostPage />
+        </ErrorBoundary>
+      );
+      console.log('React app rendered successfully');
+    } catch (error) {
+      console.error('React render error:', { message: error.message || 'Unknown error', stack: error.stack || 'No stack' });
+      document.getElementById('root').innerHTML = '<div className="error"><h2>Error</h2><p>Failed to render the app: ' + (error.message || 'An unexpected error occurred') + '</p></div>';
+    }
+  </script>
+</body>
+</html>
