@@ -200,15 +200,18 @@
                   <a href="signup.html" className="text-white font-semibold hover:underline">
                     {currentUser.profile?.username || 'User'}
                   </a>
-                  {currentUser && userId && (
+                  {currentUser && userId && currentUser.uid !== userId && (
                     <a href={`messages.html?recipient=${userId}`} className="relative text-white hover:text-white" title="Message Profile User">
                       <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
                       </svg>
                     </a>
                   )}
-                  <a href="/" className="bg-secondary text-white font-semibold py-2 px-4 rounded-lg hover:bg-red-700 transition">
+                  <a href="/" className="bg-primary text-white font-semibold py-2 px-4 rounded-lg hover:bg-blue-700 transition">
                     Home
+                  </a>
+                  <a href="users.html" className="bg-primary text-white font-semibold py-2 px-4 rounded-lg hover:bg-blue-700 transition">
+                    Browse
                   </a>
                 </div>
               ) : (
@@ -241,13 +244,19 @@
                   <a href="signup.html" className="text-white font-semibold hover:underline text-center">
                     {currentUser.profile?.username || 'User'}
                   </a>
-                  {currentUser && userId && (
+                  {currentUser && userId && currentUser.uid !== userId && (
                     <a href={`messages.html?recipient=${userId}`} className="text-white font-semibold hover:underline text-center">
                       Message Profile User
                     </a>
                   )}
-                  <a href="/" className="bg-secondary text-white font-semibold py-2 px-4 rounded-lg hover:bg-red-700 transition text-center">
+                  <a href="/" className="bg-primary text-white font-semibold py-2 px-4 rounded-lg hover:bg-blue-700 transition text-center">
                     Home
+                  </a>
+                  <a href="users.html" className="bg-primary text-white font-semibold py-2 px-4 rounded-lg hover:bg-blue-700 transition text-center">
+                    Browse
+                  </a>
+                  <a href="messages.html" className="text-white font-semibold py-2 hover:bg-blue-700 text-center relative">
+                    Messages
                   </a>
                 </div>
               ) : (
