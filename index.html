@@ -107,6 +107,31 @@
       min-height: 120px;
     }
     .marg { margin-left: 10px;}
+    .image-loading {
+      width: 100px;
+      height: 100px;
+      background-color: #e5e7eb;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 4px;
+    }
+    .image-error {
+      width: 100px;
+      height: 100px;
+      background-color: #fef2f2;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid #f87171;
+      border-radius: 4px;
+      text-align: center;
+      font-size: 11px;
+      color: #991b1b;
+      cursor: pointer;
+      padding: 4px;
+    }
     @media (max-width: 639px) {
       .marg { margin-left: 0;}
       .marg2 { margin-top: 0;}
@@ -128,6 +153,59 @@
       document.getElementById('root').innerHTML = '<div className="error"><h2>Error</h2><p>Failed to load essential libraries. Please check your internet connection and try again.</p></div>';
       throw new Error('React, ReactDOM, or Babel is not available');
     }
+
+    // Utility to preload images with retries and timeout
+    const preloadImages = async (imageUrls, maxRetries = 3, initialRetryDelay = 1000, timeout = 5000) => {
+      const results = {};
+      for (const [id, url] of Object.entries(imageUrls)) {
+        if (!url || !url.startsWith('https://res.cloudinary.com/ddmrplnut/')) {
+          console.warn(`Invalid or non-Cloudinary image URL for ${id}:`, url);
+          results[id] = { status: 'error', url: null, error: 'Invalid URL' };
+          continue;
+        }
+        let attempts = 0;
+        while (attempts <= maxRetries) {
+          try {
+            const img = new Image();
+            const cached = sessionStorage.getItem(`image_${id}`);
+            if (cached && cached === url) {
+              console.log(`Using cached image for ${id}:`, cached);
+              results[id] = { status: 'success', url: cached };
+              break;
+            }
+            await Promise.race([
+              new Promise((resolve, reject) => {
+                img.onload = () => {
+                  console.log(`Image loaded for ${id}:`, url);
+                  sessionStorage.setItem(`image_${id}`, url);
+                  resolve();
+                };
+                img.onerror = () => {
+                  console.error(`Image failed to load for ${id}, attempt ${attempts + 1}:`, url);
+                  reject(new Error('Image load failed'));
+                };
+                img.src = url;
+              }),
+              new Promise((_, reject) => setTimeout(() => reject(new Error('Image load timeout')), timeout))
+            ]);
+            results[id] = { status: 'success', url };
+            break;
+          } catch (error) {
+            console.error(`Image load error for ${id}, attempt ${attempts + 1}:`, error.message);
+            attempts++;
+            if (attempts > maxRetries) {
+              console.error(`Max retries reached for ${id}:`, url);
+              results[id] = { status: 'error', url: null, error: error.message };
+              break;
+            }
+            const delay = initialRetryDelay * Math.pow(2, attempts); // Exponential backoff
+            await new Promise(resolve => setTimeout(resolve, delay));
+          }
+        }
+      }
+      console.log('Image preload results:', JSON.stringify(results, null, 2));
+      return results;
+    };
 
     const fetchUserProfile = async (userId) => {
       console.log('Fetching profile for:', userId);
@@ -156,7 +234,7 @@
           };
         }
         const data = userDoc.data();
-        console.log(`Raw Firestore data for ${userId}:`, data);
+        console.log(`Raw Firestore data for ${userId}:`, JSON.stringify(data, null, 2));
         const basicInfo = data.basicInfo || {};
         const images = data.images || {};
         const mainProfilePic = images.mainProfilePic || {};
@@ -171,6 +249,12 @@
         } else {
           console.warn('Zipcodes library not available or no zipCode for', userId);
         }
+        const profilePicture = mainProfilePic.url && mainProfilePic.url.startsWith('https://res.cloudinary.com/ddmrplnut/')
+          ? mainProfilePic.url
+          : null;
+        if (mainProfilePic.url && !profilePicture) {
+          console.warn(`Non-Cloudinary or invalid profilePicture URL for ${userId}:`, mainProfilePic.url);
+        }
         const profile = {
           username: basicInfo.username || 'Unknown User',
           dob: basicInfo.dateOfBirth || '',
@@ -182,18 +266,14 @@
           zipCode: locationLogistics.zipCode || '',
           city: locationLogistics.currentCity || '',
           state: state,
-          profilePicture: mainProfilePic.url || null
+          profilePicture
         };
         const missingFields = Object.entries(profile).filter(([key, value]) => !value || value === 'Unknown User' || value === 0).map(([key]) => key);
         if (missingFields.length > 0) {
           console.warn(`Missing or empty fields for ${userId}:`, missingFields);
         }
-        if (profile.profilePicture && !profile.profilePicture.startsWith('http')) {
-          console.warn(`Invalid profilePicture URL for ${userId}:`, profile.profilePicture);
-          profile.profilePicture = null;
-        }
         sessionStorage.setItem(`userProfile_${userId}`, JSON.stringify(profile));
-        console.log(`Fetched profile for ${userId}:`, profile);
+        console.log(`Fetched profile for ${userId}:`, JSON.stringify(profile, null, 2));
         return profile;
       } catch (error) {
         console.error('fetchUserProfile error:', error);
@@ -600,7 +680,6 @@
       const [uploading, setUploading] = React.useState(false);
       const fileInputRef = React.useRef(null);
 
-      // Clean up previewImageUrl to avoid memory leaks
       React.useEffect(() => {
         return () => {
           if (previewImageUrl) {
@@ -864,7 +943,7 @@
                             By: {post.username}
                           </a>
                         ) : 'By: Unknown User',
-                        post.dob ? ` Age: ${calculateAgeRange(post.dob)}` : null,
+                        post.dob ? `Age: ${calculateAgeRange(post.dob)}` : null,
                         post.gender && post.gender !== '' ? `Gender: ${post.gender}` : null,
                         post.race && post.race !== '' ? `Ethnicity: ${post.race}` : null,
                         post.intent && post.intent !== '' ? `Looking for: ${post.intent}` : null,
@@ -1087,6 +1166,46 @@
     }
     
     function NewUsersSection({ users }) {
+      const [imageStatus, setImageStatus] = React.useState({});
+      const [retryCounts, setRetryCounts] = React.useState({});
+      const [refreshKey, setRefreshKey] = React.useState(0);
+      const defaultImage = './img/default-profile.png'; // Ensure this exists in your project
+
+      React.useEffect(() => {
+        if (!users || users.length === 0) return;
+        const imageUrls = users.reduce((acc, user) => {
+          if (user.profilePicture) {
+            acc[user.id] = user.profilePicture;
+          }
+          return acc;
+        }, {});
+        console.log('Preloading images for users:', JSON.stringify(imageUrls, null, 2));
+        preloadImages(imageUrls).then(results => {
+          console.log('Image preload results:', JSON.stringify(results, null, 2));
+          setImageStatus(results);
+        });
+      }, [users, refreshKey]);
+
+      const handleRetry = (userId, url) => {
+        const currentRetries = retryCounts[userId] || 0;
+        if (currentRetries >= 3) {
+          console.warn(`Max retries reached for ${userId}`);
+          return;
+        }
+        console.log(`Retrying image load for ${userId}:`, url);
+        setRetryCounts(prev => ({ ...prev, [userId]: currentRetries + 1 }));
+        preloadImages({ [userId]: url }).then(results => {
+          setImageStatus(prev => ({ ...prev, ...results }));
+        });
+      };
+
+      const handleRefreshAll = () => {
+        console.log('Refreshing all user images');
+        setImageStatus({});
+        setRetryCounts({});
+        setRefreshKey(prev => prev + 1);
+      };
+
       if (!users || users.length === 0) {
         return (
           <div className="bg-white marg rounded-lg shadow-md p-6 mt-6">
@@ -1100,22 +1219,43 @@
         <div className="bg-white marg rounded-lg shadow-md p-6 mt-6">
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-2xl font-semibold text-primary">New Users</h2>
-            <a
-              href="./users.html"
-              className="bg-primary text-white font-semibold py-1.5 px-3 rounded-md hover:bg-blue-700 transition"
-            >
-              View All Users
-            </a>
+            <div className="flex space-x-2">
+              
+              <a
+                href="./users.html"
+                className="bg-primary text-white font-semibold py-1.5 px-3 rounded-md hover:bg-blue-700 transition"
+              >
+                View All Users
+              </a>
+            </div>
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
             {users.slice(0, 5).map(user => (
               <div key={user.id} className="flex flex-col items-center text-center">
                 <a href={`./profile.html?uid=${user.id}`}>
-                  <img
-                    src={user.profilePicture || 'https://placehold.co/100x100'}
-                    alt={`${user.username}'s profile`}
-                    className="w-[100px] h-[100px] rounded-none object-cover mb-2 hover:opacity-80 transition"
-                  />
+                  {imageStatus[user.id]?.status === 'success' ? (
+                    <img
+                      src={imageStatus[user.id].url}
+                      alt={`${user.username}'s profile`}
+                      className="w-[100px] h-[100px] rounded-none object-cover mb-2 hover:opacity-80 transition"
+                    />
+                  ) : imageStatus[user.id]?.status === 'error' ? (
+                    <div
+                      className="image-error"
+                      onClick={() => handleRetry(user.id, user.profilePicture)}
+                    >
+                      <span>Image Failed</span>
+                      <span>User: {user.id.slice(0, 6)}</span>
+                      <span>Click to Retry</span>
+                    </div>
+                  ) : (
+                    <div className="image-loading">
+                      <svg className="animate-spin h-6 w-6 text-primary" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+                      </svg>
+                    </div>
+                  )}
                 </a>
                 <a
                   href={`./profile.html?uid=${user.id}`}
