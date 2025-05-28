@@ -129,6 +129,39 @@
     }
     .message-bubble {
       max-width: 75%;
+      padding: 0.75rem;
+      border-radius: 0.5rem;
+    }
+    .message-bubble.sent {
+      background-color: #0080ff;
+      color: white;
+      align-self: flex-end;
+    }
+    .message-bubble.received {
+      background-color: #e5e7eb;
+      color: #1f2937;
+      align-self: flex-start;
+    }
+    .message-bubble.access-request {
+      background-color: #fefcbf;
+      color: #854d0e;
+    }
+    .access-request-button {
+      background-color: #10b981;
+      color: white;
+      font-weight: 600;
+      padding: 0.5rem 1rem;
+      border-radius: 0.375rem;
+      transition: background-color 0.2s;
+    }
+    .access-request-button:hover {
+      background-color: #059669;
+    }
+    .deny-button {
+      background-color: #ef4444;
+    }
+    .deny-button:hover {
+      background-color: #dc2626;
     }
     .container {
       width: 100%;
@@ -183,7 +216,6 @@
       throw new Error('React, ReactDOM, or Babel is not available');
     }
 
-    // Error Boundary to catch runtime errors
     class ErrorBoundary extends React.Component {
       state = { error: null };
       static getDerivedStateFromError(error) {
@@ -604,732 +636,760 @@
     };
 
     function MessagesApp() {
-  const [viewerOpen, setViewerOpen] = React.useState(false);
-  const [currentImageIndex, setCurrentImageIndex] = React.useState(0);
-  const [user, setUser] = React.useState(null);
-  const [loading, setLoading] = React.useState(true);
-  const [conversations, setConversations] = React.useState([]);
-  const [selectedChatId, setSelectedChatId] = React.useState(null);
-  const [messages, setMessages] = React.useState([]);
-  const [newMessage, setNewMessage] = React.useState('');
-  const [image, setImage] = React.useState(null);
-  const [previewImageUrl, setPreviewImageUrl] = React.useState(null);
-  const [uploading, setUploading] = React.useState(false);
-  const [error, setError] = React.useState(null);
-  const [failedImages, setFailedImages] = React.useState(new Set());
-  const fileInputRef = React.useRef(null);
-  const messagesEndRef = React.useRef(null);
-  const [otherState1, setOtherState1] = React.useState(null);
-  const [otherState2, setOtherState2] = React.useState(null);
-  const firebase = window.firebase;
+      const [viewerOpen, setViewerOpen] = React.useState(false);
+      const [currentImageIndex, setCurrentImageIndex] = React.useState(0);
+      const [user, setUser] = React.useState(null);
+      const [loading, setLoading] = React.useState(true);
+      const [conversations, setConversations] = React.useState([]);
+      const [selectedChatId, setSelectedChatId] = React.useState(null);
+      const [messages, setMessages] = React.useState([]);
+      const [newMessage, setNewMessage] = React.useState('');
+      const [image, setImage] = React.useState(null);
+      const [previewImageUrl, setPreviewImageUrl] = React.useState(null);
+      const [uploading, setUploading] = React.useState(false);
+      const [error, setError] = React.useState(null);
+      const [failedImages, setFailedImages] = React.useState(new Set());
+      const fileInputRef = React.useRef(null);
+      const messagesEndRef = React.useRef(null);
+      const firebase = window.firebase;
 
-  const markMessagesAsRead = React.useCallback(async (chatId) => {
-    if (!user || !chatId) {
-      console.warn('markMessagesAsRead: Missing user or chatId', { user, chatId });
-      return;
-    }
-    console.log('Marking messages as read for chat', chatId);
-    try {
-      const convoRef = firebase.doc(firebase.db, 'conversations', chatId);
-      const convoSnap = await firebase.getDoc(convoRef);
-      if (!convoSnap.exists()) {
-        console.warn('Conversation does not exist:', chatId);
-        setError('Conversation not found.');
-        return;
-      }
-      const convoData = convoSnap.data();
-      if (!convoData.participants.includes(user.uid)) {
-        console.warn('User not a participant in conversation:', { chatId, uid: user.uid });
-        setError('You do not have access to this conversation.');
-        return;
-      }
-
-      const messagesRef = firebase.collection(firebase.db, `conversations/${chatId}/messages`);
-      const unreadQuery = firebase.query(
-        messagesRef,
-        firebase.where('senderId', '!=', user.uid),
-        firebase.where('read', '==', false)
-      );
-      const snapshot = await firebase.getDocs(unreadQuery);
-      if (snapshot.empty) {
-        console.log('No unread messages to mark for chat', chatId);
-        const unreadRef = firebase.doc(firebase.db, `users/${user.uid}/unreadConversations`, chatId);
-        await firebase.setDoc(unreadRef, {
-          unreadCount: 0,
-          lastMessageTimestamp: firebase.serverTimestamp()
-        }, { merge: true });
-        return;
-      }
-
-      const batch = firebase.writeBatch(firebase.db);
-      snapshot.forEach(doc => {
-        batch.update(doc.ref, { read: true });
-      });
-      batch.update(convoRef, {
-        unreadCount: 0,
-        [`unreadCounts.${user.uid}`]: 0
-      });
-      const unreadRef = firebase.doc(firebase.db, `users/${user.uid}/unreadConversations`, chatId);
-      batch.set(unreadRef, {
-        unreadCount: 0,
-        lastMessageTimestamp: firebase.serverTimestamp()
-      }, { merge: true });
-      await batch.commit();
-      console.log('Messages marked as read, unreadCount reset', { chatId, count: snapshot.size });
-    } catch (error) {
-      console.error('Error marking messages as read:', error);
-      setError(`Failed to update read status: ${error.message}`);
-      if (error.code === 'permission-denied') {
-        console.error('Permission denied. Verify Firestore rules and conversation participants:', {
-          chatId,
-          uid: user.uid
-        });
-      } else if (error.code === 'failed-precondition' && error.message.includes('index')) {
-        console.error('Missing Firestore index. Create it in Firebase Console.');
-      }
-    }
-  }, [user, firebase, setError]);
-
-  const debounce = (fn, delay) => {
-    let timeout;
-    return (...args) => {
-      clearTimeout(timeout);
-      timeout = setTimeout(() => fn(...args), delay);
-    };
-  };
-  const debouncedMarkMessagesAsRead = React.useCallback(debounce(markMessagesAsRead, 300), [markMessagesAsRead]);
-
-  console.log('MessagesApp hooks declared:', {
-    viewerOpen, currentImageIndex, user, loading, conversations,
-    selectedChatId, messages, newMessage, image, previewImageUrl, uploading, error,
-    failedImages, fileInputRef, messagesEndRef, otherState1, otherState2
-  });
-
-  React.useEffect(() => {
-    if (!firebase) {
-      setError('Firebase not initialized.');
-      setLoading(false);
-      return;
-    }
-    const initializeAuth = async () => {
-      try {
-        await firebase.setPersistence(firebase.auth, firebase.browserSessionPersistence);
-        console.log('Auth persistence set to browserSessionPersistence');
-        const unsubscribe = firebase.onAuthStateChanged(firebase.auth, async (currentUser) => {
-          if (currentUser) {
-            const profile = await fetchUserProfile(currentUser.uid);
-            setUser({ ...currentUser, profile, loginStatus: 'logged_in' });
-            console.log('Auth state updated:', { uid: currentUser.uid, username: profile.username });
-          } else {
-            setUser(null);
-            setError('Please log in to view messages.');
-            window.location.href = 'index.html';
-          }
-          setLoading(false);
-        }, (err) => {
-          console.error('Auth state error:', err);
-          setError('Authentication error: ' + err.message);
-          setLoading(false);
-        });
-        return () => unsubscribe();
-      } catch (error) {
-        console.error('Auth initialization error:', error);
-        setError('Authentication initialization error: ' + error.message);
-        setLoading(false);
-      }
-    };
-    initializeAuth();
-  }, [firebase]);
-
-  React.useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const recipientId = urlParams.get('recipient');
-    if (recipientId && user?.uid) {
-      console.log('Triggering startConversation for recipient:', recipientId);
-      startConversation(recipientId);
-    }
-  }, [user?.uid]);
-
-  React.useEffect(() => {
-    if (!user?.uid || !firebase.db) return;
-    console.log('Setting up conversations snapshot for user:', user.uid);
-    const q = firebase.query(
-      firebase.collection(firebase.db, 'conversations'),
-      firebase.where('participants', 'array-contains', user.uid),
-      firebase.orderBy('lastMessage.timestamp', 'desc')
-    );
-    const unsubscribeConvos = firebase.onSnapshot(q, async (snapshot) => {
-      const convos = await Promise.all(snapshot.docs.map(async (doc) => {
-        const data = doc.data();
-        console.log('Processing conversation:', doc.id, data);
-        const otherUserId = data.participants.find(id => id !== user.uid);
-        const profile = await fetchUserProfile(otherUserId);
-        const unreadDoc = await firebase.getDoc(
-          firebase.doc(firebase.db, `users/${user.uid}/unreadConversations`, doc.id)
-        );
-        const unreadCount = unreadDoc.exists() ? unreadDoc.data().unreadCount || 0 : 0;
-        return {
-          id: doc.id,
-          otherUserId,
-          otherUsername: profile.username,
-          profilePicture: profile.profilePicture,
-          lastMessage: data.lastMessage || {},
-          unreadCount
-        };
-      }));
-
-      const unsubscribeUnread = {};
-      convos.forEach(convo => {
-        const unreadRef = firebase.doc(firebase.db, `users/${user.uid}/unreadConversations`, convo.id);
-        unsubscribeUnread[convo.id] = firebase.onSnapshot(unreadRef, (unreadSnap) => {
-          const unreadData = unreadSnap.exists() ? unreadSnap.data() : { unreadCount: 0 };
-          console.log('Unread count updated for convo:', convo.id, unreadData.unreadCount);
-          setConversations(prev => {
-            const updatedConvos = prev.map(c => {
-              if (c.id === convo.id) {
-                return { ...c, unreadCount: unreadData.unreadCount || 0 };
-              }
-              return c;
-            });
-            return updatedConvos;
-          });
-        }, (err) => {
-          console.error('Unread snapshot error for convo:', convo.id, err);
-        });
-      });
-
-      console.log('Conversations updated:', convos);
-      setConversations(convos);
-
-      return () => {
-        Object.values(unsubscribeUnread).forEach(unsub => unsub());
-      };
-    }, (err) => {
-      console.error('Conversations snapshot error:', err.code, err.message, err.stack);
-      setError('Failed to load conversations: ' + err.message);
-    });
-
-    return () => {
-      unsubscribeConvos();
-    };
-  }, [user?.uid, firebase.db]);
-
-  React.useEffect(() => {
-    if (!user?.uid || !firebase.db) return;
-    const q = firebase.query(
-      firebase.collection(firebase.db, 'conversations'),
-      firebase.where('participants', 'array-contains', user.uid)
-    );
-    const unsubscribe = firebase.onSnapshot(q, async (snapshot) => {
-      for (const change of snapshot.docChanges()) {
-        if (change.type !== 'modified') continue;
-        const convo = change.doc.data();
-        const convoId = change.doc.id;
-        if (convoId === selectedChatId) continue;
-        const lastMessage = convo.lastMessage || {};
-        if (lastMessage.senderId === user.uid || lastMessage.read) continue;
-        const unreadRef = firebase.doc(firebase.db, `users/${user.uid}/unreadConversations`, convoId);
-        const unreadSnap = await firebase.getDoc(unreadRef);
-        const currentUnread = unreadSnap.exists() ? unreadSnap.data().unreadCount : 0;
-        await firebase.setDoc(unreadRef, {
-          unreadCount: currentUnread + 1,
-          lastMessageTimestamp: firebase.serverTimestamp()
-        }, { merge: true });
-        console.log(`Incremented unread count for ${convoId}: ${currentUnread + 1}`);
-      }
-    }, (err) => {
-      console.error('Unread count snapshot error:', err);
-      setError('Failed to update unread count: ' + err.message);
-    });
-    return () => unsubscribe();
-  }, [user?.uid, selectedChatId, firebase.db]);
-
-  React.useEffect(() => {
-    if (!selectedChatId || !user || !firebase.db) {
-      setMessages([]);
-      return;
-    }
-    console.log('Setting up messages snapshot for chat:', selectedChatId);
-    const q = firebase.query(
-      firebase.collection(firebase.db, `conversations/${selectedChatId}/messages`),
-      firebase.orderBy('timestamp', 'asc')
-    );
-    const unsubscribe = firebase.onSnapshot(q, (snapshot) => {
-      const msgs = snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      }));
-      setMessages(msgs);
-      console.log('Messages updated:', msgs);
-      debouncedMarkMessagesAsRead(selectedChatId);
-    }, (err) => {
-      console.error('Messages snapshot error:', err.code, err.message, err.stack);
-      setError('Failed to load messages: ' + err.message);
-    });
-    return () => unsubscribe();
-  }, [selectedChatId, user, firebase.db, debouncedMarkMessagesAsRead]);
-
-  React.useEffect(() => {
-    if (messages.length > 0 && messagesEndRef.current) {
-      console.log('Scrolling to latest message');
-      requestAnimationFrame(() => {
-        messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
-      });
-    }
-  }, [messages, selectedChatId]);
-
-  // Clean up previewImageUrl to avoid memory leaks
-  React.useEffect(() => {
-    return () => {
-      if (previewImageUrl) {
-        console.log('Revoking preview image URL');
-        URL.revokeObjectURL(previewImageUrl);
-      }
-    };
-  }, [previewImageUrl]);
-
-  const startConversation = async (recipientId) => {
-      if (!user?.uid || !recipientId || user.uid === recipientId) {
-        console.warn('Invalid startConversation params:', { userId: user?.uid, recipientId });
-        return;
-      }
-      try {
-        console.log('Starting conversation with recipientId:', recipientId);
-        if (!firebase.auth.currentUser) {
-          throw new Error('User not authenticated');
-        }
-        console.log('Authenticated user:', firebase.auth.currentUser.uid);
-        const isUsername = !recipientId.match(/^[a-zA-Z0-9]{20,}$/);
-        const recipientProfile = await fetchUserProfile(recipientId, isUsername);
-        const recipientUserId = recipientProfile.uid;
-        console.log('Recipient resolved:', { recipientId, recipientUserId, username: recipientProfile.username });
-        if (user.uid === recipientUserId) {
-          console.warn('Cannot start conversation with self:', recipientUserId);
+      const markMessagesAsRead = React.useCallback(async (chatId) => {
+        if (!user || !chatId) {
+          console.warn('markMessagesAsRead: Missing user or chatId', { user, chatId });
           return;
         }
-        const chatId = [user.uid, recipientUserId].sort().join('_');
-        const convoRef = firebase.doc(firebase.db, 'conversations', chatId);
-        console.log('Checking conversation:', chatId);
-        const convoSnap = await firebase.getDoc(convoRef);
-        if (!convoSnap.exists()) {
-          console.log('Creating new conversation:', chatId);
-          await firebase.setDoc(convoRef, {
-            participants: [user.uid, recipientUserId],
-            createdAt: firebase.serverTimestamp(),
-            lastMessage: {},
+        console.log('Marking messages as read for chat', chatId);
+        try {
+          const convoRef = firebase.doc(firebase.db, 'conversations', chatId);
+          const convoSnap = await firebase.getDoc(convoRef);
+          if (!convoSnap.exists()) {
+            console.warn('Conversation does not exist:', chatId);
+            setError('Conversation not found.');
+            return;
+          }
+          const convoData = convoSnap.data();
+          if (!convoData.participants.includes(user.uid)) {
+            console.warn('User not a participant in conversation:', { chatId, uid: user.uid });
+            setError('You do not have access to this conversation.');
+            return;
+          }
+
+          const messagesRef = firebase.collection(firebase.db, `conversations/${chatId}/messages`);
+          const unreadQuery = firebase.query(
+            messagesRef,
+            firebase.where('senderId', '!=', user.uid),
+            firebase.where('read', '==', false)
+          );
+          const snapshot = await firebase.getDocs(unreadQuery);
+          if (snapshot.empty) {
+            console.log('No unread messages to mark for chat', chatId);
+            const unreadRef = firebase.doc(firebase.db, `users/${user.uid}/unreadConversations`, chatId);
+            await firebase.setDoc(unreadRef, {
+              unreadCount: 0,
+              lastMessageTimestamp: firebase.serverTimestamp()
+            }, { merge: true });
+            return;
+          }
+
+          const batch = firebase.writeBatch(firebase.db);
+          snapshot.forEach(doc => {
+            batch.update(doc.ref, { read: true });
+          });
+          batch.update(convoRef, {
             unreadCount: 0,
-            unreadCounts: { [user.uid]: 0, [recipientUserId]: 0 }
+            [`unreadCounts.${user.uid}`]: 0
           });
-          console.log('New conversation created:', chatId);
-          setConversations(prev => {
-            const exists = prev.some(c => c.id === chatId);
-            if (exists) return prev;
-            const newConvo = {
-              id: chatId,
-              otherUserId: recipientUserId,
-              otherUsername: recipientProfile.username,
-              profilePicture: recipientProfile.profilePicture,
-              lastMessage: {},
-              unreadCount: 0
-            };
-            console.log('Added placeholder conversation:', newConvo);
-            return [newConvo, ...prev];
-          });
-        } else {
-          console.log('Existing conversation found:', chatId, convoSnap.data());
+          const unreadRef = firebase.doc(firebase.db, `users/${user.uid}/unreadConversations`, chatId);
+          batch.set(unreadRef, {
+            unreadCount: 0,
+            lastMessageTimestamp: firebase.serverTimestamp()
+          }, { merge: true });
+          await batch.commit();
+          console.log('Messages marked as read, unreadCount reset', { chatId, count: snapshot.size });
+        } catch (error) {
+          console.error('Error marking messages as read:', error);
+          setError(`Failed to update read status: ${error.message}`);
         }
-        setSelectedChatId(chatId);
-        console.log('Selected chat:', chatId);
-      } catch (error) {
-        console.error('startConversation error:', error.code, error.message, error.stack);
-        setError('Failed to start conversation: ' + error.message);
-      }
-    };
+      }, [user, firebase, setError]);
 
-  const handleImageChange = (e) => {
-    const file = e.target.files[0];
-    if (!file) {
-      console.log('No file selected');
-      return;
-    }
-    if (!file.type.startsWith('image/')) {
-      console.error('Invalid file type:', file.type);
-      setError('Please upload an image file.');
-      setImage(null);
-      setPreviewImageUrl(null);
-      return;
-    }
-    console.log('Image selected:', file.name);
-    setImage(file);
-    setPreviewImageUrl(URL.createObjectURL(file));
-    setError(null);
-  };
-
-  const cancelImage = () => {
-    console.log('Cancelling image attachment');
-    if (previewImageUrl) {
-      URL.revokeObjectURL(previewImageUrl);
-    }
-    setImage(null);
-    setPreviewImageUrl(null);
-    if (fileInputRef.current) {
-      fileInputRef.current.value = null;
-    }
-  };
-
-  const uploadImage = async () => {
-    if (!image) return null;
-    setUploading(true);
-    const formData = new FormData();
-    formData.append('file', image);
-    formData.append('upload_preset', window.CLOUDINARY_UPLOAD_PRESET);
-    try {
-      console.log('Uploading image to Cloudinary');
-      const response = await fetch(`https://api.cloudinary.com/v1_1/${window.CLOUDINARY_CLOUD_NAME}/image/upload`, {
-        method: 'POST',
-        body: formData
-      });
-      const data = await response.json();
-      if (data.secure_url) {
-        console.log('Image uploaded:', data.secure_url);
-        return data.secure_url;
-      }
-      throw new Error('Image upload failed');
-    } catch (error) {
-      console.error('Image upload error:', error);
-      setError('Failed to upload image: ' + error.message);
-      return null;
-    } finally {
-      setUploading(false);
-    }
-  };
-
-  const sendMessage = async (e) => {
-    e.preventDefault();
-    if (!user || !selectedChatId || (!newMessage.trim() && !image)) return;
-    try {
-      console.log('Sending message:', { selectedChatId, userId: user.uid });
-      setError(null);
-      const imageUrl = await uploadImage();
-      const messageData = {
-        text: newMessage.trim() || null,
-        imageUrl: imageUrl || null,
-        senderId: user.uid,
-        timestamp: firebase.serverTimestamp(),
-        read: false
+      const debounce = (fn, delay) => {
+        let timeout;
+        return (...args) => {
+          clearTimeout(timeout);
+          timeout = setTimeout(() => fn(...args), delay);
+        };
       };
-      const messagesRef = firebase.collection(firebase.db, `conversations/${selectedChatId}/messages`);
-      await firebase.addDoc(messagesRef, messageData);
-      const convoRef = firebase.doc(firebase.db, 'conversations', selectedChatId);
-      await firebase.updateDoc(convoRef, {
-        lastMessage: messageData
-      });
-      setNewMessage('');
-      setImage(null);
-      setPreviewImageUrl(null);
-      if (fileInputRef.current) fileInputRef.current.value = null;
-      console.log('Message sent:', messageData);
-    } catch (error) {
-      console.error('Send message error:', error.code, error.message, error.stack);
-      setError('Failed to send message: ' + error.message);
-    }
-  };
+      const debouncedMarkMessagesAsRead = React.useCallback(debounce(markMessagesAsRead, 300), [markMessagesAsRead]);
 
-  const imageUrls = (messages || []).filter(msg => msg?.imageUrl && !failedImages.has(msg.imageUrl)).map(msg => msg.imageUrl);
-  console.log('MessagesApp render', { user, conversations, messages, selectedChatId, imageUrls, previewImageUrl });
+      React.useEffect(() => {
+        if (!firebase) {
+          setError('Firebase not initialized.');
+          setLoading(false);
+          return;
+        }
+        const initializeAuth = async () => {
+          try {
+            await firebase.setPersistence(firebase.auth, firebase.browserSessionPersistence);
+            console.log('Auth persistence set to browserSessionPersistence');
+            const unsubscribe = firebase.onAuthStateChanged(firebase.auth, async (currentUser) => {
+              if (currentUser) {
+                const profile = await fetchUserProfile(currentUser.uid);
+                setUser({ ...currentUser, profile, loginStatus: 'logged_in' });
+                console.log('Auth state updated:', { uid: currentUser.uid, username: profile.username });
+              } else {
+                setUser(null);
+                setError('Please log in to view messages.');
+                window.location.href = 'index.html';
+              }
+              setLoading(false);
+            }, (err) => {
+              console.error('Auth state error:', err);
+              setError('Authentication error: ' + err.message);
+              setLoading(false);
+            });
+            return () => unsubscribe();
+          } catch (error) {
+            console.error('Auth initialization error:', error);
+            setError('Authentication initialization error: ' + error.message);
+            setLoading(false);
+          }
+        };
+        initializeAuth();
+      }, [firebase]);
 
-  const openImageViewer = (index) => {
-    console.log('Opening viewer at index', index);
-    if (index >= 0 && index < imageUrls.length) {
-      setCurrentImageIndex(index);
-      setViewerOpen(true);
-    }
-  };
+      React.useEffect(() => {
+        const urlParams = new URLSearchParams(window.location.search);
+        const recipientId = urlParams.get('recipient');
+        if (recipientId && user?.uid) {
+          console.log('Triggering startConversation for recipient:', recipientId);
+          startConversation(recipientId);
+        }
+      }, [user?.uid]);
 
-  const closeImageViewer = () => {
-    console.log('Closing viewer');
-    setViewerOpen(false);
-  };
+      React.useEffect(() => {
+        if (!user?.uid || !firebase.db) return;
+        console.log('Setting up conversations snapshot for user:', user.uid);
+        const q = firebase.query(
+          firebase.collection(firebase.db, 'conversations'),
+          firebase.where('participants', 'array-contains', user.uid)
+        );
+        const unsubscribeConvos = firebase.onSnapshot(q, async (snapshot) => {
+          const convos = await Promise.all(snapshot.docs.map(async (doc) => {
+            const data = doc.data();
+            console.log('Processing conversation:', doc.id, data);
+            const otherUserId = data.participants.find(id => id !== user.uid);
+            const profile = await fetchUserProfile(otherUserId);
+            const unreadDoc = await firebase.getDoc(
+              firebase.doc(firebase.db, `users/${user.uid}/unreadConversations`, doc.id)
+            );
+            const unreadCount = unreadDoc.exists() ? unreadDoc.data().unreadCount || 0 : 0;
+            return {
+              id: doc.id,
+              otherUserId,
+              otherUsername: profile.username,
+              profilePicture: profile.profilePicture,
+              lastMessage: data.lastMessage || {},
+              unreadCount
+            };
+          }));
 
-  const prevImage = () => {
-    setCurrentImageIndex(prev => (prev === 0 ? imageUrls.length - 1 : prev - 1));
-  };
+          console.log('Conversations updated:', convos);
+          setConversations(convos.sort((a, b) => {
+            const aTime = a.lastMessage?.timestamp?.toMillis() || 0;
+            const bTime = b.lastMessage?.timestamp?.toMillis() || 0;
+            return bTime - aTime;
+          }));
+        }, (err) => {
+          console.error('Conversations snapshot error:', err);
+          setError('Failed to load conversations: ' + err.message);
+        });
 
-  const nextImage = () => {
-    setCurrentImageIndex(prev => (prev === imageUrls.length - 1 ? 0 : prev + 1));
-  };
+        return () => unsubscribeConvos();
+      }, [user?.uid, firebase.db]);
 
-  return (
-    <div className="flex flex-col h-screen overflow-hidden">
-      <Header user={user} setUser={setUser} />
-      <div className="container">
-        {loading ? (
-          <div className="text-center mt-20">
-            <p className="text-gray-600">Loading user...</p>
-          </div>
-        ) : !user ? (
-          <div className="text-center mt-20">
-            <p className="text-gray-600">Redirecting to login...</p>
-          </div>
-        ) : (
-          <>
-            {error && (
-              <div className="bg-red-100 text-red-700 p-4 mb-4 rounded">
-                {error}
+      React.useEffect(() => {
+        if (!user?.uid || !firebase.db) return;
+        const q = firebase.query(
+          firebase.collection(firebase.db, 'conversations'),
+          firebase.where('participants', 'array-contains', user.uid)
+        );
+        const unsubscribe = firebase.onSnapshot(q, async (snapshot) => {
+          for (const change of snapshot.docChanges()) {
+            if (change.type !== 'modified') continue;
+            const convo = change.doc.data();
+            const convoId = change.doc.id;
+            if (convoId === selectedChatId) continue;
+            const lastMessage = convo.lastMessage || {};
+            if (lastMessage.senderId === user.uid || lastMessage.read) continue;
+            const unreadRef = firebase.doc(firebase.db, `users/${user.uid}/unreadConversations`, convoId);
+            const unreadSnap = await firebase.getDoc(unreadRef);
+            const currentUnread = unreadSnap.exists() ? unreadSnap.data().unreadCount : 0;
+            await firebase.setDoc(unreadRef, {
+              unreadCount: currentUnread + 1,
+              lastMessageTimestamp: firebase.serverTimestamp()
+            }, { merge: true });
+            console.log(`Incremented unread count for ${convoId}: ${currentUnread + 1}`);
+          }
+        }, (err) => {
+          console.error('Unread count snapshot error:', err);
+          setError('Failed to update unread count: ' + err.message);
+        });
+        return () => unsubscribe();
+      }, [user?.uid, selectedChatId, firebase.db]);
+
+      React.useEffect(() => {
+        if (!selectedChatId || !user || !firebase.db) {
+          setMessages([]);
+          return;
+        }
+        console.log('Setting up messages snapshot for chat:', selectedChatId);
+        const q = firebase.query(
+          firebase.collection(firebase.db, `conversations/${selectedChatId}/messages`),
+          firebase.orderBy('timestamp', 'asc')
+        );
+        const unsubscribe = firebase.onSnapshot(q, (snapshot) => {
+          const msgs = snapshot.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data()
+          }));
+          setMessages(msgs);
+          console.log('Messages updated:', msgs);
+          debouncedMarkMessagesAsRead(selectedChatId);
+        }, (err) => {
+          console.error('Messages snapshot error:', err);
+          setError('Failed to load messages: ' + err.message);
+        });
+        return () => unsubscribe();
+      }, [selectedChatId, user, firebase.db, debouncedMarkMessagesAsRead]);
+
+      React.useEffect(() => {
+        if (messages.length > 0 && messagesEndRef.current) {
+          console.log('Scrolling to latest message');
+          requestAnimationFrame(() => {
+            messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+          });
+        }
+      }, [messages, selectedChatId]);
+
+      React.useEffect(() => {
+        return () => {
+          if (previewImageUrl) {
+            console.log('Revoking preview image URL');
+            URL.revokeObjectURL(previewImageUrl);
+          }
+        };
+      }, [previewImageUrl]);
+
+      const startConversation = async (recipientId) => {
+        if (!user?.uid || !recipientId || user.uid === recipientId) {
+          console.warn('Invalid startConversation params:', { userId: user?.uid, recipientId });
+          return;
+        }
+        try {
+          console.log('Starting conversation with recipientId:', recipientId);
+          if (!firebase.auth.currentUser) {
+            throw new Error('User not authenticated');
+          }
+          const isUsername = !recipientId.match(/^[a-zA-Z0-9]{20,}$/);
+          const recipientProfile = await fetchUserProfile(recipientId, isUsername);
+          const recipientUserId = recipientProfile.uid;
+          console.log('Recipient resolved:', { recipientId, recipientUserId, username: recipientProfile.username });
+          if (user.uid === recipientUserId) {
+            console.warn('Cannot start conversation with self:', recipientUserId);
+            return;
+          }
+
+          const convoQuery = firebase.query(
+            firebase.collection(firebase.db, 'conversations'),
+            firebase.where('participants', 'array-contains', user.uid)
+          );
+          const convoSnapshot = await firebase.getDocs(convoQuery);
+          let existingConvoId = null;
+          convoSnapshot.forEach(doc => {
+            if (doc.data().participants.includes(recipientUserId)) {
+              existingConvoId = doc.id;
+            }
+          });
+
+          if (existingConvoId) {
+            console.log('Existing conversation found:', existingConvoId);
+            setSelectedChatId(existingConvoId);
+          } else {
+            console.log('Creating new conversation');
+            const convoDoc = await firebase.addDoc(
+              firebase.collection(firebase.db, 'conversations'),
+              {
+                participants: [user.uid, recipientUserId],
+                createdAt: firebase.serverTimestamp(),
+                lastMessage: {},
+                unreadCount: 0,
+                unreadCounts: { [user.uid]: 0, [recipientUserId]: 0 }
+              }
+            );
+            console.log('New conversation created:', convoDoc.id);
+            setConversations(prev => {
+              const exists = prev.some(c => c.id === convoDoc.id);
+              if (exists) return prev;
+              const newConvo = {
+                id: convoDoc.id,
+                otherUserId: recipientUserId,
+                otherUsername: recipientProfile.username,
+                profilePicture: recipientProfile.profilePicture,
+                lastMessage: {},
+                unreadCount: 0
+              };
+              return [newConvo, ...prev];
+            });
+            setSelectedChatId(convoDoc.id);
+          }
+        } catch (error) {
+          console.error('startConversation error:', error);
+          setError('Failed to start conversation: ' + error.message);
+        }
+      };
+
+      const handleImageChange = (e) => {
+        const file = e.target.files[0];
+        if (!file) {
+          console.log('No file selected');
+          return;
+        }
+        if (!file.type.startsWith('image/')) {
+          console.error('Invalid file type:', file.type);
+          setError('Please upload an image file.');
+          setImage(null);
+          setPreviewImageUrl(null);
+          return;
+        }
+        console.log('Image selected:', file.name);
+        setImage(file);
+        setPreviewImageUrl(URL.createObjectURL(file));
+        setError(null);
+      };
+
+      const cancelImage = () => {
+        console.log('Cancelling image attachment');
+        if (previewImageUrl) {
+          URL.revokeObjectURL(previewImageUrl);
+        }
+        setImage(null);
+        setPreviewImageUrl(null);
+        if (fileInputRef.current) {
+          fileInputRef.current.value = null;
+        }
+      };
+
+      const uploadImage = async () => {
+        if (!image) return null;
+        setUploading(true);
+        const formData = new FormData();
+        formData.append('file', image);
+        formData.append('upload_preset', window.CLOUDINARY_UPLOAD_PRESET);
+        try {
+          console.log('Uploading image to Cloudinary');
+          const response = await fetch(`https://api.cloudinary.com/v1_1/${window.CLOUDINARY_CLOUD_NAME}/image/upload`, {
+            method: 'POST',
+            body: formData
+          });
+          const data = await response.json();
+          if (data.secure_url) {
+            console.log('Image uploaded:', data.secure_url);
+            return data.secure_url;
+          }
+          throw new Error('Image upload failed');
+        } catch (error) {
+          console.error('Image upload error:', error);
+          setError('Failed to upload image: ' + error.message);
+          return null;
+        } finally {
+          setUploading(false);
+        }
+      };
+
+      const sendMessage = async (e) => {
+        e.preventDefault();
+        if (!user || !selectedChatId || (!newMessage.trim() && !image)) return;
+        try {
+          console.log('Sending message:', { selectedChatId, userId: user.uid });
+          setError(null);
+          const imageUrl = await uploadImage();
+          const messageData = {
+            text: newMessage.trim() || null,
+            imageUrl: imageUrl || null,
+            senderId: user.uid,
+            timestamp: firebase.serverTimestamp(),
+            read: false,
+            type: 'text'
+          };
+          const messagesRef = firebase.collection(firebase.db, `conversations/${selectedChatId}/messages`);
+          await firebase.addDoc(messagesRef, messageData);
+          const convoRef = firebase.doc(firebase.db, 'conversations', selectedChatId);
+          await firebase.updateDoc(convoRef, {
+            lastMessage: messageData
+          });
+          setNewMessage('');
+          setImage(null);
+          setPreviewImageUrl(null);
+          if (fileInputRef.current) fileInputRef.current.value = null;
+          console.log('Message sent:', messageData);
+        } catch (error) {
+          console.error('Send message error:', error);
+          setError('Failed to send message: ' + error.message);
+        }
+      };
+
+      const handleAccessResponse = async (messageId, status) => {
+        if (!user || !selectedChatId) return;
+        try {
+          const messageRef = firebase.doc(firebase.db, `conversations/${selectedChatId}/messages`, messageId);
+          const messageSnap = await firebase.getDoc(messageRef);
+          if (!messageSnap.exists()) {
+            setError('Access request not found.');
+            return;
+          }
+          const messageData = messageSnap.data();
+          if (messageData.type !== 'access_request' || messageData.accessRequestStatus !== 'pending') {
+            setError('Invalid or already processed access request.');
+            return;
+          }
+
+          await firebase.setDoc(
+            firebase.doc(firebase.db, `users/${user.uid}/accessRequests`, messageData.senderId),
+            { status, respondedAt: firebase.serverTimestamp() },
+            { merge: true }
+          );
+
+          await firebase.addDoc(
+            firebase.collection(firebase.db, `conversations/${selectedChatId}/messages`),
+            {
+              senderId: user.uid,
+              content: `Access request ${status}`,
+              type: 'access_response',
+              accessRequestStatus: status,
+              timestamp: firebase.serverTimestamp(),
+              read: false
+            }
+          );
+
+          await firebase.updateDoc(messageRef, { accessRequestStatus: status });
+        } catch (err) {
+          console.error('Access response error:', err);
+          setError(`Failed to ${status} access request: ${err.message}`);
+        }
+      };
+
+      const imageUrls = (messages || []).filter(msg => msg?.imageUrl && !failedImages.has(msg.imageUrl)).map(msg => msg.imageUrl);
+      console.log('MessagesApp render', { user, conversations, messages, selectedChatId, imageUrls, previewImageUrl });
+
+      const openImageViewer = (index) => {
+        console.log('Opening viewer at index', index);
+        if (index >= 0 && index < imageUrls.length) {
+          setCurrentImageIndex(index);
+          setViewerOpen(true);
+        }
+      };
+
+      const closeImageViewer = () => {
+        console.log('Closing viewer');
+        setViewerOpen(false);
+      };
+
+      const prevImage = () => {
+        setCurrentImageIndex(prev => (prev === 0 ? imageUrls.length - 1 : prev - 1));
+      };
+
+      const nextImage = () => {
+        setCurrentImageIndex(prev => (prev === imageUrls.length - 1 ? 0 : prev + 1));
+      };
+
+      return (
+        <div className="flex flex-col h-screen overflow-hidden">
+          <Header user={user} setUser={setUser} />
+          <div className="container">
+            {loading ? (
+              <div className="text-center mt-20">
+                <p className="text-gray-600">Loading user...</p>
               </div>
-            )}
-            <div className="message-container flex flex-col md:flex-row">
-              <div
-                className={`message-list w-full md:w-1/3 ${
-                  selectedChatId ? 'hidden md:block' : 'block'
-                } transition-transform duration-300 ${
-                  selectedChatId ? '-translate-x-full md:translate-x-0' : 'translate-x-0'
-                }`}
-              >
-                <h2 className="text-xl font-semibold text-primary mb-2">Conversations</h2>
-                {(!conversations || conversations.length === 0) ? (
-                  <p className="text-gray-600">No conversations yet.</p>
-                ) : (
-                  conversations.map(convo => (
-                    <div
-                      key={convo?.id || 'unknown'}
-                      className={`flex items-center p-3 cursor-pointer rounded-lg hover:bg-gray-100 ${
-                        selectedChatId === convo?.id ? 'bg-gray-200' : ''
-                      }`}
-                      onClick={() => {
-                        console.log('Selecting chat', convo?.id);
-                        setSelectedChatId(convo?.id);
-                        debouncedMarkMessagesAsRead(convo?.id);
-                      }}
-                    >
-                      <img
-                        src={convo?.profilePicture || 'https://placehold.co/40x40?text=User'}
-                        alt={convo?.otherUsername || 'User'}
-                        className="w-10 h-10 rounded-full mr-3 object-cover"
-                        onError={(e) => {
-                          e.target.src = 'https://placehold.co/40x40?text=User';
-                        }}
-                      />
-                      <div className="flex-1">
-                        <div className="flex justify-between">
-                          <span className="font-semibold">{convo?.otherUsername || 'Unknown'}</span>
-                          <span className="text-sm text-gray-600">
-                            {convo?.lastMessage?.timestamp?.toDate().toLocaleTimeString() || ''}
-                          </span>
-                        </div>
-                        <div className="flex justify-between">
-                          <p className="text-sm text-gray-600 truncate">
-                            {convo?.lastMessage?.text || (convo?.lastMessage?.imageUrl ? '[Image]' : '')}
-                          </p>
-                          {convo?.unreadCount > 0 && (
-                            <span className="bg-secondary text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
-                              {convo?.unreadCount}
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  ))
-                )}
+            ) : !user ? (
+              <div className="text-center mt-20">
+                <p className="text-gray-600">Redirecting to login...</p>
               </div>
-              <div
-                className={`conversation-view w-full md:w-2/3 flex flex-col ${
-                  selectedChatId ? 'block' : 'hidden md:block'
-                } transition-transform duration-300 ${
-                  selectedChatId ? 'translate-x-0' : 'translate-x-full md:translate-x-0'
-                }`}
-              >
-                {selectedChatId ? (
-                  <>
-                    <div className="flex items-center p-4 bg-primary text-white rounded-t-lg">
-                      <button
-                        className="md:hidden mr-4 text-white"
-                        onClick={() => {
-                          console.log('Back to list');
-                          setSelectedChatId(null);
-                        }}
-                      >
-                        ← Back
-                      </button>
-                      <h2 className="text-xl font-semibold">
-                        <a
-                          href={`/profile.html?uid=${
-                            conversations.find(c => c?.id === selectedChatId)?.otherUserId || ''
-                          }`}
-                          className="text-white underline hover:opacity-75"
-                        >
-                          {conversations.find(c => c?.id === selectedChatId)?.otherUsername ||
-                            'Conversation'}
-                        </a>
-                      </h2>
-                    </div>
-                    <div className="messages-area flex-1 overflow-y-auto p-4">
-                      {(messages || []).map((msg, msgIndex) => (
-                        <div
-                          key={msg?.id || `msg-${msgIndex}`}
-                          className={`flex mb-2 ${msg?.senderId === user.uid ? 'justify-end' : 'justify-start'}`}
-                        >
-                          <div
-                            className={`message-bubble p-3 rounded-lg ${
-                              msg?.senderId === user.uid ? 'bg-primary text-white' : 'bg-gray-200 text-gray-800'
-                            }`}
-                          >
-                            {msg?.text && <p>{msg.text}</p>}
-                            {msg?.imageUrl && (
-                              <div
-                                className="cursor-pointer"
-                                onClick={() => {
-                                  const index = imageUrls.indexOf(msg.imageUrl);
-                                  console.log('Image clicked, index', index);
-                                  openImageViewer(index);
-                                }}
-                              >
-                                <img
-                                  src={msg.imageUrl}
-                                  alt="Shared image"
-                                  className="max-w-[200px] rounded-lg mt-2"
-                                  onError={(e) => {
-                                    setFailedImages(prev => new Set(prev).add(msg.imageUrl));
-                                    e.target.src = 'https://placehold.co/200x200?text=Image+Error';
-                                  }}
-                                />
-                              </div>
-                            )}
-                            <span
-                              className={`text-xs block mt-1 ${
-                                msg?.senderId === user.uid ? 'text-white' : 'text-gray-500'
-                              }`}
-                            >
-                              {msg?.timestamp?.toDate().toLocaleTimeString() || ''}
-                            </span>
-                          </div>
-                        </div>
-                      ))}
-                      <div ref={messagesEndRef} />
-                    </div>
-                    <form className="message-input flex flex-col space-y-2 p-4 border-t">
-                      <div className="flex items-center space-x-2">
-                        <input
-                          type="text"
-                          placeholder="Type a message..."
-                          value={newMessage || ''}
-                          onChange={(e) => setNewMessage(e.target.value)}
-                          className="form-input flex-1 border-gray-300 focus:border-primary focus:ring focus:ring-primary focus:ring-opacity-50"
-                        />
-                        <input
-                          type="file"
-                          accept="image/*"
-                          onChange={handleImageChange}
-                          className="hidden"
-                          ref={fileInputRef}
-                          id="image-upload"
-                        />
-                        <label
-                          htmlFor="image-upload"
-                          className="bg-gray-200 p-2 rounded-lg cursor-pointer hover:bg-gray-300"
-                        >
-                          <svg
-                            className="h-6 w-6 text-gray-600"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth="2"
-                              d="M15.172 7l-6.586 6.586a2 2 0 002.828 2.828l6.586-6.586a4 4 0 00-5.656-5.656L5.586 10.758a6 6 0 008.486 8.486L20.758 12"
-                            />
-                          </svg>
-                        </label>
-                        <button
-                          type="submit"
-                          className="bg-primary text-white font-semibold py-2 px-4 rounded-lg hover:bg-blue-700 transition"
-                          disabled={uploading}
-                          onClick={sendMessage}
-                        >
-                          {uploading ? 'Sending...' : 'Send'}
-                        </button>
-                      </div>
-                      {previewImageUrl && (
-                        <div className="relative w-[100px] h-[100px]">
-                          <img
-                            src={previewImageUrl}
-                            alt="Image preview"
-                            className="w-full h-full object-cover rounded-lg"
-                          />
-                          <button
-                            className="absolute top-0 right-0 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center hover:bg-red-600"
-                            onClick={cancelImage}
-                          >
-                            ✕
-                          </button>
-                        </div>
-                      )}
-                    </form>
-                  </>
-                ) : (
-                  <div className="flex-1 flex items-center justify-center text-gray-600">
-                    Select a conversation to start chatting.
+            ) : (
+              <>
+                {error && (
+                  <div className="bg-red-100 text-red-700 p-4 mb-4 rounded">
+                    {error}
                   </div>
                 )}
-              </div>
-            </div>
-            {viewerOpen && (
-              <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-[2000]">
-                <div className="relative bg-white rounded-lg max-w-[90%] max-h-[90vh] md:max-w-3xl">
-                  <button
-                    className="absolute top-2 right-2 text-gray-600 hover:text-gray-800"
-                    onClick={closeImageViewer}
+                <div className="message-container flex flex-col md:flex-row">
+                  <div
+                    className={`message-list w-full md:w-1/3 ${
+                      selectedChatId ? 'hidden md:block' : 'block'
+                    } transition-transform duration-300 ${
+                      selectedChatId ? '-translate-x-full md:translate-x-0' : 'translate-x-0'
+                    }`}
                   >
-                    <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                  </button>
-                  {imageUrls.length > 0 && currentImageIndex < imageUrls.length ? (
-                    <>
-                      <img
-                        src={imageUrls[currentImageIndex]}
-                        alt="Conversation image"
-                        className="w-full h-auto max-h-[80vh] object-contain rounded-lg"
-                        onError={(e) => {
-                          setFailedImages(prev => new Set(prev).add(imageUrls[currentImageIndex]));
-                          e.target.src = 'https://placehold.co/400x400?text=Image+Error';
-                        }}
-                      />
-                      {imageUrls.length > 1 && (
-                        <>
+                    <h2 className="text-xl font-semibold text-primary mb-2">Conversations</h2>
+                    {(!conversations || conversations.length === 0) ? (
+                      <p className="text-gray-600">No conversations yet.</p>
+                    ) : (
+                      conversations.map(convo => (
+                        <div
+                          key={convo?.id || 'unknown'}
+                          className={`flex items-center p-3 cursor-pointer rounded-lg hover:bg-gray-100 ${
+                            selectedChatId === convo?.id ? 'bg-gray-200' : ''
+                          }`}
+                          onClick={() => {
+                            console.log('Selecting chat', convo?.id);
+                            setSelectedChatId(convo?.id);
+                            debouncedMarkMessagesAsRead(convo?.id);
+                          }}
+                        >
+                          <img
+                            src={convo?.profilePicture || 'https://placehold.co/40x40?text=User'}
+                            alt={convo?.otherUsername || 'User'}
+                            className="w-10 h-10 rounded-full mr-3 object-cover"
+                            onError={(e) => {
+                              e.target.src = 'https://placehold.co/40x40?text=User';
+                            }}
+                          />
+                          <div className="flex-1">
+                            <div className="flex justify-between">
+                              <span className="font-semibold">{convo?.otherUsername || 'Unknown'}</span>
+                              <span className="text-sm text-gray-600">
+                                {convo?.lastMessage?.timestamp?.toDate().toLocaleTimeString() || ''}
+                              </span>
+                            </div>
+                            <div className="flex justify-between">
+                              <p className="text-sm text-gray-600 truncate">
+                                {convo?.lastMessage?.text || convo?.lastMessage?.content || (convo?.lastMessage?.imageUrl ? '[Image]' : '')}
+                              </p>
+                              {convo?.unreadCount > 0 && (
+                                <span className="bg-secondary text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                                  {convo?.unreadCount}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                  <div
+                    className={`conversation-view w-full md:w-2/3 flex flex-col ${
+                      selectedChatId ? 'block' : 'hidden md:block'
+                    } transition-transform duration-300 ${
+                      selectedChatId ? 'translate-x-0' : 'translate-x-full md:translate-x-0'
+                    }`}
+                  >
+                    {selectedChatId ? (
+                      <>
+                        <div className="flex items-center p-4 bg-primary text-white rounded-t-lg">
                           <button
-                            className="absolute left-2 top-1/2 transform -translate-y-1/2 bg-primary text-white p-2 rounded-full hover:bg-blue-700"
-                            onClick={prevImage}
+                            className="md:hidden mr-4 text-white"
+                            onClick={() => {
+                              console.log('Back to list');
+                              setSelectedChatId(null);
+                            }}
                           >
-                            <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" />
-                            </svg>
+                            ← Back
                           </button>
-                          <button
-                            className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-primary text-white p-2 rounded-full hover:bg-blue-700"
-                            onClick={nextImage}
-                          >
-                            <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
-                            </svg>
-                          </button>
-                        </>
-                      )}
-                    </>
-                  ) : (
-                    <p className="p-4 text-gray-600">No images available.</p>
-                  )}
+                          <h2 className="text-xl font-semibold">
+                            <a
+                              href={`/profile.html?uid=${
+                                conversations.find(c => c?.id === selectedChatId)?.otherUserId || ''
+                              }`}
+                              className="text-white underline hover:opacity-75"
+                            >
+                              {conversations.find(c => c?.id === selectedChatId)?.otherUsername ||
+                                'Conversation'}
+                            </a>
+                          </h2>
+                        </div>
+                        <div className="messages-area flex-1 overflow-y-auto p-4">
+                          {(messages || []).map((msg, msgIndex) => (
+                            <div
+                              key={msg?.id || `msg-${msgIndex}`}
+                              className={`flex mb-2 ${msg?.senderId === user.uid ? 'justify-end' : 'justify-start'}`}
+                            >
+                              <div
+                                className={`message-bubble ${msg?.senderId === user.uid ? 'sent' : 'received'} ${msg?.type === 'access_request' ? 'access-request' : ''}`}
+                              >
+                                {(msg?.text || msg?.content) && <p>{msg.text || msg.content}</p>}
+                                {msg?.imageUrl && (
+                                  <div
+                                    className="cursor-pointer"
+                                    onClick={() => {
+                                      const index = imageUrls.indexOf(msg.imageUrl);
+                                      console.log('Image clicked, index', index);
+                                      openImageViewer(index);
+                                    }}
+                                  >
+                                    <img
+                                      src={msg.imageUrl}
+                                      alt="Shared image"
+                                      className="max-w-[200px] rounded-lg mt-2"
+                                      onError={(e) => {
+                                        setFailedImages(prev => new Set(prev).add(msg.imageUrl));
+                                        e.target.src = 'https://placehold.co/200x200?text=Image+Error';
+                                      }}
+                                    />
+                                  </div>
+                                )}
+                                {msg?.type === 'access_request' && msg.senderId !== user.uid && msg.accessRequestStatus === 'pending' && (
+                                  <div className="mt-2 flex space-x-2">
+                                    <button
+                                      onClick={() => handleAccessResponse(msg.id, 'approved')}
+                                      className="access-request-button"
+                                    >
+                                      Approve
+                                    </button>
+                                    <button
+                                      onClick={() => handleAccessResponse(msg.id, 'denied')}
+                                      className="access-request-button deny-button"
+                                    >
+                                      Deny
+                                    </button>
+                                  </div>
+                                )}
+                                {msg?.type === 'access_response' && (
+                                  <p className="text-sm text-gray-500">Status: {msg.accessRequestStatus}</p>
+                                )}
+                                <span
+                                  className={`text-xs block mt-1 ${
+                                    msg?.senderId === user.uid ? 'text-white' : 'text-gray-500'
+                                  }`}
+                                >
+                                  {msg?.timestamp?.toDate().toLocaleTimeString() || ''}
+                                </span>
+                              </div>
+                            </div>
+                          ))}
+                          <div ref={messagesEndRef} />
+                        </div>
+                        <form className="message-input flex flex-col space-y-2 p-4 border-t">
+                          <div className="flex items-center space-x-2">
+                            <input
+                              type="text"
+                              placeholder="Type a message..."
+                              value={newMessage || ''}
+                              onChange={(e) => setNewMessage(e.target.value)}
+                              className="form-input flex-1 border-gray-300 focus:border-primary focus:ring focus:ring-primary focus:ring-opacity-50"
+                            />
+                            <input
+                              type="file"
+                              accept="image/*"
+                              onChange={handleImageChange}
+                              className="hidden"
+                              ref={fileInputRef}
+                              id="image-upload"
+                            />
+                            <label
+                              htmlFor="image-upload"
+                              className="bg-gray-200 p-2 rounded-lg cursor-pointer hover:bg-gray-300"
+                            >
+                              <svg
+                                className="h-6 w-6 text-gray-600"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth="2"
+                                  d="M15.172 7l-6.586 6.586a2 2 0 002.828 2.828l6.586-6.586a4 4 0 00-5.656-5.656L5.586 10.758a6 6 0 008.486 8.486L20.758 12"
+                                />
+                              </svg>
+                            </label>
+                            <button
+                              type="submit"
+                              className="bg-primary text-white font-semibold py-2 px-4 rounded-lg hover:bg-blue-700 transition"
+                              disabled={uploading}
+                              onClick={sendMessage}
+                            >
+                              {uploading ? 'Sending...' : 'Send'}
+                            </button>
+                          </div>
+                          {previewImageUrl && (
+                            <div className="relative w-[100px] h-[100px]">
+                              <img
+                                src={previewImageUrl}
+                                alt="Image preview"
+                                className="w-full h-full object-cover rounded-lg"
+                              />
+                              <button
+                                className="absolute top-0 right-0 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center hover:bg-red-600"
+                                onClick={cancelImage}
+                              >
+                                ✕
+                              </button>
+                            </div>
+                          )}
+                        </form>
+                      </>
+                    ) : (
+                      <div className="flex-1 flex items-center justify-center text-gray-600">
+                        Select a conversation to start chatting.
+                      </div>
+                    )}
+                  </div>
                 </div>
-              </div>
+                {viewerOpen && (
+                  <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-[2000]">
+                    <div className="relative bg-white rounded-lg max-w-[90%] max-h-[90vh] md:max-w-3xl">
+                      <button
+                        className="absolute top-2 right-2 text-gray-600 hover:text-gray-800"
+                        onClick={closeImageViewer}
+                      >
+                        <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                      </button>
+                      {imageUrls.length > 0 && currentImageIndex < imageUrls.length ? (
+                        <>
+                          <img
+                            src={imageUrls[currentImageIndex]}
+                            alt="Conversation image"
+                            className="w-full h-auto max-h-[80vh] object-contain rounded-lg"
+                            onError={(e) => {
+                              setFailedImages(prev => new Set(prev).add(imageUrls[currentImageIndex]));
+                              e.target.src = 'https://placehold.co/400x400?text=Image+Error';
+                            }}
+                          />
+                          {imageUrls.length > 1 && (
+                            <>
+                              <button
+                                className="absolute left-2 top-1/2 transform -translate-y-1/2 bg-primary text-white p-2 rounded-full hover:bg-blue-700"
+                                onClick={prevImage}
+                              >
+                                <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" />
+                                </svg>
+                              </button>
+                              <button
+                                className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-primary text-white p-2 rounded-full hover:bg-blue-700"
+                                onClick={nextImage}
+                              >
+                                <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
+                                </svg>
+                              </button>
+                            </>
+                          )}
+                        </>
+                      ) : (
+                        <p className="p-4 text-gray-600">No images available.</p>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </>
             )}
-          </>
-        )}
-      </div>
-    </div>
-  );
-}
+          </div>
+        </div>
+      );
+    }
 
     try {
       console.log('Rendering React app');

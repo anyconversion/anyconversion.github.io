@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="View user profiles on RealVibin to connect with like-minded people.">
   <meta name="keywords" content="RealVibin, user profile, social platform, connect, dating">
-  <title>RealVibin - User Profile</title>
+  <title>Profile - RealVibin</title>
   <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
@@ -19,15 +19,15 @@
           }
         }
       }
-    }
+    };
   </script>
-  <script src="https://cdn.jsdelivr.net/npm/react@18.2.0/umd/react.development.js" crossorigin="anonymous"></script>
-  <script src="https://cdn.jsdelivr.net/npm/react-dom@18.2.0/umd/react-dom.development.js" crossorigin="anonymous"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@babel/standalone@7.20.15/babel.min.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/react@18.2.0/umd/react.development.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/react-dom@18.2.0/umd/react-dom.development.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@babel/standalone@7.20.15/babel.min.js"></script>
   <script type="module">
     import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
     import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
-    import { getFirestore, getDoc, doc } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
+    import { getFirestore, getDoc, doc, setDoc, addDoc, serverTimestamp, query, where, getDocs, collection } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
 
     const firebaseConfig = {
       apiKey: "AIzaSyCZavBCNmUx2lX4SqdXlYdloCdwmw-hYT8",
@@ -43,17 +43,16 @@
       const auth = getAuth(app);
       const db = getFirestore(app);
       console.log('Firebase initialized successfully');
-
       window.CLOUDINARY_CLOUD_NAME = "ddmrplnut";
-      window.firebase = { app, auth, db, getDoc, doc, onAuthStateChanged };
+      window.firebase = { app, auth, db, getDoc, doc, setDoc, addDoc, serverTimestamp, query, where, getDocs, collection, onAuthStateChanged };
       window.firebaseInitialized = true;
     } catch (error) {
-      console.error('Firebase Initialization Error:', { message: error.message, code: error.code, stack: error.stack });
+      console.error('Firebase Initialization Error:', error);
       window.firebaseError = error;
     }
   </script>
   <style>
-    body { font-family: 'Open Sans', Arial, sans-serif; background-color: #f3f4f6; }
+    body { font-family: 'Open Sans', sans-serif; background-color: #f3f4f6; }
     .error { padding: 1.5rem; background-color: #fef2f2; color: #991b1b; border: 1px solid #f87171; border-radius: 8px; }
     .error h2 { font-size: 1.5rem; font-weight: bold; }
     .slider-container { overflow: hidden; width: 100%; }
@@ -61,6 +60,17 @@
     .slider-item { flex: 0 0 auto; margin-right: 8px; }
     .blurred-image { filter: blur(20px); }
     .no-transition { transition: none !important; }
+    .access-request-button {
+      background-color: #10b981;
+      color: white;
+      font-weight: 600;
+      padding: 0.5rem 1rem;
+      border-radius: 0.375rem;
+      transition: background-color 0.2s;
+    }
+    .access-request-button:hover {
+      background-color: #059669;
+    }
   </style>
 </head>
 <body>
@@ -72,38 +82,25 @@
       throw new Error('Libraries unavailable');
     }
 
+    const { useState, useEffect } = React;
+
     const fetchUserProfile = async (userId, isUsername = false) => {
       try {
         let actualUserId = userId;
         if (isUsername) {
           const usernameDoc = await window.firebase.getDoc(window.firebase.doc(window.firebase.db, 'usernames', userId));
-          console.log(`Username lookup for ${userId}: exists=${usernameDoc.exists()}, data=`, usernameDoc.data());
           if (!usernameDoc.exists() || !usernameDoc.data()?.uid) {
-            console.warn(`No UID found for username: ${userId}`);
             throw new Error('Username not found');
           }
           actualUserId = usernameDoc.data().uid;
-          console.log(`Resolved username ${userId} to UID ${actualUserId}`);
-        }
-
-        sessionStorage.removeItem(`userProfile_${actualUserId}`); // Clear cache
-        const cached = sessionStorage.getItem(`userProfile_${actualUserId}`);
-        if (cached) {
-          const profile = JSON.parse(cached);
-          console.log(`Using cached profile for ${actualUserId} from sessionStorage:`, profile);
-          return profile;
         }
 
         const userDoc = await window.firebase.getDoc(window.firebase.doc(window.firebase.db, 'users', actualUserId));
         if (!userDoc.exists()) {
-          console.warn(`No user profile for UID: ${actualUserId}`);
-          throw new Error(`No profile found for UID: ${actualUserId}`);
+          throw new Error('No profile found');
         }
 
         const data = userDoc.data();
-        console.log(`Raw Firestore data for UID ${actualUserId}:`, JSON.stringify(data, null, 2));
-        console.log('Firestore images:', data.images);
-
         const profile = {
           username: data.basicInfo?.username || data.username || 'Not provided',
           firstName: data.basicInfo?.firstName || data.firstName || '',
@@ -156,52 +153,38 @@
           uid: actualUserId
         };
 
-        if (!profile.profileImage) {
-          console.warn(`No profile image for UID ${actualUserId}`);
-        }
-        if (!profile.standardImages.length && !profile.privateImages.length) {
-          console.warn(`No standard or private images for UID ${actualUserId}`);
-        }
-
         sessionStorage.setItem(`userProfile_${actualUserId}`, JSON.stringify(profile));
-        console.log(`Cached profile for ${actualUserId} in sessionStorage:`, profile);
         return profile;
       } catch (error) {
-        console.error('fetchUserProfile error:', error.message, error.stack);
+        console.error('fetchUserProfile error:', error);
         throw error;
       }
     };
 
     function Header({ currentUser }) {
-      const [isMenuOpen, setIsMenuOpen] = React.useState(false);
-
+      const [isMenuOpen, setIsMenuOpen] = useState(false);
       const getUserIdFromUrl = () => {
         const params = new URLSearchParams(window.location.search);
         return params.get('uid') || params.get('username') || '';
       };
-
       const userId = getUserIdFromUrl();
 
       return (
         <nav className="bg-primary shadow-md sticky top-0 z-50">
-          <div className="container mx-auto flex items-center justify-between h-auto min-h-[64px] px-2 sm:px-4 py-2">
-            <div className="logo-container flex items-center">
+          <div className="container mx-auto flex items-center justify-between h-auto min-h-[64px] px-4 py-2">
+            <div className="flex items-center">
               <a href="/">
-                <img
-                  src="./img/RealVibin.png"
-                  alt="RealVibin Logo"
-                  className="h-12 sm:h-16 md:h-[100px] w-auto"
-                />
+                <img src="./img/RealVibin.png" alt="RealVibin Logo" className="h-12 sm:h-16 w-auto" />
               </a>
             </div>
-            <div className="auth-container hidden md:flex items-center space-x-4">
+            <div className="hidden md:flex items-center space-x-4">
               {currentUser ? (
                 <div className="flex items-center space-x-2">
                   <a href="signup.html" className="text-white font-semibold hover:underline">
                     {currentUser.profile?.username || 'User'}
                   </a>
                   {currentUser && userId && currentUser.uid !== userId && (
-                    <a href={`messages.html?recipient=${userId}`} className="relative text-white hover:text-white" title="Message Profile User">
+                    <a href={`messages.html?recipient=${userId}`} className="text-white" title="Message Profile User">
                       <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
                       </svg>
@@ -215,30 +198,21 @@
                   </a>
                 </div>
               ) : (
-                <a href="/" className="bg-primary text-white font-semibold py-2 px-4 rounded-lg hover:bg-blue-700 transition text-sm">
+                <a href="/" className="bg-primary text-white font-semibold py-2 px-4 rounded-lg hover:bg-blue-700 transition">
                   Back to Home
                 </a>
               )}
             </div>
-            <div className="md:hidden flex items-center">
-              <button
-                onClick={() => setIsMenuOpen(!isMenuOpen)}
-                className="text-white focus:outline-none"
-                type="button"
-              >
+            <div className="md:hidden">
+              <button onClick={() => setIsMenuOpen(!isMenuOpen)} className="text-white">
                 <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d={isMenuOpen ? 'M6 18L18 6M6 6l12 12' : 'M4 6h16M4 12h16M4 18h16'}
-                  />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d={isMenuOpen ? 'M6 18L18 6M6 6l12 12' : 'M4 6h16M4 12h16M4 18h16'} />
                 </svg>
               </button>
             </div>
           </div>
           {isMenuOpen && (
-            <div className="md:hidden bg-primary shadow-md px-2 py-4">
+            <div className="md:hidden bg-primary px-4 py-2">
               {currentUser ? (
                 <div className="flex flex-col space-y-2">
                   <a href="signup.html" className="text-white font-semibold hover:underline text-center">
@@ -255,12 +229,9 @@
                   <a href="users.html" className="bg-primary text-white font-semibold py-2 px-4 rounded-lg hover:bg-blue-700 transition text-center">
                     Browse
                   </a>
-                  <a href="messages.html" className="text-white font-semibold py-2 hover:bg-blue-700 text-center relative">
-                    Messages
-                  </a>
                 </div>
               ) : (
-                <a href="/" className="bg-primary text-white font-semibold py-2 px-4 rounded-lg hover:bg-blue-700 transition text-center text-sm">
+                <a href="/" className="bg-primary text-white font-semibold py-2 px-4 rounded-lg hover:bg-blue-700 transition text-center">
                   Back to Home
                 </a>
               )}
@@ -271,13 +242,15 @@
     }
 
     function PublicProfile() {
-      const [profile, setProfile] = React.useState(null);
-      const [currentImageIndex, setCurrentImageIndex] = React.useState(0);
-      const [images, setImages] = React.useState([]);
-      const [error, setError] = React.useState(null);
-      const [currentUser, setCurrentUser] = React.useState(null);
-      const [isModalOpen, setIsModalOpen] = React.useState(false);
-      const [isTransitioning, setIsTransitioning] = React.useState(true);
+      const [profile, setProfile] = useState(null);
+      const [currentImageIndex, setCurrentImageIndex] = useState(0);
+      const [images, setImages] = useState([]);
+      const [error, setError] = useState(null);
+      const [currentUser, setCurrentUser] = useState(null);
+      const [isModalOpen, setIsModalOpen] = useState(false);
+      const [isTransitioning, setIsTransitioning] = useState(true);
+      const [accessStatus, setAccessStatus] = useState('none');
+      const [accessError, setAccessError] = useState('');
 
       const getUserIdFromUrl = () => {
         const params = new URLSearchParams(window.location.search);
@@ -290,14 +263,13 @@
         if (!dob) return 'Not provided';
         try {
           const birthDate = new Date(dob);
-          if (isNaN(birthDate.getTime())) throw new Error(`Invalid DOB: ${dob}`);
+          if (isNaN(birthDate.getTime())) return 'Not provided';
           const today = new Date();
-          const age = today.getFullYear() - birthDate.getFullYear() - 
-            (today.getMonth() < birthDate.getMonth() || 
-             (today.getMonth() === birthDate.getMonth() && today.getDate() < birthDate.getDate()) ? 1 : 0);
+          let age = today.getFullYear() - birthDate.getFullYear();
+          const m = today.getMonth() - birthDate.getMonth();
+          if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) age--;
           return age >= 18 ? age : 'Not provided';
-        } catch (error) {
-          console.error('calculateAge error:', error.message);
+        } catch {
           return 'Not provided';
         }
       };
@@ -313,24 +285,75 @@
         if (!timestamp) return 'Not provided';
         try {
           return new Date(timestamp.toDate()).toLocaleString();
-        } catch (error) {
-          console.error('formatTimestamp error:', error.message);
+        } catch {
           return 'Not provided';
         }
       };
 
-      React.useEffect(() => {
+      const handleRequestAccess = async () => {
+        if (!window.firebase) {
+          setAccessError('Firebase not initialized');
+          return;
+        }
+        if (!currentUser) {
+          setAccessError('Please log in to request access');
+          return;
+        }
+        if (currentUser.uid === profile.uid) {
+          setAccessError('You cannot request access to your own images');
+          return;
+        }
+        try {
+          await window.firebase.setDoc(
+            window.firebase.doc(window.firebase.db, `users/${profile.uid}/accessRequests`, currentUser.uid),
+            { status: 'pending', requestedAt: window.firebase.serverTimestamp() },
+            { merge: true }
+          );
+
+          const convoQuery = window.firebase.query(
+            window.firebase.collection(window.firebase.db, 'conversations'),
+            window.firebase.where('participants', 'array-contains', currentUser.uid)
+          );
+          let conversationId = null;
+          const convoSnapshot = await window.firebase.getDocs(convoQuery);
+          convoSnapshot.forEach(doc => {
+            if (doc.data().participants.includes(profile.uid)) conversationId = doc.id;
+          });
+
+          if (!conversationId) {
+            const convoDoc = await window.firebase.addDoc(
+              window.firebase.collection(window.firebase.db, 'conversations'),
+              { participants: [currentUser.uid, profile.uid], createdAt: window.firebase.serverTimestamp() }
+            );
+            conversationId = convoDoc.id;
+          }
+
+          await window.firebase.addDoc(
+            window.firebase.collection(window.firebase.db, `conversations/${conversationId}/messages`),
+            {
+              senderId: currentUser.uid,
+              content: 'I am requesting access to your private images',
+              type: 'access_request',
+              accessRequestStatus: 'pending',
+              timestamp: window.firebase.serverTimestamp()
+            }
+          );
+
+          setAccessStatus('pending');
+          setAccessError('');
+        } catch (err) {
+          setAccessError('Failed to send access request');
+        }
+      };
+
+      useEffect(() => {
         const fetchCurrentUser = async () => {
           const unsubscribe = window.firebase.onAuthStateChanged(window.firebase.auth, async (user) => {
             if (user) {
               try {
                 const userProfile = await fetchUserProfile(user.uid);
-                setCurrentUser({
-                  ...user,
-                  profile: { username: userProfile.username }
-                });
-              } catch (error) {
-                console.error('Error fetching current user profile:', error.message);
+                setCurrentUser({ ...user, profile: { username: userProfile.username } });
+              } catch {
                 setCurrentUser({ ...user, profile: { username: 'User' } });
               }
             } else {
@@ -342,7 +365,7 @@
         fetchCurrentUser();
       }, []);
 
-      React.useEffect(() => {
+      useEffect(() => {
         const fetchProfile = async () => {
           if (!userId) {
             setError('No user ID or username provided.');
@@ -350,7 +373,7 @@
           }
           try {
             const params = new URLSearchParams(window.location.search);
-            const isUsername = !!params.get('username');            
+            const isUsername = !!params.get('username');
             const profileData = await fetchUserProfile(userId, isUsername);
             setProfile(profileData);
             const allImages = [
@@ -358,23 +381,21 @@
               ...profileData.standardImages.map(url => ({ url, isPrivate: false })),
               ...profileData.privateImages.map(url => ({ url, isPrivate: true }))
             ].filter(img => img.url && typeof img.url === 'string');
-            console.log('All images:', allImages);
-            if (!allImages.length) {
-              console.warn('No valid images found for profile');
-            }
             setImages(allImages);
+            if (currentUser && currentUser.uid !== profileData.uid) {
+              const accessDoc = await window.firebase.getDoc(
+                window.firebase.doc(window.firebase.db, `users/${profileData.uid}/accessRequests`, currentUser.uid)
+              );
+              if (accessDoc.exists()) {
+                setAccessStatus(accessDoc.data().status || 'none');
+              }
+            }
           } catch (err) {
-            console.error('Fetch profile error:', err.message, err.stack);
-            setError(
-              err.message === 'Username not found' ? 'User not found.' :
-              err.message.includes('permissions') ? 'Unable to access profile due to permissions.' :
-              err.message.includes('No profile found') ? 'Profile not found for this user.' :
-              'Failed to load profile: ' + err.message
-            );
+            setError('Failed to load profile');
           }
         };
         fetchProfile();
-      }, [userId]);
+      }, [userId, currentUser]);
 
       const handleNextImage = () => {
         setIsTransitioning(true);
@@ -406,47 +427,36 @@
         });
       };
 
-      const handleImageClick = () => {
-        setIsModalOpen(true);
-      };
+      const handleImageClick = () => setIsModalOpen(true);
+      const closeModal = () => setIsModalOpen(false);
 
-      const closeModal = () => {
-        setIsModalOpen(false);
-      };
-
-      const transformImageUrl = (url, isPrivate = false, modal = false, isOwner = false) => {
+      const transformImageUrl = (url, isPrivate = false, modal = false, isOwner = false, hasAccess = false) => {
         if (!url || typeof url !== 'string') {
-          console.warn('Invalid image URL:', url);
           return 'https://placehold.co/300x200?text=No+Image';
         }
         const publicIdMatch = url.match(/\/v\d+\/(.+?)(\.\w+)?$/);
         if (!publicIdMatch) {
-          console.warn('Invalid Cloudinary URL format:', url);
           return 'https://placehold.co/300x200?text=No+Image';
         }
         const publicId = publicIdMatch[1];
-        const transform = isPrivate && !isOwner
+        const transform = isPrivate && !isOwner && !hasAccess
           ? 'w_300,h_200,c_fill,g_auto,f_auto,q_auto,e_blur:1000'
           : modal
           ? 'w_1200,h_800,c_fill,g_auto,f_auto,q_auto'
           : 'w_300,h_200,c_fill,g_auto,f_auto,q_auto';
-        const transformedUrl = `https://res.cloudinary.com/${window.CLOUDINARY_CLOUD_NAME}/image/upload/${transform}/${publicId}`;
-        console.log(`Transformed URL for ${url}: ${transformedUrl}`);
-        return transformedUrl;
+        return `https://res.cloudinary.com/${window.CLOUDINARY_CLOUD_NAME}/image/upload/${transform}/${publicId}`;
       };
 
       const isOwner = currentUser && profile && currentUser.uid === profile.uid;
       const currentImage = images[currentImageIndex % images.length] || {};
       const isCurrentPrivate = currentImage.isPrivate || false;
-
-      const sliderImages = images.length > 0
-        ? [...images.slice(-1), ...images, ...images, ...images.slice(0, 1)]
-        : [];
+      const canViewPrivate = isOwner || accessStatus === 'approved';
+      const sliderImages = images.length > 0 ? [...images, ...images] : [];
 
       return (
         <div className="flex flex-col min-h-screen">
           <Header currentUser={currentUser} />
-          <main className="flex-grow container mx-auto py-8 px-2 sm:px-4">
+          <main className="flex-grow container mx-auto py-8 px-4">
             <div className="bg-white rounded-lg shadow-md p-6">
               {error ? (
                 <div className="error">
@@ -458,28 +468,41 @@
               ) : (
                 <>
                   <h1 className="text-3xl font-semibold text-primary mb-4">{profile.username}'s Profile</h1>
-                  <div className="flex flex-col md:flex-row gap-2 mb-6">
+                  <div className="flex flex-col md:flex-row gap-4 mb-6">
                     <div className="w-full md:w-1/3">
                       <img
-                        src={transformImageUrl(currentImage.url || profile.profileImage, isCurrentPrivate, false, isOwner)}
+                        src={transformImageUrl(currentImage.url || profile.profileImage, isCurrentPrivate, false, isOwner, accessStatus === 'approved')}
                         alt="Profile Image"
                         className="w-[300px] h-[300px] object-cover rounded-lg cursor-pointer"
                         onClick={handleImageClick}
                       />
-                      <br />
                       {userId && (
-                        <a href={'messages.html?recipient=' + userId} className="bg-primary text-white font-semibold py-2 px-4 rounded-lg hover:bg-blue-700 transition">
-                          Message Me
-                        </a>
+                        <div className="flex space-x-2 mt-4">
+                          <a
+                            href={`messages.html?recipient=${userId}`}
+                            className="bg-primary text-white font-semibold py-2 px-4 rounded-lg hover:bg-blue-700 transition"
+                          >
+                            Message Me
+                          </a>
+                          {!isOwner && currentUser && accessStatus === 'none' && (
+                            <button
+                              onClick={handleRequestAccess}
+                              className="access-request-button py-2 px-4"
+                            >
+                              Request Full Access
+                            </button>
+                          )}
+                        </div>
                       )}
+                      {accessStatus === 'pending' && <p className="text-gray-600 text-sm mt-2">Access request pending</p>}
+                      {accessStatus === 'approved' && <p className="text-green-600 text-sm mt-2">Access granted</p>}
+                      {accessStatus === 'denied' && <p className="text-red-600 text-sm mt-2">Access request denied</p>}
+                      {accessError && <p className="text-red-500 text-sm mt-2">{accessError}</p>}
                     </div>
                     <div className="w-full md:w-2/3 flex items-center">
                       <div className="flex items-center gap-2 w-full">
                         {images.length > 1 && (
-                          <button
-                            onClick={handlePrevImage}
-                            className="bg-primary text-white p-2 rounded-full hover:bg-blue-700"
-                          >
+                          <button onClick={handlePrevImage} className="bg-primary text-white p-2 rounded-full hover:bg-blue-700">
                             ←
                           </button>
                         )}
@@ -491,9 +514,11 @@
                             {sliderImages.map((img, index) => (
                               <div key={index} className="slider-item">
                                 <img
-                                  src={transformImageUrl(img.url, img.isPrivate, false, isOwner)}
+                                  src={transformImageUrl(img.url, img.isPrivate, false, isOwner, accessStatus === 'approved')}
                                   alt={`Image ${index + 1}`}
-                                  className={`w-[100px] h-[100px] object-cover rounded cursor-pointer ${img.isPrivate && !isOwner ? 'blurred-image' : ''}`}
+                                  className={`w-[100px] h-[100px] object-cover rounded cursor-pointer ${
+                                    img.isPrivate && !canViewPrivate && accessStatus !== 'approved' ? 'blurred-image' : ''
+                                  }`}
                                   onClick={() => setCurrentImageIndex(index % images.length)}
                                 />
                               </div>
@@ -501,10 +526,7 @@
                           </div>
                         </div>
                         {images.length > 1 && (
-                          <button
-                            onClick={handleNextImage}
-                            className="bg-primary text-white p-2 rounded-full hover:bg-blue-700"
-                          >
+                          <button onClick={handleNextImage} className="bg-primary text-white p-2 rounded-full hover:bg-blue-700">
                             →
                           </button>
                         )}
@@ -513,46 +535,30 @@
                   </div>
                   {isModalOpen && (
                     <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50">
-                      <button
-                        onClick={closeModal}
-                        className="absolute top-4 right-4 text-white text-2xl"
-                      >
-                        ×
-                      </button>
+                      <button onClick={closeModal} className="absolute top-4 right-4 text-white text-2xl">×</button>
                       {images.length > 1 && (
                         <>
-                          <button
-                            onClick={handlePrevImage}
-                            className="absolute left-4 text-white text-4xl"
-                          >
-                            ←
-                          </button>
-                          <button
-                            onClick={handleNextImage}
-                            className="absolute right-4 text-white text-4xl"
-                          >
-                            →
-                          </button>
+                          <button onClick={handlePrevImage} className="absolute left-4 text-white text-4xl">←</button>
+                          <button onClick={handleNextImage} className="absolute right-4 text-white text-4xl">→</button>
                         </>
                       )}
                       <img
-                        src={transformImageUrl(currentImage.url || profile.profileImage, isCurrentPrivate, true, isOwner)}
-                        alt="Full-size Profile Image"
+                        src={transformImageUrl(currentImage.url || profile.profileImage, isCurrentPrivate, true, isOwner, accessStatus === 'approved')}
+                        alt="Full-size Image"
                         className="max-w-[90%] max-h-[90%] object-contain"
                       />
                     </div>
                   )}
-                  <div className="mb-6 px-[20%]">
+                  <div className="mb-6">
                     <h2 className="text-xl font-semibold text-primary mb-2">About Me</h2>
                     <p className="text-gray-600">{profile.bio || 'No bio provided'}</p>
                   </div>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
                     <div className="bg-white rounded-lg shadow-md p-4">
                       <h2 className="text-xl font-semibold text-primary mb-2">Basic Info</h2>
                       <ul className="text-gray-600 space-y-2">
                         <li><strong>Username:</strong> {profile.username}</li>
                         <li><strong>First Name:</strong> {profile.firstName || 'Not provided'}</li>
-                        <li><strong>Last Name:</strong> {profile.lastName || 'Not provided'}</li>
                         <li><strong>Email:</strong> {'Ask Me'}</li>
                         <li><strong>Phone Number:</strong> {'Ask Me'}</li>
                         <li><strong>Age:</strong> {calculateAge(profile.dateOfBirth)}</li>
@@ -585,24 +591,24 @@
                       </ul>
                     </div>
                   </div>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
                     <div className="bg-white rounded-lg shadow-md p-4">
                       <h2 className="text-xl font-semibold text-primary mb-2">Interests & Lifestyle</h2>
                       <ul className="text-gray-600 space-y-2">
                         <li><strong>Favorite Activities:</strong> {profile.favoriteActivities || 'Not provided'}</li>
                         <li><strong>Music Preferences:</strong> {profile.musicPreferences || 'Not provided'}</li>
                         <li><strong>Introvert/Extrovert:</strong> {profile.introvertExtrovert || 'Not provided'}</li>
-                        <li><strong>Morning/Night Person:</strong> {profile.morningNight || 'Not provided'}</li>
+                        <li><strong>Morning/Night:</strong> {profile.morningNight || 'Not provided'}</li>
                       </ul>
                     </div>
                     <div className="bg-white rounded-lg shadow-md p-4">
                       <h2 className="text-xl font-semibold text-primary mb-2">Lifestyle Habits</h2>
                       <ul className="text-gray-600 space-y-2">
-                        <li><strong>Smoking Habits:</strong> {profile.smokingHabits || 'Not provided'}</li>
-                        <li><strong>Drinking Habits:</strong> {profile.drinkingHabits || 'Not provided'}</li>
+                        <li><strong>Smoking:</strong> {profile.smokingHabits || 'Not provided'}</li>
+                        <li><strong>Drinking:</strong> {profile.drinkingHabits || 'Not provided'}</li>
                         <li><strong>420 Friendly:</strong> {profile.fourTwentyFriendly || 'Not provided'}</li>
-                        <li><strong>Other Substance Use:</strong> {profile.otherSubstanceUse || 'Not provided'}</li>
-                        <li><strong>Languages Spoken:</strong> {profile.languagesSpoken || 'Not provided'}</li>
+                        <li><strong>Other Substances:</strong> {profile.otherSubstanceUse || 'Not provided'}</li>
+                        <li><strong>Languages:</strong> {profile.languagesSpoken || 'Not provided'}</li>
                         <li><strong>Pets:</strong> {profile.pets || 'Not provided'}</li>
                         <li><strong>Children:</strong> {profile.children || 'Not provided'}</li>
                         <li><strong>Occupation:</strong> {profile.occupation || 'Not provided'}</li>
@@ -615,11 +621,11 @@
                         <li><strong>Communication Style:</strong> {profile.communicationStyle || 'Not provided'}</li>
                         <li><strong>Deal Breakers:</strong> {profile.dealBreakers || 'Not provided'}</li>
                         <li><strong>Must Haves:</strong> {profile.mustHaves || 'Not provided'}</li>
-                        <li><strong>Living Arrangement Preferences:</strong> {profile.livingArrangementPrefs || 'Not provided'}</li>
+                        <li><strong>Living Preferences:</strong> {profile.livingArrangementPrefs || 'Not provided'}</li>
                       </ul>
                     </div>
                   </div>
-                  <div className="bg-white rounded-lg shadow-md p-4">
+                  <div className="bg-white rounded-lg shadow-md p-6">
                     <h2 className="text-xl font-semibold text-primary mb-2">Written Sections</h2>
                     <ul className="text-gray-600 space-y-2">
                       <li><strong>Conversation Starters:</strong> {profile.conversationStarters || 'Not provided'}</li>
@@ -634,12 +640,12 @@
             </div>
           </main>
           <footer className="bg-dark text-white py-8">
-            <div className="container mx-auto text-center px-2 sm:px-4">
+            <div className="container mx-auto text-center px-4">
               <p>© 2025 RealVibin. All rights reserved.</p>
               <div className="mt-4 flex justify-center space-x-4">
-                <a href="#" className="text-gray-400 hover:text-white">Privacy Policy</a>
-                <a href="#" className="text-gray-400 hover:text-white">Terms of Service</a>
-                <a href="#" className="text-gray-400 hover:text-white">Contact</a>
+                <a href="#" className="text-white hover:underline">Privacy Policy</a>
+                <a href="#" className="text-white hover:underline">Terms of Service</a>
+                <a href="#" className="text-white hover:underline">Contact</a>
               </div>
             </div>
           </footer>
@@ -651,9 +657,8 @@
       console.log('Rendering React app');
       const root = ReactDOM.createRoot(document.getElementById('root'));
       root.render(<PublicProfile />);
-      console.log('React app rendered');
     } catch (error) {
-      console.error('Render error:', error.message, error.stack);
+      console.error('Render error:', error);
       document.getElementById('root').innerHTML = '<div className="error"><h2>Error</h2><p>Failed to render: ' + error.message + '</p></div>';
     }
   </script>
