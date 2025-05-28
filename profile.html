@@ -83,7 +83,7 @@
     }
 
     const { useState, useEffect } = React;
-
+    
     const fetchUserProfile = async (userId, isUsername = false) => {
       try {
         let actualUserId = userId;
@@ -150,6 +150,7 @@
           lastLogin: data.lastLogin || null,
           lastLogout: data.lastLogout || null,
           loginStatus: data.loginStatus || '',
+          isAdmin: data.isAdmin || false,
           uid: actualUserId
         };
 
@@ -158,6 +159,32 @@
       } catch (error) {
         console.error('fetchUserProfile error:', error);
         throw error;
+      }
+    };
+
+    const checkIfAdmin = async () => {
+      try {
+        if (!window.firebase || !window.firebase.auth || !window.firebase.db) {
+          console.error("Firebase not initialized. Check initialization errors.");
+          return;
+        }
+        const user = window.firebase.auth.currentUser;
+        if (!user) {
+          console.log("No user is logged in.");
+          return;
+        }
+        const uid = user.uid;
+        const userDoc = await window.firebase.getDoc(window.firebase.doc(window.firebase.db, 'users', uid));
+        if (!userDoc.exists()) {
+          console.log(`No user document found for UID: ${uid}`);
+          return;
+        }
+        const isAdmin = userDoc.data().isAdmin || false;
+        console.log(isAdmin
+          ? `User ${uid} is an admin (isAdmin: true).`
+          : `User ${uid} is not an admin (isAdmin: ${isAdmin}).`);
+      } catch (error) {
+        console.error(`Error checking admin status: ${error.message}`);
       }
     };
 
@@ -259,6 +286,7 @@
 
       const userId = getUserIdFromUrl();
 
+
       const calculateAge = (dob) => {
         if (!dob) return 'Not provided';
         try {
@@ -352,19 +380,22 @@
             if (user) {
               try {
                 const userProfile = await fetchUserProfile(user.uid);
-                setCurrentUser({ ...user, profile: { username: userProfile.username } });
+                setCurrentUser({ ...user, profile: { username: userProfile.username, isAdmin: userProfile.isAdmin } });
+                // Call checkIfAdmin after user is confirmed
+                await checkIfAdmin();
               } catch {
-                setCurrentUser({ ...user, profile: { username: 'User' } });
+                setCurrentUser({ ...user, profile: { username: 'User', isAdmin: false } });
               }
             } else {
               setCurrentUser(null);
+              console.log("No user is logged in (onAuthStateChanged).");
             }
           });
           return () => unsubscribe();
         };
         fetchCurrentUser();
       }, []);
-
+      
       useEffect(() => {
         const fetchProfile = async () => {
           if (!userId) {
@@ -397,6 +428,7 @@
         fetchProfile();
       }, [userId, currentUser]);
 
+      
       const handleNextImage = () => {
         setIsTransitioning(true);
         setCurrentImageIndex((prev) => {
@@ -430,7 +462,7 @@
       const handleImageClick = () => setIsModalOpen(true);
       const closeModal = () => setIsModalOpen(false);
 
-      const transformImageUrl = (url, isPrivate = false, modal = false, isOwner = false, hasAccess = false) => {
+      const transformImageUrl = (url, isPrivate = false, modal = false, isOwner = false, hasAccess = false, isAdmin = false) => {
         if (!url || typeof url !== 'string') {
           return 'https://placehold.co/300x200?text=No+Image';
         }
@@ -439,7 +471,7 @@
           return 'https://placehold.co/300x200?text=No+Image';
         }
         const publicId = publicIdMatch[1];
-        const transform = isPrivate && !isOwner && !hasAccess
+        const transform = isPrivate && !isOwner && !hasAccess && !isAdmin
           ? 'w_300,h_200,c_fill,g_auto,f_auto,q_auto,e_blur:1000'
           : modal
           ? 'w_1200,h_800,c_fill,g_auto,f_auto,q_auto'
@@ -450,8 +482,10 @@
       const isOwner = currentUser && profile && currentUser.uid === profile.uid;
       const currentImage = images[currentImageIndex % images.length] || {};
       const isCurrentPrivate = currentImage.isPrivate || false;
-      const canViewPrivate = isOwner || accessStatus === 'approved';
+      const canViewPrivate = isOwner || accessStatus === 'approved' || currentUser?.profile?.isAdmin;
       const sliderImages = images.length > 0 ? [...images, ...images] : [];
+
+      
 
       return (
         <div className="flex flex-col min-h-screen">
@@ -471,7 +505,7 @@
                   <div className="flex flex-col md:flex-row gap-4 mb-6">
                     <div className="w-full md:w-1/3">
                       <img
-                        src={transformImageUrl(currentImage.url || profile.profileImage, isCurrentPrivate, false, isOwner, accessStatus === 'approved')}
+                        src={transformImageUrl(currentImage.url || profile.profileImage, isCurrentPrivate, false, isOwner, accessStatus === 'approved', currentUser?.profile?.isAdmin)}
                         alt="Profile Image"
                         className="w-[300px] h-[300px] object-cover rounded-lg cursor-pointer"
                         onClick={handleImageClick}
@@ -514,10 +548,10 @@
                             {sliderImages.map((img, index) => (
                               <div key={index} className="slider-item">
                                 <img
-                                  src={transformImageUrl(img.url, img.isPrivate, false, isOwner, accessStatus === 'approved')}
+                                  src={transformImageUrl(img.url, img.isPrivate, false, isOwner, accessStatus === 'approved', currentUser?.profile?.isAdmin)}
                                   alt={`Image ${index + 1}`}
                                   className={`w-[100px] h-[100px] object-cover rounded cursor-pointer ${
-                                    img.isPrivate && !canViewPrivate && accessStatus !== 'approved' ? 'blurred-image' : ''
+                                    img.isPrivate && !canViewPrivate && accessStatus !== 'approved' && !currentUser?.profile?.isAdmin ? 'blurred-image' : ''
                                   }`}
                                   onClick={() => setCurrentImageIndex(index % images.length)}
                                 />
@@ -543,7 +577,7 @@
                         </>
                       )}
                       <img
-                        src={transformImageUrl(currentImage.url || profile.profileImage, isCurrentPrivate, true, isOwner, accessStatus === 'approved')}
+                        src={transformImageUrl(currentImage.url || profile.profileImage, isCurrentPrivate, true, isOwner, accessStatus === 'approved', currentUser?.profile?.isAdmin)}
                         alt="Full-size Image"
                         className="max-w-[90%] max-h-[90%] object-contain"
                       />
